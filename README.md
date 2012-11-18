@@ -13,7 +13,8 @@ keys:
 	Q or ESC - 	exit screen/proram
 	F - 		set youtube-dl format
 	P-		toggle between OMXPlayer and MPlayer 
-	H-		Toggle between HDMI/Local audio output.
+	H-		Toggle between HDMI/Local audio output
+	I- 		More information on selected record
 
 binarybond007@gmail.com
 
