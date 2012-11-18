@@ -627,5 +627,4 @@ void redraw_results(bool swap)
 
     if(swap)
         eglSwapBuffers(state->display, state->surface);
-
 }
