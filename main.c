@@ -189,7 +189,10 @@ int main(int argc, char **argv)
 
         case RTN_KEY:
             if(selected_rec != NULL)
-                play_video(selected_rec->url);
+                if (selected_rec->url != NULL)
+                    play_video(selected_rec->url);
+                else    
+                    show_message("Unable to play:\nselected_rec->url==NULL", true, ERROR_POINT);
             break;
 
         default :
