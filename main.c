@@ -192,7 +192,7 @@ int main(int argc, char **argv)
                 if (selected_rec->url != NULL)
                     play_video(selected_rec->url);
                 else    
-                    show_message("Unable to play:\nselected_rec->url==NULL", true, ERROR_POINT);
+                    show_message("Unable to play:\n\nselected_rec->url==NULL", true, ERROR_POINT);
             break;
 
         default :
