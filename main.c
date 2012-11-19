@@ -437,14 +437,19 @@ static void parse_buffer_jsonc(char * jsoncContent, bool reset)
                 break;
 
             case '}' :
+                handle_output_jsonc(iBracket, iBrace, key, value);
+                findkey  = true;
+                iKey     = 0;
+                key[0]   = 0x00;
+                iValue   = 0;
+                value[0] = 0x00;
+                bSkip    = true;
                 iBracket--;
-                bSkip     = true;
                 break;
 
             case ',' :
-
+            
                 handle_output_jsonc(iBracket, iBrace, key, value);
-
                 findkey  = true;
                 iKey     = 0;
                 key[0]   = 0x00;

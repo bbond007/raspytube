@@ -113,7 +113,7 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
             return &last_rec->description;
         else if (iBracket == 4 && strcmp(key, "sqDefault") == 0)
             return &last_rec->thumbSmall;
-        else if (iBracket == 3 && strcmp(key, "hqDefault") == 0)
+        else if (iBracket == 4 && strcmp(key, "hqDefault") == 0)
             return &last_rec->thumbLarge;
         else if (iBracket == 4 && strcmp(key, "default") == 0)
             return &last_rec->url;
