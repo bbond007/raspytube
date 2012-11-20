@@ -28,7 +28,7 @@ int numFormat    = 0;
 int numStart     = 1;
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
-enum tJpegDecoder jpegDecoder = jdLibJpeg;
+enum tJpegDecoder jpegDecoder = jdOMX;
 #define ERROR_POINT 40
 
 VGfloat textColor[4]        = {  5,  5,  5,1};
