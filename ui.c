@@ -560,8 +560,9 @@ void redraw_results(bool swap)
     int rectHeight = (int) ((float) step * .9f);
     int rectOffset = (int) ((float) state->screen_width * .05);
     int rectWidth = state->screen_width - (rectOffset * 2);
-    int rectWidth2 = state->screen_width / 14;
-    int jpegWidth = state->screen_width / 15;
+    int rectWidth2 = state->screen_width / 13;
+    int jpegWidth =  state->screen_width / 15;
+    jpegWidth += (jpegWidth % 16);
     int txtXoffset = state->screen_width / 6;
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
