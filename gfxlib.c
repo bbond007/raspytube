@@ -2,9 +2,9 @@
 // shapes: minimal program to explore OpenVG
 // Anthony Starks (ajstarks@gmail.com)
 // and "test_image.c"
-// ShivaVG / Ivan Leben <ivan.leben@gmail.com>
-// ShivaVG - an open-source LGPL ANSI C implementation of the OpenVG specificatio
-  
+// ShivaVG / Ivan Leben <ivan.leben@gmail.com>
+// ShivaVG - an open-source LGPL ANSI C implementation of the OpenVG specificatio
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,10 +132,12 @@ VGImage createImageFromJpeg(const char *filename, int desired_height)
 	free(data);
 
 	return img;
+      
 }
 
 VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_height)
 {
+  
 	struct jpeg_decompress_struct jdc;
 	struct jpeg_error_mgr jerr;
 	JSAMPARRAY buffer;
@@ -231,7 +233,7 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
 	// Cleanup
 	jpeg_destroy_decompress(&jdc);
 	free(data);
-	return img;
+	return img;     
 }
 //------------------------------------------------------------------------------
 // 

@@ -121,9 +121,20 @@ int main(int argc, char **argv)
             break;
 
         case 'T' :
+            //if(selected_rec != NULL)
+            //    if(selected_rec->thumbLarge != NULL)
+            //        test_hardware_jpeg(selected_rec->thumbLarge);
             show_message("This is a test.", true, ERROR_POINT);
             break;
 
+        case 'X' :
+            if (jpegDecoder == jdOMX)
+                jpegDecoder = jdLibJpeg;
+            else 
+                jpegDecoder = jdOMX;
+            redraw_results(true);
+            break;
+            
         case 'F' :
             show_youtube_formats();
             break;
@@ -189,10 +200,12 @@ int main(int argc, char **argv)
 
         case RTN_KEY:
             if(selected_rec != NULL)
+            {
                 if (selected_rec->url != NULL)
                     play_video(selected_rec->url);
                 else    
                     show_message("Unable to play:\n\nselected_rec->url==NULL", true, ERROR_POINT);
+            }
             break;
 
         default :

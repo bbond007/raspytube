@@ -23,7 +23,7 @@ struct result_rec
     
 typedef enum tVideoPlayer {vpOMXPlayer, vpMPlayer};
 typedef enum tSoundOutput {soHDMI, soLOCAL};
-
+typedef enum tJpegDecoder {jdLibJpeg, jdOMX};
 //------------------------------------------------------------------------------
 
 struct result_rec * init_result_rec();
@@ -40,6 +40,7 @@ void redraw_results(bool swap);
 void replace_char_str(char * buf,  char old, char new);
 char *parse_url(char * url, char ** server, char ** page);
 char ** get_lastrec_column(int iBracket, int iBrace, char * key); 
+VGImage load_jpeg(char * url, unsigned int * outputWidth, unsigned int * outputHeight);
 
 bool kbHit(void);
 int readKb();
@@ -54,6 +55,7 @@ extern int numFormat;
 extern int numStart;
 extern enum tSoundOutput soundOutput;
 extern enum tVideoPlayer videoPlayer;
+extern enum tJpegDecoder jpegDecoder;
 
 #define ERROR_POINT 40
 

@@ -28,6 +28,7 @@ int numFormat    = 0;
 int numStart     = 1;
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
+enum tJpegDecoder jpegDecoder = jdLibJpeg;
 #define ERROR_POINT 40
 
 VGfloat textColor[4]        = {  5,  5,  5,1};
@@ -41,6 +42,8 @@ VGfloat errorColor[4]       = {  4,  0,  0,1};
 
 extern unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
+extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
+
 
 //------------------------------------------------------------------------------
 struct result_rec * init_result_rec()
@@ -183,25 +186,9 @@ void show_selection_info(struct result_rec * rec)
     
     if(rec->thumbLarge != NULL)
     {
-        VGImage image = 0;
-        unsigned int fileSize = 0;
-        unsigned char * downloadData;
-        char * server = NULL;
-        char * page = NULL;
-        char * freeMe = parse_url(rec->thumbLarge, &server, &page);
-        if(server != NULL && page != NULL)
-        {
-            downloadData = download_file(server, page, &fileSize);
-            unsigned char * imageData = find_jpg_start(downloadData, &fileSize);
-            if (imageData == NULL)
-                show_message("unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
-            else
-                image = createImageFromBuf(imageData, fileSize, state->screen_height * .40f);
-
-            if(downloadData != NULL) free(downloadData);
-        }
-        if(freeMe != NULL)free(freeMe);
-
+        unsigned int image_width  = 0;
+        unsigned int image_height = (state->screen_height * .50f);
+        VGImage image = load_jpeg(rec->thumbLarge, &image_width, &image_height);
         char * infoStr = NULL;
      
         if(rec->date != NULL && rec->user != NULL && rec->id != NULL)
@@ -223,14 +210,7 @@ void show_selection_info(struct result_rec * rec)
                 show_big_message("Info: ???", rec->description, false);
         }
        
-        if(rec->user ==NULL)
-           printf("user = null\n");
-        
-        if(rec->date ==NULL)
-           printf("date = null\n");
-                        
-        int image_width  = vgGetParameteri(image, VG_IMAGE_WIDTH);
-        int image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);
+       
         int offsetY      = (state->screen_height * .02f);
         int offsetX      = (state->screen_width  * .02f);
         int imageY       = (state->screen_height - image_height) - offsetX;
@@ -528,6 +508,51 @@ void replace_char_str(char * buf,  char oldChar, char newChar)
 }
 
 //------------------------------------------------------------------------------
+VGImage load_jpeg(char * url, unsigned int * outputWidth, unsigned int * outputHeight)
+{
+    
+    VGImage vgImage = 0;
+    unsigned int fileSize = 0;
+    unsigned char * downloadData;
+    char * server = NULL;
+    char * page = NULL;
+    char * freeMe = parse_url(url, &server, &page);
+    if(server != NULL && page != NULL)
+    {
+        downloadData = download_file(server, page, &fileSize);
+        unsigned char * imageData = find_jpg_start(downloadData, &fileSize);
+        if (imageData == NULL)
+            show_message("unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
+        else
+        {
+            switch (jpegDecoder)
+            {
+                case jdOMX:
+                    vgImage = OMXCreateImageFromBuf(imageData, fileSize, 
+                        (*outputWidth), (*outputHeight));
+                break;
+                
+                case jdLibJpeg:
+                    vgImage = createImageFromBuf(imageData, fileSize, (*outputHeight));     
+                break;
+                
+                default:
+                     show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
+                break;
+            }
+            
+            *outputWidth  = vgGetParameteri(vgImage, VG_IMAGE_WIDTH);
+            *outputHeight = vgGetParameteri(vgImage, VG_IMAGE_HEIGHT);    
+        
+            
+        }
+        if(downloadData != NULL) free(downloadData);
+    }
+    if(freeMe != NULL)free(freeMe);
+    return vgImage;
+}
+
+//------------------------------------------------------------------------------
 void redraw_results(bool swap)
 {
 
@@ -575,39 +600,16 @@ void redraw_results(bool swap)
         {
             if(temp->image == 0)
             {
-                unsigned int fileSize = 0;
-                unsigned char * downloadData;
-                char * server = NULL;
-                char * page = NULL;
-                char * freeMe = parse_url(temp->thumbSmall, &server, &page);
-                if(server != NULL && page != NULL)
-                {
-                    downloadData = download_file(server, page, &fileSize);
-                    unsigned char * imageData = find_jpg_start(downloadData, &fileSize);
-                    if (imageData == NULL)
-                        show_message("unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
-                    else
-                        temp->image = createImageFromBuf(imageData, fileSize, rectHeight);
-
-                    if(downloadData != NULL) free(downloadData);
-                }
-                if(freeMe != NULL)free(freeMe);
+                unsigned int outputWidth  = rectWidth2;
+                unsigned int outputHeight = rectHeight;
+                temp->image = load_jpeg(temp->thumbSmall, &outputWidth, &outputHeight);                
             }
-            vgSetPixels(jpegOffset, y, temp->image, 0, 0, jpegWidth, rectHeight);
+            vgSetPixels(jpegOffset, y, temp->image, 0,0, jpegWidth, rectHeight);
         }
         temp = temp->next;
     }
 
-    switch(soundOutput)
-    {
-    case soHDMI :
-        Text_DejaVuSans(0, 0, "(((HDMI)))", 12, textColor);
-        break;
-    case soLOCAL:
-        Text_DejaVuSans(0, 0, "(((LOCAL)))", 12, textColor);
-        break;
-    }
-
+    
     switch(videoPlayer)
     {
     case vpOMXPlayer:
@@ -615,6 +617,26 @@ void redraw_results(bool swap)
         break;
     case vpMPlayer:
         Text_DejaVuSans(0, state->screen_height * .98f, "[MPlayer]", 10, textColor);
+        break;
+    }
+    
+    switch(jpegDecoder)
+    {
+    case jdOMX:
+        Text_DejaVuSans(0,state->screen_height * .96f, "[OMXJPEG]", 10, textColor);
+        break;
+    case jdLibJpeg:
+        Text_DejaVuSans(0, state->screen_height * .96f, "[LIBJPEG]", 10, textColor);
+        break;
+    }
+    
+    switch(soundOutput)
+    {
+    case soHDMI :
+        Text_DejaVuSans(0, state->screen_height * .94, "(((HDMI)))", 12, textColor);
+        break;
+    case soLOCAL:
+        Text_DejaVuSans(0, state->screen_height * .94, "(((LOCAL)))", 12, textColor);
         break;
     }
 
