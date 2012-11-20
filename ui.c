@@ -188,7 +188,10 @@ void show_selection_info(struct result_rec * rec)
     {
         unsigned int image_width  = 0;
         unsigned int image_height = (state->screen_height * .50f);
-        VGImage image = load_jpeg(rec->thumbLarge, &image_width, &image_height);
+        VGImage image = load_jpeg(rec->thumbLarge, image_width, image_height);
+        image_width  = vgGetParameteri(image, VG_IMAGE_WIDTH);
+        image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);    
+
         char * infoStr = NULL;
      
         if(rec->date != NULL && rec->user != NULL && rec->id != NULL)
@@ -508,7 +511,7 @@ void replace_char_str(char * buf,  char oldChar, char newChar)
 }
 
 //------------------------------------------------------------------------------
-VGImage load_jpeg(char * url, unsigned int * outputWidth, unsigned int * outputHeight)
+VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
 {
     
     VGImage vgImage = 0;
@@ -528,12 +531,11 @@ VGImage load_jpeg(char * url, unsigned int * outputWidth, unsigned int * outputH
             switch (jpegDecoder)
             {
                 case jdOMX:
-                    vgImage = OMXCreateImageFromBuf(imageData, fileSize, 
-                        (*outputWidth), (*outputHeight));
+                    vgImage = OMXCreateImageFromBuf(imageData, fileSize, width, height);
                 break;
                 
                 case jdLibJpeg:
-                    vgImage = createImageFromBuf(imageData, fileSize, (*outputHeight));     
+                    vgImage = createImageFromBuf(imageData, fileSize, height);     
                 break;
                 
                 default:
@@ -541,10 +543,7 @@ VGImage load_jpeg(char * url, unsigned int * outputWidth, unsigned int * outputH
                 break;
             }
             
-            *outputWidth  = vgGetParameteri(vgImage, VG_IMAGE_WIDTH);
-            *outputHeight = vgGetParameteri(vgImage, VG_IMAGE_HEIGHT);    
-        
-            
+                     
         }
         if(downloadData != NULL) free(downloadData);
     }
@@ -561,8 +560,8 @@ void redraw_results(bool swap)
     int rectHeight = (int) ((float) step * .9f);
     int rectOffset = (int) ((float) state->screen_width * .05);
     int rectWidth = state->screen_width - (rectOffset * 2);
-    int rectWidth2 = state->screen_width / 12;
-    int jpegWidth = state->screen_width / 13;
+    int rectWidth2 = state->screen_width / 14;
+    int jpegWidth = state->screen_width / 15;
     int txtXoffset = state->screen_width / 6;
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
@@ -599,12 +598,10 @@ void redraw_results(bool swap)
         if(temp->thumbSmall != NULL)
         {
             if(temp->image == 0)
-            {
-                unsigned int outputWidth  = rectWidth2;
-                unsigned int outputHeight = rectHeight;
-                temp->image = load_jpeg(temp->thumbSmall, &outputWidth, &outputHeight);                
-            }
-            vgSetPixels(jpegOffset, y, temp->image, 0,0, jpegWidth, rectHeight);
+                temp->image = load_jpeg(temp->thumbSmall, jpegWidth, rectHeight);                
+            vgSetPixels(jpegOffset, y, temp->image, 0,0, 
+                vgGetParameteri(temp->image, VG_IMAGE_WIDTH), 
+                vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
         }
         temp = temp->next;
     }

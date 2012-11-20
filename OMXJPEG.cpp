@@ -243,7 +243,9 @@ VGImage OMXJPEG::CreateImageFromBuf(unsigned char *buf, unsigned int bufLength, 
         m_pLogger->Log("vgImage created!");
 #endif
         //the image is upside down :( need to flip it. 
+
         size_t stStride = outputWidth * 4;
+
         unsigned char * tempLine = (unsigned char *) malloc(stStride);
         unsigned char * top = m_pHeaderOutput->pBuffer;
         unsigned char * bot = &m_pHeaderOutput->pBuffer[outputHeight * stStride]; 
@@ -256,6 +258,7 @@ VGImage OMXJPEG::CreateImageFromBuf(unsigned char *buf, unsigned int bufLength, 
             top += stStride;
         }
         free(tempLine);
+    
         VGImageFormat rgbaFormat = VG_sABGR_8888;
         vgImage = vgCreateImage(rgbaFormat, outputWidth, outputHeight, VG_IMAGE_QUALITY_BETTER);
         vgImageSubData(vgImage, m_pHeaderOutput->pBuffer, stStride, rgbaFormat, 0, 0, outputWidth, outputHeight);

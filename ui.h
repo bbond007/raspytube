@@ -40,7 +40,7 @@ void redraw_results(bool swap);
 void replace_char_str(char * buf,  char old, char new);
 char *parse_url(char * url, char ** server, char ** page);
 char ** get_lastrec_column(int iBracket, int iBrace, char * key); 
-VGImage load_jpeg(char * url, unsigned int * outputWidth, unsigned int * outputHeight);
+VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 
 bool kbHit(void);
 int readKb();
