@@ -26,6 +26,7 @@ typedef enum tSoundOutput {soHDMI, soLOCAL};
 typedef enum tJpegDecoder {jdLibJpeg, jdOMX};
 //------------------------------------------------------------------------------
 
+void init_ui_var();
 struct result_rec * init_result_rec();
 void free_result_rec(struct result_rec * rec);
 void draw_txt_box(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points, bool swap);
@@ -49,15 +50,20 @@ void dumpKb();
 extern struct result_rec * first_rec;
 extern struct result_rec * last_rec;
 extern struct result_rec * selected_rec;
-
+extern int numPointFontTiny;
+extern int numPointFontSmall;
+extern int numPointFontMed;
+extern int numPointFontlarge; 
+extern int numThumbWidth;
 extern int numResults;
 extern int numFormat;
 extern int numStart;
+
 extern enum tSoundOutput soundOutput;
 extern enum tVideoPlayer videoPlayer;
 extern enum tJpegDecoder jpegDecoder;
 
-#define ERROR_POINT 40
+#define ERROR_POINT (numPointFontMed)
 
 extern VGfloat textColor[];
 extern VGfloat rectColor[];

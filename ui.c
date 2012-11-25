@@ -22,14 +22,19 @@ struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
 
+int numPointFontTiny  = 7;
+int numPointFontSmall = 10;
+int numPointFontMed   = 15;
+int numPointFontLarge = 30; 
+int numThumbWidth     = 10;  
+int numResults        = 8;
+int numFormat        = 0;
+int numStart         = 1;
 
-int numResults   = 10;
-int numFormat    = 0;
-int numStart     = 1;
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
 enum tJpegDecoder jpegDecoder = jdOMX;
-#define ERROR_POINT 40
+#define ERROR_POINT  (numPointFontMed)
 
 VGfloat textColor[4]        = {  5,  5,  5,1};
 VGfloat rectColor[4]        = {  0,  0,  5,1};
@@ -125,6 +130,29 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
     }
     else
         return NULL;
+}
+
+//------------------------------------------------------------------------------
+void init_ui_var()
+{
+    if(state->screen_width >= 1920)
+    {
+        numPointFontTiny  = 10;
+        numPointFontSmall = 12;
+        numPointFontMed   = 20;
+        numPointFontLarge = 40; 
+        numThumbWidth     = 15;  
+        numResults        = 10;
+    }
+    else if (state->screen_width >= 1280)
+    {
+        numPointFontTiny  = 6;
+        numPointFontSmall = 8;
+        numPointFontMed   = 15;
+        numPointFontLarge = 30; 
+        numThumbWidth     = 10;  
+        numResults        = 8;
+    }
 }
 //------------------------------------------------------------------------------
 //
@@ -268,14 +296,14 @@ bool input_string(char * prompt, char * buf, int max)
     {
         clear_screen(false);
         //redraw_results(false);
-        draw_txt_box(prompt, .95f, .50f, .05, .10f, .50f, 40, false);
+        draw_txt_box(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
         sprintf(temp, "%02X->%02X:%02X:%02X:%02X:%02X:%02X:%02X", key,
                 lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
-        Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .10f, temp, 16, textColor);
+        Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .10f, temp, numPointFontMed, textColor);
         endPos = strlen(buf);
         buf[endPos] = '_';
         buf[endPos+1]= 0x00;
-        Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .30f, buf, 40, textColor);
+        Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .30f, buf, numPointFontLarge, textColor);
         buf[endPos] = 0x00;
         eglSwapBuffers(state->display, state->surface);
         int i = 0;
@@ -341,13 +369,13 @@ bool input_string(char * prompt, char * buf, int max)
 void show_big_message(char * title, char * message, bool pause)
 {
     redraw_results(false);
-    draw_txt_box(title, .95f, .50f, .05, .10f, .47f, 40, false);
+    draw_txt_box(title, .95f, .50f, .05, .10f, .47f, numPointFontLarge, false);
     Text_DejaVuSans_Rollover(state->screen_width  * .10f,
                              state->screen_height * .40f,
                              state->screen_width  * .85f,
                              7, //max no of lines
                              state->screen_height * .05f,
-                             message, 22, textColor);
+                             message, numPointFontMed, textColor);
 
     if(pause)
     {
@@ -397,7 +425,7 @@ void show_youtube_formats()
     {
         //redraw_results(false);
         clear_screen(false);
-        draw_txt_box("Youtube supported video formats:", .95f, .95f, .025, .10f, .92f, 40, false);
+        draw_txt_box("Youtube supported video formats:", .95f, .95f, .025, .10f, .92f,  numPointFontLarge, false);
 
         int step = state->screen_height / (AFORMAT_HEIGHT + 5);
         Roundrect(.085f * state->screen_width,
@@ -411,7 +439,7 @@ void show_youtube_formats()
             for(y = 0; y < AFORMAT_HEIGHT; y++)
                 Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
                                 (y+2) * step,
-                                supported_formats[(AFORMAT_HEIGHT - 1) -y][x], 16, textColor);
+                                supported_formats[(AFORMAT_HEIGHT - 1) -y][x], numPointFontSmall, textColor);
 
 
         eglSwapBuffers(state->display, state->surface);
@@ -560,10 +588,10 @@ void redraw_results(bool swap)
     int rectHeight = (int) ((float) step * .9f);
     int rectOffset = (int) ((float) state->screen_width * .05);
     int rectWidth = state->screen_width - (rectOffset * 2);
-    int rectWidth2 = state->screen_width / 13;
-    int jpegWidth =  state->screen_width / 15;
-    jpegWidth += (jpegWidth % 16);
-    int txtXoffset = state->screen_width / 6;
+    int rectWidth2 = state->screen_width / (numThumbWidth - 2);
+    int jpegWidth =  state->screen_width / numThumbWidth;
+    //jpegWidth += (jpegWidth % 16);
+    int txtXoffset = rectWidth2 + (rectOffset * 1.2); 
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
     int jpegOffset = rectOffset + ((rectWidth2 - jpegWidth) / 2);
@@ -585,13 +613,13 @@ void redraw_results(bool swap)
         {
             Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, 6, rectColor, selectedColor);
             if(temp->title != NULL)
-                Text_DejaVuSans_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, 24, selectedColor);
+                Text_DejaVuSans_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, numPointFontMed, selectedColor);
         }
         else
         {
             Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, 2, rectColor, outlineColor);
             if(temp->title != NULL)
-                Text_DejaVuSans_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, 24, textColor);
+                Text_DejaVuSans_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, numPointFontMed, textColor);
         }
 
         Roundrect(rectOffset, y - rectDiff, rectWidth2, step, 20, 20, 2, rectColor2, outlineColor2);
@@ -611,30 +639,30 @@ void redraw_results(bool swap)
     switch(videoPlayer)
     {
     case vpOMXPlayer:
-        Text_DejaVuSans(0,state->screen_height * .98f, "[OMXPlayer]", 10, textColor);
+        Text_DejaVuSans(0,state->screen_height * .98f, "[OMXPlayer]", numPointFontTiny, textColor);
         break;
     case vpMPlayer:
-        Text_DejaVuSans(0, state->screen_height * .98f, "[MPlayer]", 10, textColor);
+        Text_DejaVuSans(0, state->screen_height * .98f, "[MPlayer]",  numPointFontTiny, textColor);
         break;
     }
     
     switch(jpegDecoder)
     {
     case jdOMX:
-        Text_DejaVuSans(0,state->screen_height * .96f, "[OMXJPEG]", 10, textColor);
+        Text_DejaVuSans(0,state->screen_height * .96f, "[OMXJPEG]", numPointFontTiny, textColor);
         break;
     case jdLibJpeg:
-        Text_DejaVuSans(0, state->screen_height * .96f, "[LIBJPEG]", 10, textColor);
+        Text_DejaVuSans(0, state->screen_height * .96f, "[LIBJPEG]", numPointFontTiny, textColor);
         break;
     }
     
     switch(soundOutput)
     {
     case soHDMI :
-        Text_DejaVuSans(0, state->screen_height * .94, "(((HDMI)))", 12, textColor);
+        Text_DejaVuSans(0, state->screen_height * .94, "(((HDMI)))",  numPointFontSmall, textColor);
         break;
     case soLOCAL:
-        Text_DejaVuSans(0, state->screen_height * .94, "(((LOCAL)))", 12, textColor);
+        Text_DejaVuSans(0, state->screen_height * .94, "(((LOCAL)))", numPointFontSmall, textColor);
         break;
     }
 
@@ -642,7 +670,7 @@ void redraw_results(bool swap)
     {
         char numStartStr[10];
         sprintf(numStartStr, "<-%d", numStart-1);
-        Text_DejaVuSans(0, state->screen_height * .50f, numStartStr, 20, textColor);
+        Text_DejaVuSans(0, state->screen_height * .50f, numStartStr, numPointFontMed, textColor);
     }
 
     if(swap)

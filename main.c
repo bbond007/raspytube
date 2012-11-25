@@ -62,10 +62,11 @@ int main(int argc, char **argv)
     memset( state, 0, sizeof( *state ) );
     init_ogl(state);
     load_DejaVuSans_font();
+    init_ui_var();
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
-
+    
     if(argc > 1)
     {
         youtube_search(argv[1]);
