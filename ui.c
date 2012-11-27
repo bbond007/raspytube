@@ -22,14 +22,14 @@ struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
 
-int numPointFontTiny  = 7;
-int numPointFontSmall = 10;
-int numPointFontMed   = 15;
-int numPointFontLarge = 30; 
-int numThumbWidth     = 10;  
-int numResults        = 8;
-int numFormat        = 0;
-int numStart         = 1;
+int numPointFontTiny;
+int numPointFontSmall;
+int numPointFontMed;
+int numPointFontLarge; 
+int numThumbWidth     = 13;  
+int numResults        = 10;
+int numFormat         = 0;
+int numStart          = 1;
 
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
@@ -141,8 +141,8 @@ void init_ui_var()
         numPointFontSmall = 12;
         numPointFontMed   = 20;
         numPointFontLarge = 40; 
-        numThumbWidth     = 15;  
-        numResults        = 10;
+    //  numThumbWidth     = 12;  
+    //  numResults        = 10;
     }
     else if (state->screen_width >= 1280)
     {
@@ -150,8 +150,17 @@ void init_ui_var()
         numPointFontSmall = 8;
         numPointFontMed   = 15;
         numPointFontLarge = 30; 
-        numThumbWidth     = 10;  
-        numResults        = 8;
+   //   numThumbWidth     = 10;  
+   //   numResults        = 8;
+    }
+    else
+    {
+        numPointFontTiny  = 4;
+        numPointFontSmall = 6;
+        numPointFontMed   = 13;
+        numPointFontLarge = 25; 
+   //   numThumbWidth     = 10;  
+   //   numResults        = 8; 
     }
 }
 //------------------------------------------------------------------------------
@@ -214,8 +223,8 @@ void show_selection_info(struct result_rec * rec)
     
     if(rec->thumbLarge != NULL)
     {
-        unsigned int image_width  = 0;
-        unsigned int image_height = (state->screen_height * .50f);
+        unsigned int image_width  = (state->screen_width  * .30f);
+        unsigned int image_height = (state->screen_height * .35f);
         VGImage image = load_jpeg(rec->thumbLarge, image_width, image_height);
         image_width  = vgGetParameteri(image, VG_IMAGE_WIDTH);
         image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);    
@@ -590,7 +599,7 @@ void redraw_results(bool swap)
     int rectWidth = state->screen_width - (rectOffset * 2);
     int rectWidth2 = state->screen_width / (numThumbWidth - 2);
     int jpegWidth =  state->screen_width / numThumbWidth;
-    //jpegWidth += (jpegWidth % 16);
+    //jpegWidth = (int)((jpegWidth / 16)) * 16;
     int txtXoffset = rectWidth2 + (rectOffset * 1.2); 
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
