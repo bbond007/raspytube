@@ -25,8 +25,8 @@ struct result_rec * selected_rec = NULL;
 int numPointFontTiny;
 int numPointFontSmall;
 int numPointFontMed;
-int numPointFontLarge; 
-int numThumbWidth     = 13;  
+int numPointFontLarge;
+int numThumbWidth     = 13;
 int numResults        = 10;
 int numFormat         = 0;
 int numStart          = 1;
@@ -104,7 +104,7 @@ void free_result_rec(struct result_rec * rec)
 
 //------------------------------------------------------------------------------
 char ** get_lastrec_column(int iBracket, int iBrace, char * key)
-{   
+{
     if(last_rec != NULL)
     {
         if (iBracket == 3 && strcmp(key, "id") == 0)
@@ -140,27 +140,27 @@ void init_ui_var()
         numPointFontTiny  = 10;
         numPointFontSmall = 12;
         numPointFontMed   = 20;
-        numPointFontLarge = 40; 
-    //  numThumbWidth     = 12;  
-    //  numResults        = 10;
+        numPointFontLarge = 40;
+        //  numThumbWidth     = 12;
+        //  numResults        = 10;
     }
     else if (state->screen_width >= 1280)
     {
         numPointFontTiny  = 6;
         numPointFontSmall = 8;
         numPointFontMed   = 15;
-        numPointFontLarge = 30; 
-   //   numThumbWidth     = 10;  
-   //   numResults        = 8;
+        numPointFontLarge = 30;
+        //   numThumbWidth     = 10;
+        //   numResults        = 8;
     }
     else
     {
         numPointFontTiny  = 4;
         numPointFontSmall = 6;
         numPointFontMed   = 13;
-        numPointFontLarge = 25; 
-   //   numThumbWidth     = 10;  
-   //   numResults        = 8; 
+        numPointFontLarge = 25;
+        //   numThumbWidth     = 10;
+        //   numResults        = 8;
     }
 }
 //------------------------------------------------------------------------------
@@ -220,25 +220,25 @@ void show_selection_info(struct result_rec * rec)
     }
     else //description not found.
         show_message("OOPS! description == NULL", true, ERROR_POINT);
-    
+
     if(rec->thumbLarge != NULL)
     {
         unsigned int image_width  = (state->screen_width  * .30f);
         unsigned int image_height = (state->screen_height * .35f);
         VGImage image = load_jpeg(rec->thumbLarge, image_width, image_height);
         image_width  = vgGetParameteri(image, VG_IMAGE_WIDTH);
-        image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);    
+        image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);
 
         char * infoStr = NULL;
-     
+
         if(rec->date != NULL && rec->user != NULL && rec->id != NULL)
-        {	
+        {
             char * T = strchr(rec->date, 'T'); //remove after T - time unwanted
             if (T != NULL) *T= 0x00;
             char formatStr[] = "Info: #%s : %s : %s";
             int size = strlen(rec->id)   +
-                       strlen(rec->date) + 
-                       strlen(rec->user) + 
+                       strlen(rec->date) +
+                       strlen(rec->user) +
                        strlen(formatStr);
             infoStr = malloc(size);
             sprintf(infoStr, formatStr, rec->id, rec->user, rec->date);
@@ -249,8 +249,8 @@ void show_selection_info(struct result_rec * rec)
             if(rec->description)
                 show_big_message("Info: ???", rec->description, false);
         }
-       
-       
+
+
         int offsetY      = (state->screen_height * .02f);
         int offsetX      = (state->screen_width  * .02f);
         int imageY       = (state->screen_height - image_height) - offsetX;
@@ -265,7 +265,7 @@ void show_selection_info(struct result_rec * rec)
             show_big_message(infoStr, rec->description, false);
 
         if(infoStr != NULL) free(infoStr);
-            
+
         Roundrect(rectX,
                   rectY,
                   rect_width,
@@ -285,7 +285,7 @@ void show_selection_info(struct result_rec * rec)
     }
     else
         show_message("OOPS! rec->thumbLarge == NULL", true, ERROR_POINT);
-    
+
 }
 //------------------------------------------------------------------------------
 bool input_string(char * prompt, char * buf, int max)
@@ -329,33 +329,50 @@ bool input_string(char * prompt, char * buf, int max)
             break;
 
         case ESC_KEY:
-            if (!kbHit()) 
+            if (!kbHit())
                 strcpy(buf, save);
+            else
+            {
+                key = readKb();
+                switch(key)
+                {
+                case '[':
+                    if(kbHit())
+                    {
+                        key = readKb();
+                        switch(key)
+                        {
+                        case 'D':
+                            buf[0] = 0x00;
+                            break;
+                        case 'C':
+                            strcpy(buf, save);
+                            break;
+                        }
+                    }
+                    break;
+                case 'O' :
+                    if(kbHit())
+                    {
+                        key = readKb();
+                        switch(key)
+                        {
+                        case 'P':
+                            show_message("F1 Pressed!!!", true, ERROR_POINT);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                break;
+            }
             break;
 
         case RTN_KEY:
             break;
 
 
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-        
-            if (lastkeys[1] == ESC_KEY)
-            {
-                switch(key)
-                {
-                    case 'D':  
-                        buf[0] = 0x00;
-                        break;
-                    case 'C':
-                        strcpy(buf, save);
-                        break;
-                }
-                break;
-            }
-            
+
         default:
             if(strchr(validChars, toupper(key)) != NULL &&  strlen(buf) < max - 3)
             {
@@ -503,7 +520,7 @@ bool kbHit(void)
 void dumpKb()
 {
     while(kbHit())
-       readKb();
+        readKb();
 }
 //------------------------------------------------------------------------------
 int readKb()
@@ -512,12 +529,12 @@ int readKb()
     struct termios oldt;
     struct termios newt;
     tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
-    newt = oldt; 				// copy old settings to new settings 
-    newt.c_lflag &= ~(ICANON | ECHO); 		// change settings 
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly 
-    ch = getchar(); 				// standard getchar call 
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings 
-    return ch; 					// return received char 
+    newt = oldt; 				// copy old settings to new settings
+    newt.c_lflag &= ~(ICANON | ECHO); 		// change settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly
+    ch = getchar(); 				// standard getchar call
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
+    return ch; 					// return received char
 }
 
 //------------------------------------------------------------------------------
@@ -550,7 +567,7 @@ void replace_char_str(char * buf,  char oldChar, char newChar)
 //------------------------------------------------------------------------------
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
 {
-    
+
     VGImage vgImage = 0;
     unsigned int fileSize = 0;
     unsigned char * downloadData;
@@ -567,20 +584,20 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
         {
             switch (jpegDecoder)
             {
-                case jdOMX:
-                    vgImage = OMXCreateImageFromBuf(imageData, fileSize, width, height);
+            case jdOMX:
+                vgImage = OMXCreateImageFromBuf(imageData, fileSize, width, height);
                 break;
-                
-                case jdLibJpeg:
-                    vgImage = createImageFromBuf(imageData, fileSize, height);     
+
+            case jdLibJpeg:
+                vgImage = createImageFromBuf(imageData, fileSize, height);
                 break;
-                
-                default:
-                     show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
+
+            default:
+                show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
                 break;
             }
-            
-                     
+
+
         }
         if(downloadData != NULL) free(downloadData);
     }
@@ -600,7 +617,7 @@ void redraw_results(bool swap)
     int rectWidth2 = state->screen_width / (numThumbWidth - 2);
     int jpegWidth =  state->screen_width / numThumbWidth;
     //jpegWidth = (int)((jpegWidth / 16)) * 16;
-    int txtXoffset = rectWidth2 + (rectOffset * 1.2); 
+    int txtXoffset = rectWidth2 + (rectOffset * 1.2);
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
     int jpegOffset = rectOffset + ((rectWidth2 - jpegWidth) / 2);
@@ -636,15 +653,15 @@ void redraw_results(bool swap)
         if(temp->thumbSmall != NULL)
         {
             if(temp->image == 0)
-                temp->image = load_jpeg(temp->thumbSmall, jpegWidth, rectHeight);                
-            vgSetPixels(jpegOffset, y, temp->image, 0,0, 
-                vgGetParameteri(temp->image, VG_IMAGE_WIDTH), 
-                vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
+                temp->image = load_jpeg(temp->thumbSmall, jpegWidth, rectHeight);
+            vgSetPixels(jpegOffset, y, temp->image, 0,0,
+                        vgGetParameteri(temp->image, VG_IMAGE_WIDTH),
+                        vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
         }
         temp = temp->next;
     }
 
-    
+
     switch(videoPlayer)
     {
     case vpOMXPlayer:
@@ -654,7 +671,7 @@ void redraw_results(bool swap)
         Text_DejaVuSans(0, state->screen_height * .98f, "[MPlayer]",  numPointFontTiny, textColor);
         break;
     }
-    
+
     switch(jpegDecoder)
     {
     case jdOMX:
@@ -664,7 +681,7 @@ void redraw_results(bool swap)
         Text_DejaVuSans(0, state->screen_height * .96f, "[LIBJPEG]", numPointFontTiny, textColor);
         break;
     }
-    
+
     switch(soundOutput)
     {
     case soHDMI :
