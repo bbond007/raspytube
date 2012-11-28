@@ -466,7 +466,7 @@ void show_message(char * message, bool error, int points)
     int tx = state->screen_width * .15f;
     int ty = state->screen_height * .55f;
     
-    int key;
+    int key = ESC_KEY;
     do
     {
         redraw_results(false);
@@ -492,8 +492,10 @@ void show_message(char * message, bool error, int points)
             dumpKb();
             redraw_results(true);
         }
+        else
+            break;
         
-    }while (!error || key != ESC_KEY);
+    }while (key != ESC_KEY);
 }
 
 //------------------------------------------------------------------------------

@@ -299,7 +299,6 @@ static void play_video (char * url)
     int status;
 
     show_message(url, false, 20);
-
     if(server != NULL && page != NULL)
     {
         if (numFormat > 0)
