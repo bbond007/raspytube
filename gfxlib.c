@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <termios.h>
 #include <assert.h>
 #include <jpeglib.h>
@@ -22,245 +23,256 @@
 STATE_T _state, *state=&_state;
 VGPath DejaVuSans_Paths[DejaVuSans_glyphCount];
 
+#define ERROR_POINT (numPointFontMed)
+void show_message(char * message, bool error, int points);
+extern int numPointFontMed;
+
 // createImageFromJpeg decompresses a JPEG image to the standard image format
 // source: https://github.com/ileben/ShivaVG/blob/master/examples/test_image.c
 VGImage createImageFromJpeg(const char *filename, int desired_height)
 {
-	FILE *infile;
-	struct jpeg_decompress_struct jdc;
-	struct jpeg_error_mgr jerr;
-	JSAMPARRAY buffer;
-	unsigned int bstride;
-	unsigned int bbpp;
-	
-	VGImage img;
-	VGubyte *data;
-	unsigned int width;
-	unsigned int height;
-	unsigned int dstride;
-	unsigned int dbpp;
+    FILE *infile;
+    struct jpeg_decompress_struct jdc;
+    struct jpeg_error_mgr jerr;
+    JSAMPARRAY buffer;
+    unsigned int bstride;
+    unsigned int bbpp;
 
-	VGubyte *brow;
-	VGubyte *drow;
-	unsigned int x;
-	unsigned int lilEndianTest = 1;
-	VGImageFormat rgbaFormat;
+    VGImage img;
+    VGubyte *data;
+    unsigned int width;
+    unsigned int height;
+    unsigned int dstride;
+    unsigned int dbpp;
 
-	// Check for endianness
-	if (((unsigned char *)&lilEndianTest)[0] == 1)
-		rgbaFormat = VG_sABGR_8888;
-	else
-		rgbaFormat = VG_sRGBA_8888;
+    VGubyte *brow;
+    VGubyte *drow;
+    unsigned int x;
+    unsigned int lilEndianTest = 1;
+    VGImageFormat rgbaFormat;
 
-	// Try to open image file
-	infile = fopen(filename, "rb");
-	if (infile == NULL) {
-		printf("Failed opening '%s' for reading!\n", filename);
-		return VG_INVALID_HANDLE;
-	}
-	
-	// Setup default error handling
-	jdc.err = jpeg_std_error(&jerr);
-	jpeg_create_decompress(&jdc);
+    // Check for endianness
+    if (((unsigned char *)&lilEndianTest)[0] == 1)
+        rgbaFormat = VG_sABGR_8888;
+    else
+        rgbaFormat = VG_sRGBA_8888;
 
-	// Set input file
-	jpeg_stdio_src(&jdc, infile);
+    // Try to open image file
+    infile = fopen(filename, "rb");
+    if (infile == NULL)
+    {
+        printf("Failed opening '%s' for reading!\n", filename);
+        return VG_INVALID_HANDLE;
+    }
+
+    // Setup default error handling
+    jdc.err = jpeg_std_error(&jerr);
+    jpeg_create_decompress(&jdc);
+
+    // Set input file
+    jpeg_stdio_src(&jdc, infile);
 
 
-	// Read header and start
-	jpeg_read_header(&jdc, TRUE);
-	jdc.scale_num = 1;
-	
-	if(desired_height > jdc.image_height)
-		jdc.scale_denom = 1;
-	else if(desired_height > (jdc.image_height / 2))
-		jdc.scale_denom = 2;
-	else if(desired_height > (jdc.image_height / 4))
-		jdc.scale_denom = 4;
-	else
-		jdc.scale_denom = 8;
-		
-	jpeg_start_decompress(&jdc);
-	width = jdc.output_width;
-	height = jdc.output_height;
-   
-  
-	// Allocate buffer using jpeg allocator
-	bbpp = jdc.output_components;
-	bstride = width * bbpp;
-	buffer = (*jdc.mem->alloc_sarray)
-	    ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
+    // Read header and start
+    jpeg_read_header(&jdc, TRUE);
+    jdc.scale_num = 1;
 
-	// Allocate image data buffer
-	dbpp = 4;
-	dstride = width * dbpp;
-	data = (VGubyte *) malloc(dstride * height);
+    if(desired_height > jdc.image_height)
+        jdc.scale_denom = 1;
+    else if(desired_height > (jdc.image_height / 2))
+        jdc.scale_denom = 2;
+    else if(desired_height > (jdc.image_height / 4))
+        jdc.scale_denom = 4;
+    else
+        jdc.scale_denom = 8;
 
-	// Iterate until all scanlines processed
-	while (jdc.output_scanline < height) {
+    jpeg_start_decompress(&jdc);
+    width = jdc.output_width;
+    height = jdc.output_height;
 
-		// Read scanline into buffer
-		jpeg_read_scanlines(&jdc, buffer, 1);
-		drow = data + (height - jdc.output_scanline) * dstride;
-		brow = buffer[0];
-		// Expand to RGBA
-		for (x = 0; x < width; ++x, drow += dbpp, brow += bbpp) {
-			switch (bbpp) {
-			case 4:
-				drow[0] = brow[0];
-				drow[1] = brow[1];
-				drow[2] = brow[2];
-				drow[3] = brow[3];
-				break;
-			case 3:
-				drow[0] = brow[0];
-				drow[1] = brow[1];
-				drow[2] = brow[2];
-				drow[3] = 255;
-				break;
-			}
-		}
-	}
 
-	// Create VG image
-	img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
-	vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
+    // Allocate buffer using jpeg allocator
+    bbpp = jdc.output_components;
+    bstride = width * bbpp;
+    buffer = (*jdc.mem->alloc_sarray)
+             ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
 
-	// Cleanup
-	jpeg_destroy_decompress(&jdc);
-	fclose(infile);
-	free(data);
+    // Allocate image data buffer
+    dbpp = 4;
+    dstride = width * dbpp;
+    data = (VGubyte *) malloc(dstride * height);
 
-	return img;
-      
+    // Iterate until all scanlines processed
+    while (jdc.output_scanline < height)
+    {
+
+        // Read scanline into buffer
+        jpeg_read_scanlines(&jdc, buffer, 1);
+        drow = data + (height - jdc.output_scanline) * dstride;
+        brow = buffer[0];
+        // Expand to RGBA
+        for (x = 0; x < width; ++x, drow += dbpp, brow += bbpp)
+        {
+            switch (bbpp)
+            {
+            case 4:
+                drow[0] = brow[0];
+                drow[1] = brow[1];
+                drow[2] = brow[2];
+                drow[3] = brow[3];
+                break;
+            case 3:
+                drow[0] = brow[0];
+                drow[1] = brow[1];
+                drow[2] = brow[2];
+                drow[3] = 255;
+                break;
+            }
+        }
+    }
+
+    // Create VG image
+    img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
+
+    // Cleanup
+    jpeg_destroy_decompress(&jdc);
+    fclose(infile);
+    free(data);
+
+    return img;
+
 }
 
 VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_height)
 {
-  
-	struct jpeg_decompress_struct jdc;
-	struct jpeg_error_mgr jerr;
-	JSAMPARRAY buffer;
-	unsigned int bstride;
-	unsigned int bbpp;
-	
-	VGImage img;
-	VGubyte *data;
-	unsigned int width;
-	unsigned int height;
-	unsigned int dstride;
-	unsigned int dbpp;
 
-	VGubyte *brow;
-	VGubyte *drow;
-	unsigned int x;
-	unsigned int lilEndianTest = 1;
-	VGImageFormat rgbaFormat;
+    struct jpeg_decompress_struct jdc;
+    struct jpeg_error_mgr jerr;
+    JSAMPARRAY buffer;
+    unsigned int bstride;
+    unsigned int bbpp;
 
-	// Check for endianness
-	if (((unsigned char *)&lilEndianTest)[0] == 1)
-		rgbaFormat = VG_sABGR_8888;
-	else
-		rgbaFormat = VG_sRGBA_8888;
+    VGImage img;
+    VGubyte *data;
+    unsigned int width;
+    unsigned int height;
+    unsigned int dstride;
+    unsigned int dbpp;
 
-	// Setup default error handling
-	jdc.err = jpeg_std_error(&jerr);
-	jpeg_create_decompress(&jdc);
+    VGubyte *brow;
+    VGubyte *drow;
+    unsigned int x;
+    unsigned int lilEndianTest = 1;
+    VGImageFormat rgbaFormat;
 
-	// Set input file
-	jpeg_mem_src(&jdc, buf, bufSize);
+    // Check for endianness
+    if (((unsigned char *)&lilEndianTest)[0] == 1)
+        rgbaFormat = VG_sABGR_8888;
+    else
+        rgbaFormat = VG_sRGBA_8888;
 
-	
-	// Read header and start
-	jpeg_read_header(&jdc, TRUE);
-	jdc.scale_num = 1;
-	
-	if(desired_height > jdc.image_height)
-		jdc.scale_denom = 1;
-	else if(desired_height > (jdc.image_height / 2))
-		jdc.scale_denom = 2;
-	else if(desired_height > (jdc.image_height / 4))
-		jdc.scale_denom = 4;
-	else
-		jdc.scale_denom = 8;
-		
-	jpeg_start_decompress(&jdc);
-	width = jdc.output_width;
-	height = jdc.output_height;
-   
-  
-	// Allocate buffer using jpeg allocator
-	bbpp = jdc.output_components;
-	bstride = width * bbpp;
-	buffer = (*jdc.mem->alloc_sarray)
-	    ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
+    // Setup default error handling
+    jdc.err = jpeg_std_error(&jerr);
+    jpeg_create_decompress(&jdc);
 
-	// Allocate image data buffer
-	dbpp = 4;
-	dstride = width * dbpp;
-	data = (VGubyte *) malloc(dstride * height);
+    // Set input file
+    jpeg_mem_src(&jdc, buf, bufSize);
 
-	// Iterate until all scanlines processed
-	while (jdc.output_scanline < height) {
 
-		// Read scanline into buffer
-		jpeg_read_scanlines(&jdc, buffer, 1);
-		drow = data + (height - jdc.output_scanline) * dstride;
-		brow = buffer[0];
-		// Expand to RGBA
-		for (x = 0; x < width; ++x, drow += dbpp, brow += bbpp) {
-			switch (bbpp) {
-			case 4:
-				drow[0] = brow[0];
-				drow[1] = brow[1];
-				drow[2] = brow[2];
-				drow[3] = brow[3];
-				break;
-			case 3:
-				drow[0] = brow[0];
-				drow[1] = brow[1];
-				drow[2] = brow[2];
-				drow[3] = 255;
-				break;
-			}
-		}
-	}
+    // Read header and start
+    jpeg_read_header(&jdc, TRUE);
+    jdc.scale_num = 1;
 
-	// Create VG image
-	img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
-	vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
+    if(desired_height > jdc.image_height)
+        jdc.scale_denom = 1;
+    else if(desired_height > (jdc.image_height / 2))
+        jdc.scale_denom = 2;
+    else if(desired_height > (jdc.image_height / 4))
+        jdc.scale_denom = 4;
+    else
+        jdc.scale_denom = 8;
 
-	// Cleanup
-	jpeg_destroy_decompress(&jdc);
-	free(data);
-	return img;     
+    jpeg_start_decompress(&jdc);
+    width = jdc.output_width;
+    height = jdc.output_height;
+
+
+    // Allocate buffer using jpeg allocator
+    bbpp = jdc.output_components;
+    bstride = width * bbpp;
+    buffer = (*jdc.mem->alloc_sarray)
+             ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
+
+    // Allocate image data buffer
+    dbpp = 4;
+    dstride = width * dbpp;
+    data = (VGubyte *) malloc(dstride * height);
+
+    // Iterate until all scanlines processed
+    while (jdc.output_scanline < height)
+    {
+
+        // Read scanline into buffer
+        jpeg_read_scanlines(&jdc, buffer, 1);
+        drow = data + (height - jdc.output_scanline) * dstride;
+        brow = buffer[0];
+        // Expand to RGBA
+        for (x = 0; x < width; ++x, drow += dbpp, brow += bbpp)
+        {
+            switch (bbpp)
+            {
+            case 4:
+                drow[0] = brow[0];
+                drow[1] = brow[1];
+                drow[2] = brow[2];
+                drow[3] = brow[3];
+                break;
+            case 3:
+                drow[0] = brow[0];
+                drow[1] = brow[1];
+                drow[2] = brow[2];
+                drow[3] = 255;
+                break;
+            }
+        }
+    }
+
+    // Create VG image
+    img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
+
+    // Cleanup
+    jpeg_destroy_decompress(&jdc);
+    free(data);
+    return img;
 }
 //------------------------------------------------------------------------------
-// 
+//
 VGImage ResizeImage(VGImage src, int width, int height)
 {
-	int orig_width = vgGetParameteri(src, VG_IMAGE_WIDTH); 
-	int orig_height = vgGetParameteri(src, VG_IMAGE_HEIGHT); 
-	//printf("(%d, %d)\n", orig_width, orig_height);
-	
-	VGImageFormat rgbaFormat;
-	unsigned int lilEndianTest = 1;
+    int orig_width = vgGetParameteri(src, VG_IMAGE_WIDTH);
+    int orig_height = vgGetParameteri(src, VG_IMAGE_HEIGHT);
+    //printf("(%d, %d)\n", orig_width, orig_height);
+
+    VGImageFormat rgbaFormat;
+    unsigned int lilEndianTest = 1;
 
 
-	// Check for endianness
-	if (((unsigned char *)&lilEndianTest)[0] == 1)
-		rgbaFormat = VG_sABGR_8888;
-	else
-		rgbaFormat = VG_sRGBA_8888;
-		
-	VGImage dst = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
-/*
-	vgCopyImage(dst, VGint dx, VGint dy,
-                             VGImage src, VGint sx, VGint sy,
-                             VGint width, VGint height,
-                             VGboolean dither) VG_API_EXIT;
-                             */
-	return src;
+    // Check for endianness
+    if (((unsigned char *)&lilEndianTest)[0] == 1)
+        rgbaFormat = VG_sABGR_8888;
+    else
+        rgbaFormat = VG_sRGBA_8888;
+
+    VGImage dst = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
+    /*
+    	vgCopyImage(dst, VGint dx, VGint dy,
+                                 VGImage src, VGint sx, VGint sy,
+                                 VGint width, VGint height,
+                                 VGboolean dither) VG_API_EXIT;
+                                 */
+    return src;
 }
 //------------------------------------------------------------------------------
 // Roundrect makes an rounded rectangle at the specified location and dimensions, applying style
@@ -347,13 +359,13 @@ void setstroke(float color[4], float width)
 //------------------------------------------------------------------------------
 void Text_DejaVuSans(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4])
 {
-	Text(x, y, s, pointsize, fillcolor, DejaVuSans_Paths, DejaVuSans_characterMap, DejaVuSans_glyphAdvances, VG_FILL_PATH);
+    Text(x, y, s, pointsize, fillcolor, DejaVuSans_Paths, DejaVuSans_characterMap, DejaVuSans_glyphAdvances, VG_FILL_PATH);
 }
 
 //------------------------------------------------------------------------------
 void Text_DejaVuSans_Rollover(VGfloat x, VGfloat y, VGfloat maxlength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4])
 {
-      Text_Rollover(x, y, maxlength, maxLines, yStep, s, pointsize, fillcolor, DejaVuSans_Paths, DejaVuSans_characterMap, DejaVuSans_glyphAdvances, VG_FILL_PATH);
+    Text_Rollover(x, y, maxlength, maxLines, yStep, s, pointsize, fillcolor, DejaVuSans_Paths, DejaVuSans_characterMap, DejaVuSans_glyphAdvances, VG_FILL_PATH);
 }
 
 //------------------------------------------------------------------------------
@@ -368,7 +380,7 @@ void load_DejaVuSans_font()
 //------------------------------------------------------------------------------
 void unload_DejaVuSans_font()
 {
-	 unloadfont(DejaVuSans_Paths, DejaVuSans_glyphCount);
+    unloadfont(DejaVuSans_Paths, DejaVuSans_glyphCount);
 }
 
 //------------------------------------------------------------------------------
@@ -415,20 +427,20 @@ void Text_Rollover(VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, VGfloa
     int iLines = 0;
     vgGetMatrix(mm);
     setfill(fillcolor);
- 
+
     for(i=0; i < (int)strlen(s); i++)
     {
         unsigned int character = (unsigned int)s[i];
         int glyph = characterMap[character];
         if( glyph != -1 )
         {
-          
+
 
             VGfloat mat[9] =
             {
-              size,	0.0f,	0.0f,
-              0.0f,	size,	0.0f,
-              xx,		y,		1.0f
+                size,	0.0f,	0.0f,
+                0.0f,	size,	0.0f,
+                xx,		y,		1.0f
             };
 
             vgLoadMatrix(mm);
@@ -437,15 +449,40 @@ void Text_Rollover(VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, VGfloa
             xx += size * glyphAdvances[glyph] / 65536.0f;
         }
         if(character == '\n' || (xx >= maxLength && !isalnum(character))) //autoroll
-        {	
+        {
             xx = x;
             y -= yStep;
             iLines++;
             if (maxLines > 0 && iLines == maxLines)
-              break;
-        }   
+                break;
+        }
     }
     vgLoadMatrix(mm);
+}
+
+
+//------------------------------------------------------------------------------
+// Poly makes a stroked polyline or a stroked and filled polygon
+void Poly(VGfloat *xy, VGint n, VGfloat sw, VGfloat fill[4], VGfloat stroke[4], VGboolean dofill)
+{
+    VGPath path = newpath();
+    VGbitfield pflag;
+
+    //interleave(x, y, n, points);
+    vguPolygon(path, xy, n, VG_FALSE);
+    if (dofill)
+    {
+        setfill(fill);
+        pflag = VG_FILL_PATH | VG_STROKE_PATH;
+    }
+    else
+    {
+        pflag = VG_STROKE_PATH;
+    }
+
+    setstroke(stroke, sw);
+    vgDrawPath(path, pflag);
+    vgDestroyPath(path);
 }
 
 //------------------------------------------------------------------------------
@@ -554,4 +591,86 @@ void exit_func(void)
     eglTerminate( state->display );
 }
 
+//------------------------------------------------------------------------------
+int write_jpeg_file(FILE * outputFile, unsigned char * bitmapData, unsigned int Width, unsigned int Height)
+{
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
 
+    /*thisisapointertoonerowofimagedata*/
+    JSAMPROW row_pointer[1];
+    cinfo.err=jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    jpeg_stdio_dest(&cinfo,outputFile);
+
+    /*Settingtheparametersoftheoutputfilehere*/
+    cinfo.image_width=Width;
+    cinfo.image_height=Height;
+    cinfo.input_components=3;
+    cinfo.in_color_space=JCS_RGB;
+    /*defaultcompressionparameters,weshouldn'tbeworriedaboutthese*/
+    jpeg_set_defaults(&cinfo);
+    /*Nowdothecompression..*/
+    jpeg_start_compress(&cinfo,TRUE);
+    /*likereadingafile,thistimewriteonerowatatime*/
+    unsigned char * dst;
+    unsigned char * src;
+    unsigned int src_stride = cinfo.image_width * 4;
+    unsigned int dst_stride = cinfo.image_width * 3;
+
+    unsigned char * outputBuf = malloc(dst_stride);
+
+    while(cinfo.next_scanline<cinfo.image_height)
+    {
+        row_pointer[0]=outputBuf;
+        dst = outputBuf;
+        src = &bitmapData[(cinfo.image_height - cinfo.next_scanline -1) * src_stride];
+        unsigned int count;
+        for (count = 0; count < cinfo.image_width; count++)
+        {
+            *dst = *src;
+            dst++;
+            src++;
+            *dst = *src;
+            dst++;
+            src++;
+            *dst = *src;
+            src++;
+            dst++;
+            src++;
+        }
+        //bitmapData[cinfo.next_scanline*cinfo.image_width*cinfo.input_components];
+        jpeg_write_scanlines(&cinfo,row_pointer,1);
+    }
+    free(outputBuf);
+    /*similartoreadfile,cleanupafterwe'redonecompressing*/
+    jpeg_finish_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
+    /*successcodeis1!*/
+    return 1;
+}
+
+//------------------------------------------------------------------------------
+void DoSnapshot()
+{
+
+    unsigned int bitmapSize = state->screen_width * state->screen_height * 4;
+    unsigned char * bitmapData = malloc(bitmapSize);;
+    vgReadPixels(bitmapData, state->screen_width * 4,
+                 VG_sABGR_8888,
+                 0,0,
+                 state->screen_width, state->screen_height);
+
+    FILE *outputFile = fopen("snapshot.jpg", "wb");
+    if (!outputFile)
+    {
+        show_message("bogus!\nfopen failed", true, ERROR_POINT);
+        return;
+    }
+
+    write_jpeg_file(outputFile, bitmapData, state->screen_width, state->screen_height);
+
+    //fwrite(bitmapData, 1, bitmapSize, outputFile);
+    fclose(outputFile);
+    free(bitmapData);
+}

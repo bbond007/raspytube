@@ -1,7 +1,7 @@
 #include "VG/openvg.h"
 #include "VG/vgu.h"
 
-//------------------------------------------------------------------------------
+#define VGfloat float
 
 struct result_rec 
 {
@@ -20,6 +20,65 @@ struct result_rec
 };
 
 //------------------------------------------------------------------------------
+typedef struct _tMenuItem
+{
+    char * description;
+    char * key;
+} tMenuItem;
+
+typedef struct _tPointPer
+{
+    float xPer;
+    float yPer;
+} tPointPer;
+
+typedef struct _tPointXY
+{
+    float x;
+    float y;
+} tPointXY;
+
+typedef struct _tRectPer
+{
+  float xPer;
+  float yPer;
+  float wPer;
+  float hPer; 
+} tRectPer;
+
+typedef struct _tRectBounds
+{
+  float x;
+  float y;
+  float w;
+  float h; 
+} tRectBounds;
+
+typedef struct _tMenuState
+{
+    char * title;
+    tPointPer titlePer;
+    tMenuItem * menuItems;
+    int selectedIndex;
+    int maxItems;
+    int scrollIndex;
+    int yStep;
+    tPointXY txtOffset;
+    tPointXY txtRaster;
+    int selectedItem;
+    int numPointFont;
+    int numPointFontTitle;
+    tRectPer winPer;
+    tRectPer selPer;
+    tRectBounds winRect;
+    tRectBounds selRect;
+    VGfloat upArrow[8];
+    VGfloat downArrow[8];
+    void (*drawHeader) (struct _tMenuState * menu);
+    void (*drawDetail) (struct _tMenuState * menu);
+    void (*drawFooter) (struct _tMenuState * menu);
+} tMenuState; 
+//------------------------------------------------------------------------------
     
 typedef enum tVideoPlayer {vpOMXPlayer, vpMPlayer};
 typedef enum tSoundOutput {soHDMI, soLOCAL};
@@ -29,18 +88,31 @@ typedef enum tJpegDecoder {jdLibJpeg, jdOMX};
 void init_ui_var();
 struct result_rec * init_result_rec();
 void free_result_rec(struct result_rec * rec);
-void draw_txt_box(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points, bool swap);
+void draw_txt_box(char * message, 
+                  float widthP, 
+                  float heightP, 
+                  float boxYp, 
+                  float tXp, 
+                  float tYp, 
+                  int points, 
+                  bool swap);
 void clear_screen(bool swap);
 bool input_string(char * prompt, char * buf, int max);
 void show_big_message(char * title, char * message, bool Pause);
-void show_selection_info(struct result_rec * rec);
+int  show_selection_info(struct result_rec * rec);
 void show_message(char * message, bool error, int points);
-void show_youtube_formats();
 void clear_output();
 void redraw_results(bool swap);
 void replace_char_str(char * buf,  char old, char new);
 char *parse_url(char * url, char ** server, char ** page);
 char ** get_lastrec_column(int iBracket, int iBrace, char * key); 
+int show_menu(tMenuState * menu);
+void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY);
+void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds);
+void init_big_menu(tMenuState * menu, char * title);
+void init_format_menu(tMenuState * menu);
+int show_format_menu(tMenuState * menu);
+unsigned int HandleESC();
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 
 bool kbHit(void);
@@ -78,3 +150,8 @@ extern VGfloat errorColor[];
 #define RTN_KEY 0x0a
 #define DEL_KEY 0x7f
 #define BSL_KEY 0x5c
+#define CUR_UP  'A'
+#define CUR_DWN 'B'
+#define CUR_R	'C'
+#define CUR_L 	'D'
+#define FUN_1 	'P'

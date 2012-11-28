@@ -17,6 +17,7 @@
 #include "gfxlib.h"
 #include "videoformats.h"
 #include "ui.h"
+//#include "menus.h"
 
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
@@ -133,6 +134,7 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
 }
 
 //------------------------------------------------------------------------------
+
 void init_ui_var()
 {
     if(state->screen_width >= 1920)
@@ -163,6 +165,65 @@ void init_ui_var()
         //   numResults        = 8;
     }
 }
+
+//------------------------------------------------------------------------------
+
+unsigned int HandleESC()
+{
+    int key;
+    if (!kbHit())
+    {
+        return ESC_KEY;
+    }
+    else
+    {
+        key = readKb();
+        switch(key)
+        {
+        case '[':
+            if(kbHit())
+            {
+                key = readKb();
+                switch(key) //cursor movement
+                {
+                case CUR_R:
+                    return CUR_R;
+                    break;
+
+                case CUR_L:
+                    return CUR_L;
+                    break;
+
+                case CUR_UP:
+                    return CUR_UP;
+                    break;
+
+                case CUR_DWN:
+                    return CUR_DWN;
+                    break;
+                }
+            }
+            break;
+        case 'O' :
+            if(kbHit()) //function keys
+            {
+                key = readKb();
+                switch(key)
+                {
+                case FUN_1:
+                    //eglSwapBuffers(state->display, state->surface);
+                    DoSnapshot();
+                    show_message("Snapshot Saved!", true, ERROR_POINT);
+                    return FUN_1;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    return 0;
+}
+
 //------------------------------------------------------------------------------
 //
 char * parse_url(char * url, char ** server, char ** page)
@@ -209,9 +270,9 @@ void clear_screen(bool swap)
 }
 
 //------------------------------------------------------------------------------
-void show_selection_info(struct result_rec * rec)
+int show_selection_info(struct result_rec * rec)
 {
-
+    int key = 0x00;   
     if(rec->description)
     {
         redraw_results(false);
@@ -260,32 +321,40 @@ void show_selection_info(struct result_rec * rec)
         int rectX        = (state->screen_width  - rect_width) / 2;
         int rectY        = (state->screen_height - rect_height);
 
-        redraw_results(false);
-        if(infoStr != NULL && rec->description != NULL)
-            show_big_message(infoStr, rec->description, false);
+        do
+        {
+            redraw_results(false);
+            if(infoStr != NULL && rec->description != NULL)
+                show_big_message(infoStr, rec->description, false);    
 
+            Roundrect(rectX,
+                      rectY,
+                      rect_width,
+                      rect_height,
+                      20, 20, 10, rectColor2, selectedColor);
+
+            vgSetPixels(imageX,
+                        imageY,
+                        image,
+                        0, 0,
+                        image_width,
+                        image_height);
+            eglSwapBuffers(state->display, state->surface);
+            key = readKb();
+            if(key == ESC_KEY)
+            {
+                key = HandleESC();
+                if(key == CUR_L || key == CUR_R || key == CUR_UP || key == CUR_DWN)
+                    break;
+            }  
+        } while (key != ESC_KEY);
         if(infoStr != NULL) free(infoStr);
-
-        Roundrect(rectX,
-                  rectY,
-                  rect_width,
-                  rect_height,
-                  20, 20, 10, rectColor2, selectedColor);
-
-        vgSetPixels(imageX,
-                    imageY,
-                    image,
-                    0, 0,
-                    image_width,
-                    image_height);
-        eglSwapBuffers(state->display, state->surface);
         vgDestroyImage(image);
-        readKb();
         redraw_results(true);
     }
     else
         show_message("OOPS! rec->thumbLarge == NULL", true, ERROR_POINT);
-
+    return key;
 }
 //------------------------------------------------------------------------------
 bool input_string(char * prompt, char * buf, int max)
@@ -329,49 +398,25 @@ bool input_string(char * prompt, char * buf, int max)
             break;
 
         case ESC_KEY:
-            if (!kbHit())
-                strcpy(buf, save);
-            else
+            key = HandleESC();
+            switch (key)
             {
-                key = readKb();
-                switch(key)
-                {
-                case '[':
-                    if(kbHit())
-                    {
-                        key = readKb();
-                        switch(key)
-                        {
-                        case 'D':
-                            buf[0] = 0x00;
-                            break;
-                        case 'C':
-                            strcpy(buf, save);
-                            break;
-                        }
-                    }
-                    break;
-                case 'O' :
-                    if(kbHit())
-                    {
-                        key = readKb();
-                        switch(key)
-                        {
-                        case 'P':
-                            show_message("F1 Pressed!!!", true, ERROR_POINT);
-                            break;
-                        }
-                    }
-                    break;
-                }
+            case ESC_KEY:
+                strcpy(buf, save);
+                break;
+
+            case CUR_L:
+                buf[0] = 0x00;
+                break;
+
+            case CUR_R:
+                strcpy(buf, save);
                 break;
             }
             break;
 
         case RTN_KEY:
             break;
-
-
 
         default:
             if(strchr(validChars, toupper(key)) != NULL &&  strlen(buf) < max - 3)
@@ -382,7 +427,7 @@ bool input_string(char * prompt, char * buf, int max)
             break;
         }
     }
-    while (key != RTN_KEY && (key != ESC_KEY || kbHit()));
+    while (key != RTN_KEY && key != ESC_KEY);
     free(save);
     dumpKb();
     if(key == ESC_KEY)
@@ -414,82 +459,319 @@ void show_big_message(char * title, char * message, bool pause)
 //------------------------------------------------------------------------------
 void show_message(char * message, bool error, int points)
 {
-    redraw_results(false);
     int width  = state->screen_width * .8f;
     int height = state->screen_height * .4f;
     int x = (state->screen_width  - width) / 2;
     int y = (state->screen_height - height) / 2;
     int tx = state->screen_width * .15f;
     int ty = state->screen_height * .55f;
-    if(error)
-        Roundrect(x,y, width, height, 20, 20, 10, errorColor, selectedColor);
-    else
-        Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
-    Text_DejaVuSans_Rollover(tx, // X
-                             ty, // Y
-                             state->screen_width * .80f,
-                             5,
-                             state->screen_height * .05f,
-                             message, points, textColor);
-    eglSwapBuffers(state->display, state->surface);
-
-    if(error)
+    
+    int key;
+    do
     {
-        dumpKb();
-        readKb();
-        dumpKb();
-        redraw_results(true);
+        redraw_results(false);
+        
+        if(error)
+            Roundrect(x,y, width, height, 20, 20, 10, errorColor, selectedColor);
+        else
+            Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
+            Text_DejaVuSans_Rollover(tx, // X
+                                     ty, // Y
+                                     state->screen_width * .80f,
+                                     5,
+                                     state->screen_height * .05f,
+                                     message, points, textColor);
+                                     eglSwapBuffers(state->display, 
+                                     state->surface);
+        if(error)
+        {
+            dumpKb();
+            key = readKb();
+            if(key == ESC_KEY)
+                key = HandleESC();
+            dumpKb();
+            redraw_results(true);
+        }
+        
+    }while (!error || key != ESC_KEY);
+}
+
+//------------------------------------------------------------------------------
+
+void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds)
+{
+    rectBounds->x = rectPer->xPer * state->screen_width;
+    rectBounds->y = rectPer->yPer * state->screen_height;
+    rectBounds->w = rectPer->wPer * state->screen_width;
+    rectBounds->h = rectPer->hPer * state->screen_height;
+} 
+//------------------------------------------------------------------------------
+
+void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY)
+{
+    pointXY->x = pointPer->xPer * state->screen_width;
+    pointXY->y = pointPer->yPer * state->screen_height;
+} 
+
+//------------------------------------------------------------------------------
+
+void init_arrow(VGfloat * xy, tRectPer * rectPer, bool bFlip)
+{
+    tPointXY p1;
+    tPointXY p2;
+    tPointXY p3;
+    int x1 = state->screen_width  * rectPer->xPer;
+    int x2 = state->screen_width  * (rectPer->xPer + rectPer->wPer);
+    int x3 = x1 + ((x2 - x1) / 2);
+    int y1 = state->screen_height * rectPer->yPer;
+    int y2 = state->screen_height * rectPer->yPer;
+    int yOffset = rectPer->hPer * state->screen_height;
+    
+    if(bFlip)
+        y1 += yOffset;
+    else
+        y2 += yOffset;
+        
+    p1.x = x3; 
+    p1.y = y1; 
+    p2.x = x1; 
+    p2.y = y2; 
+    p3.x = x2; 
+    p3.y = y2; 
+    xy[0] = p1.x;
+    xy[1] = p1.y;
+    xy[2] = p2.x;
+    xy[3] = p2.y;
+    xy[4] = p3.x;
+    xy[5] = p3.y;
+    xy[6] = p1.x;
+    xy[7] = p1.y; 
+}
+
+//------------------------------------------------------------------------------
+void init_big_menu(tMenuState * menu, char * title)
+{
+    menu->title = title;
+    menu->titlePer.xPer = .15f;
+    menu->titlePer.yPer = .87f;
+    //menu->titlePer.wPer = 0;
+    //menu->titlePer.hPer = 0;
+    menu->selectedIndex = 0;
+    menu->scrollIndex 	= 0;
+    menu->maxItems = 18;
+    menu->txtOffset.x = state->screen_height * .20f;
+    menu->txtOffset.y = state->screen_width  * .10f;
+    menu->winPer.xPer = .10f;
+    menu->winPer.yPer = .05f;
+    menu->winPer.wPer = .92f;
+    menu->winPer.hPer = .90f;
+    calc_rect_bounds(&menu->winPer, &menu->winRect);
+    menu->numPointFontTitle = numPointFontLarge;
+    menu->numPointFont = numPointFontMed;
+    menu->selPer.xPer =  .085f;
+    menu->yStep = state->screen_height * .04f;
+    menu->selPer.wPer = .50f;
+    menu->selPer.hPer = .04f;
+    calc_rect_bounds(&menu->selPer, &menu->selRect);  
+
+    tRectPer rectPer;
+    rectPer.xPer = .88f;
+    rectPer.yPer = .88f;
+    rectPer.wPer = .04f;
+    rectPer.hPer = .04f;    
+    init_arrow(menu->upArrow, &rectPer, true);
+    rectPer.yPer = .08f;
+    init_arrow(menu->downArrow, &rectPer, false);      
+    menu->drawHeader = NULL;
+    menu->drawDetail = NULL;
+    menu->drawFooter = NULL;
+}
+
+//------------------------------------------------------------------------------
+void format_menu_header(tMenuState * menu)
+{
+    int x;
+    for (x = 0; x < AFORMAT_WIDTH; x++)
+            Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
+                            menu->txtRaster.y + menu->yStep,
+                            supported_formats[0][x], numPointFontSmall, errorColor);
+
+}
+
+//------------------------------------------------------------------------------
+void format_menu_detail(tMenuState * menu)
+{
+    int x;
+    for (x = 1; x < AFORMAT_WIDTH; x++)
+            Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
+                            menu->txtRaster.y,
+                            supported_formats[menu->selectedItem + 1][x], numPointFontSmall, textColor);
+
+}
+
+//------------------------------------------------------------------------------
+void init_format_menu(tMenuState * menu)
+{
+    init_big_menu(menu, "Select format:");
+    menu->drawHeader = &format_menu_header;
+    menu->drawDetail = &format_menu_detail;
+    menu->menuItems = NULL;
+    menu->txtOffset.y = state->screen_width  * .12f;
+    menu->selPer.wPer = .76f;
+    calc_rect_bounds(&menu->selPer, &menu->selRect);  
+
+}
+
+//------------------------------------------------------------------------------
+int show_format_menu(tMenuState * menu)
+{
+    if(menu->menuItems == NULL)
+    {
+         menu->menuItems = malloc(sizeof(tMenuItem) * (AFORMAT_HEIGHT + 1));
+         int i;
+         for (i = 1; i < AFORMAT_HEIGHT; i++)
+         {
+             menu->menuItems[i-1].key = supported_formats[i][0];
+             menu->menuItems[i-1].description = supported_formats[i][0];
+         }   
+         menu->menuItems[i-1].key = NULL;
+         menu->menuItems[i-1].description = NULL;
     }
+    int result = show_menu(menu);
+    if(result != -1)
+        numFormat =  result;
+    return result;
 }
 //------------------------------------------------------------------------------
-void show_youtube_formats()
+#define SHOW_MENU_Y_CALC (state->screen_height - (y * menu->yStep) - menu->txtOffset.y) 
+int show_menu(tMenuState * menu)
 {
-    int key;
-    int numFormatSave = numFormat;
-
+    int scrollIndexSave   = menu->scrollIndex;
+    int selectedIndexSave = menu->selectedIndex;
+    int key;   
     do
     {
         //redraw_results(false);
         clear_screen(false);
-        draw_txt_box("Youtube supported video formats:", .95f, .95f, .025, .10f, .92f,  numPointFontLarge, false);
-
-        int step = state->screen_height / (AFORMAT_HEIGHT + 5);
-        Roundrect(.085f * state->screen_width,
-                  (AFORMAT_HEIGHT - numFormat) * step - (step / 3.0f),
-                  state->screen_width * .75f,
-                  state->screen_height / (AFORMAT_HEIGHT + 4),
+        draw_txt_box(menu->title, 
+                     menu->winPer.wPer, 
+                     menu->winPer.hPer, 
+                     //menu->winPer.xPer,
+                     menu->winPer.yPer, 
+                     menu->titlePer.xPer,
+                     menu->titlePer.yPer, 
+                     menu->numPointFontTitle, false);
+  
+        menu->selRect.y = state->screen_height - 
+            (menu->selectedIndex * menu->yStep) - (menu->yStep / 3.0f) - menu->txtOffset.y;
+        
+        Roundrect(menu->selRect.x,
+                  menu->selRect.y,
+                  menu->selRect.w,
+                  menu->selRect.h,
                   20, 20, 5, rectColor, selectedColor);
+        
+        int y = 0;
+        int count = 0;
+        
+        menu->selectedItem = menu->scrollIndex;
+        menu->txtRaster.x = menu->txtOffset.x;
+        menu->txtRaster.y = SHOW_MENU_Y_CALC; 
+                  
+        if (menu->drawHeader != NULL)
+            menu->drawHeader(menu);
 
-        int x, y;
-        for (x = 0; x < AFORMAT_WIDTH; x++)
-            for(y = 0; y < AFORMAT_HEIGHT; y++)
-                Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
-                                (y+2) * step,
-                                supported_formats[(AFORMAT_HEIGHT - 1) -y][x], numPointFontSmall, textColor);
-
-
+        tMenuItem * currentItem = menu->menuItems;
+        while(currentItem->key != NULL && currentItem->description != NULL)
+        {
+            if(count >= menu->scrollIndex)
+            {
+                               
+                Text_DejaVuSans(menu->txtRaster.x, 
+                                menu->txtRaster.y,
+                                currentItem->description, 
+                                numPointFontMed, 
+                                textColor);
+                if (menu->drawDetail != NULL)
+                    menu->drawDetail(menu);
+                y++;
+                
+                menu->selectedItem = y + menu->scrollIndex;
+                menu->txtRaster.x = menu->txtOffset.x;
+                menu->txtRaster.y = SHOW_MENU_Y_CALC; 
+                
+                if (y == menu->maxItems)
+                    break;
+            }
+            currentItem++;count++;
+        }
+        
+        menu->selectedItem = menu->selectedIndex + menu->scrollIndex;
+        
+        bool bMoreItems = false;
+        if (currentItem->key != NULL || currentItem->description != NULL)
+        {
+            currentItem++;
+            if(currentItem->key != NULL || currentItem->description != NULL)
+                bMoreItems = true;
+        }
+       
+        if (bMoreItems)
+        {
+            Poly(menu->downArrow, 4, 5, selectedColor, bgColor, VG_TRUE); 
+        }   
+        
+        if (menu->scrollIndex > 0)
+        {
+            Poly(menu->upArrow, 4, 5, selectedColor, bgColor, VG_TRUE);
+        }   
+                
+        if (menu->drawFooter != NULL)
+            menu->drawFooter(menu);  
         eglSwapBuffers(state->display, state->surface);
 
+        
         key = toupper(readKb());
         switch (key)
         {
-        case 'A' :
-            if (numFormat > 0)
-                numFormat--;
-            break;
 
-        case 'B' :
-            if (numFormat < AFORMAT_HEIGHT - 2)
-                numFormat++;
+        case ESC_KEY:
+            key = HandleESC();
+            switch(key)
+            {
+            case CUR_UP:
+                if (menu->selectedIndex > 0)
+                    menu->selectedIndex--;
+                else
+                    if(menu->scrollIndex > 0)
+                        menu->scrollIndex--;
+                break;
+
+            case CUR_DWN:  
+                if (menu->selectedIndex < menu->maxItems -1)
+                {
+                     currentItem = &menu->menuItems[menu->selectedIndex + menu->scrollIndex + 1];
+                     if(currentItem->key != NULL || currentItem->description != NULL)
+                        menu->selectedIndex++;
+                }
+                else if(bMoreItems) 
+                    menu->scrollIndex++;
+                    
+                break;
+            }
             break;
         }
     }
-    while (key != 'Q' && key != RTN_KEY && (key != ESC_KEY || kbHit()));
+    while (key != 'Q' && key != RTN_KEY && key != ESC_KEY);
     if(key == 'Q' || key == ESC_KEY)
-        numFormat = numFormatSave;
-
-    redraw_results(true);
+    {
+        //restore previous value
+        menu->scrollIndex = scrollIndexSave;
+        menu->selectedIndex = selectedIndexSave;
+        return -1;
+    }
     dumpKb();
+    return menu->selectedItem;
 }
 
 //------------------------------------------------------------------------------
