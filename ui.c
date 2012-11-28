@@ -344,7 +344,9 @@ int show_selection_info(struct result_rec * rec)
             if(key == ESC_KEY)
             {
                 key = HandleESC();
-                if(key == CUR_L || key == CUR_R || key == CUR_UP || key == CUR_DWN)
+                if(key == CUR_L || key == CUR_R || 
+                   key == CUR_UP || key == CUR_DWN || 
+                   key == RTN_KEY)
                     break;
             }  
         } while (key != ESC_KEY);
@@ -596,8 +598,7 @@ void format_menu_header(tMenuState * menu)
     for (x = 0; x < AFORMAT_WIDTH; x++)
             Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
                             menu->txtRaster.y + menu->yStep,
-                            supported_formats[0][x], numPointFontSmall, errorColor);
-
+                            supported_formats[0][x], (x>=3)?numPointFontSmall:numPointFontMed, errorColor);
 }
 
 //------------------------------------------------------------------------------
@@ -607,8 +608,7 @@ void format_menu_detail(tMenuState * menu)
     for (x = 1; x < AFORMAT_WIDTH; x++)
             Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
                             menu->txtRaster.y,
-                            supported_formats[menu->selectedItem + 1][x], numPointFontSmall, textColor);
-
+                            supported_formats[menu->selectedItem + 1][x],(x==3)?numPointFontSmall:numPointFontMed, textColor);
 }
 
 //------------------------------------------------------------------------------
@@ -880,8 +880,6 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
                 show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
                 break;
             }
-
-
         }
         if(downloadData != NULL) free(downloadData);
     }

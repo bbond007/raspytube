@@ -241,6 +241,10 @@ int main(int argc, char **argv)
                         do_cur_down();
                         dumpKb();
                         break;
+                    case RTN_KEY:
+                        if(selected_rec != NULL || selected_rec->url != NULL)
+                            play_video(selected_rec->url);
+                        break;
                     }
                 } while (result != ESC_KEY);
             }
