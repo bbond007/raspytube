@@ -354,11 +354,10 @@ int show_selection_info(struct result_rec * rec)
             {
                 key = HandleESC();
                 if(key == CUR_L || key == CUR_R || 
-                   key == CUR_UP || key == CUR_DWN || 
-                   key == RTN_KEY)
+                   key == CUR_UP || key == CUR_DWN)
                     break;
             }  
-        } while (key != ESC_KEY);
+        } while (key != ESC_KEY && key != RTN_KEY);
         if(infoStr != NULL) free(infoStr);
         vgDestroyImage(image);
         redraw_results(true);
