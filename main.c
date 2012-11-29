@@ -235,18 +235,17 @@ int main(int argc, char **argv)
                     case CUR_L :
                     case CUR_UP :
                         do_cur_up();
-                        dumpKb();
                         break;
                     case CUR_R:
                     case CUR_DWN:
                         do_cur_down();
-                        dumpKb();
                         break;
                     case RTN_KEY:
                         if(selected_rec != NULL && selected_rec->url != NULL)
                             play_video(selected_rec->url);
                         break;
                     }
+                    dumpKb();
                 } while (result != ESC_KEY);
             }
             break;
