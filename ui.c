@@ -335,11 +335,12 @@ bool input_string(char * prompt, char * buf, int max)
     
     int endPos;
     int lastkeys[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    char temp[30];
-    char cstr[2];
-    cstr[1]=0x00;
+    char formatStr[] = "%02X->%02X:%02X:%02X:%02X:%02X:%02X:%02X";
     char validChars[] =
         "!@#$%^&*(()_<>?+=1234567890,.ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+    char temp[strlen(formatStr) + 1];
+    char cstr[2];
+    cstr[1]=0x00;
 
     char * save = malloc(max+1);
     strcpy(save, buf);
@@ -349,7 +350,7 @@ bool input_string(char * prompt, char * buf, int max)
         //clear_screen(false);
         //redraw_results(false);
         draw_txt_box(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
-        sprintf(temp, "%02X->%02X:%02X:%02X:%02X:%02X:%02X:%02X", key,
+        snprintf(temp, sizeof(formatStr),formatStr, key,
                 lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
         Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .10f, temp, numPointFontMed, textColor);
         endPos = strlen(buf);
@@ -359,8 +360,10 @@ bool input_string(char * prompt, char * buf, int max)
         buf[endPos] = 0x00;
         eglSwapBuffers(state->display, state->surface);
         int i = 0;
+        
         for (i = (sizeof(lastkeys) / sizeof(int))-1; i > 0; i--)
             lastkeys[i] = lastkeys[i-1];
+        
         lastkeys[0] = key;
         key = readKb(&esc);
         switch (key)
@@ -752,11 +755,9 @@ int show_menu(tMenuState * menu)
 
 
 //------------------------------------------------------------------------------
-
-unsigned int handleESC()
+int handleESC()
 {
-    int key;
-    key = getchar();
+    int key = getchar();
     if (key == EOF)
     {
         return ESC_KEY;
@@ -830,14 +831,18 @@ bool kbHit(void)
 //------------------------------------------------------------------------------
 int readKb(int * esc)
 {
-    int key = getchar(); 				// standard getchar call
+    int key = getchar();
     if (key == ESC_KEY)
     {
         fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
         *esc = handleESC();
-        fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
+        fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     }
-    //else play_sample(&asiKbClick, false);    
+    else
+    {
+        // play_sample(&asiKbClick, false);    
+        *esc = 0x00;
+    }
     return key;
 }
     

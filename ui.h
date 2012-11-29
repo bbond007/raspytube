@@ -112,7 +112,7 @@ void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds);
 void init_big_menu(tMenuState * menu, char * title);
 void init_format_menu(tMenuState * menu);
 int show_format_menu(tMenuState * menu);
-unsigned int handleESC();
+int handleESC();
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 void drawBGImage();
 void setBGImage();
