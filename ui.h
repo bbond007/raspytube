@@ -24,6 +24,7 @@ typedef struct _tMenuItem
 {
     char * description;
     char * key;
+    int special;
 } tMenuItem;
 
 typedef struct _tPointPer
@@ -74,6 +75,8 @@ typedef struct _tMenuState
     tRectBounds selRect;
     VGfloat upArrow[8];
     VGfloat downArrow[8];
+    bool bCenterX;
+    bool bCenterY;
     void (*drawHeader) (struct _tMenuState * menu);
     void (*drawDetail) (struct _tMenuState * menu);
     void (*drawFooter) (struct _tMenuState * menu);
@@ -90,12 +93,23 @@ struct result_rec * init_result_rec();
 void free_result_rec(struct result_rec * rec);
 void draw_txt_box(char * message, 
                   float widthP, 
+                  float heightP,
+                  float boxXp, 
+                  float boxYp, 
+                  float tXp, 
+                  float tYp, 
+                  int points, 
+                  bool swap);
+void draw_txt_box_cen(
+                  char * message, 
+                  float widthP, 
                   float heightP, 
                   float boxYp, 
                   float tXp, 
                   float tYp, 
                   int points, 
                   bool swap);
+
 void clear_screen(bool swap);
 bool input_string(char * prompt, char * buf, int max);
 void show_big_message(char * title, char * message, bool Pause);
@@ -121,6 +135,7 @@ int readKb(int * esc);
 void dumpKb();
 void initKb();
 void restoreKb();
+void main_menu_detail(tMenuState * menu);
 
 extern struct result_rec * first_rec;
 extern struct result_rec * last_rec;

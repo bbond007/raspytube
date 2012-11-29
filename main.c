@@ -19,6 +19,7 @@
 #include "gfxlib.h"
 #include "ui.h"
 #include "region.h"
+#include "mainmenu.h"
 
 //------------------------------------------------------------------------------
 
@@ -54,7 +55,7 @@ unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 #define USERAGENT "RASPITUBE 1.0"
 #define HOST "gdata.youtube.com"
 #define AUTHOR bbond007@gmail.com
-
+tMenuState regionMenu;
 
 //------------------------------------------------------------------------------
 
@@ -96,13 +97,16 @@ int main(int argc, char **argv)
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
-    tMenuState regionMenu;
+    tMenuState mainMenu;
+    mainMenu.menuItems = mainMenuItems;
+    init_small_menu(&mainMenu, "Main Menu:");
+    mainMenu.drawDetail = &main_menu_detail;
+    
     regionMenu.menuItems = regionMenuItems;
     init_big_menu(&regionMenu, "Select region:");
     tMenuState formatMenu;
     init_format_menu(&formatMenu);
     char txt[100];
-    int region = 0;
 
     if(argc > 1)
     {
@@ -180,16 +184,43 @@ int main(int argc, char **argv)
             show_message("This is a error test.", true, ERROR_POINT);
             break;
 
+        case 'M':
+            redraw_results(false);
+            setBGImage();
+            do
+            {
+                result =  show_menu(&mainMenu);
+                if(result > -1)
+                {
+                    switch(result)
+                    {
+                        case 4: 
+                            show_menu(&regionMenu);
+                        break;
+                        default:        
+                            sprintf(txt, "item #%d\nkey->%s\ndescription->%s",
+                            result,
+                            mainMenuItems[result].key,
+                            mainMenuItems[result].description);
+                            show_message(txt, true, ERROR_POINT);
+                        break;
+                    }
+                }
+            } while (result != -1); 
+            dumpKb();
+            redraw_results(true);
+            break;
+
         case 'R':
             redraw_results(false);
             setBGImage();
-            region =  show_menu(&regionMenu);
-            if(region > -1)
+            result =  show_menu(&regionMenu);
+            if(result > -1)
             {
                 sprintf(txt, "item #%d\nkey->%s\ndescription->%s",
-                        region,
-                        regionMenuItems[region].key,
-                        regionMenuItems[region].description);
+                        result,
+                        regionMenuItems[result].key,
+                        regionMenuItems[result].description);
                 show_message(txt, true, ERROR_POINT);
             }
             dumpKb();
@@ -349,11 +380,11 @@ static void play_video (char * url)
         switch(videoPlayer)
         {
         case vpMPlayer:
-            draw_txt_box("Starting Mplayer...", .50f, .50f, .30f, .30f, .55f, 40, true);
+            draw_txt_box_cen("Starting Mplayer...", .50f, .50f, .30f, .30f, .55f, 40, true);
             //clear_screen(true);
             break;
         case vpOMXPlayer:
-            draw_txt_box("Starting OMXPlayer...", .50f, .50f, .30f, .30f, .55f, 40, true);
+            draw_txt_box_cen("Starting OMXPlayer...", .50f, .50f, .30f, .30f, .55f, 40, true);
             break;
         }
 

@@ -60,6 +60,7 @@ VGfloat errorColor[4]       = {  4,  0,  0,1};
 extern unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
+extern tMenuState regionMenu;
 
 //------------------------------------------------------------------------------
 void setBGImage()
@@ -212,11 +213,26 @@ char * parse_url(char * url, char ** server, char ** page)
 }
 
 //------------------------------------------------------------------------------
-void draw_txt_box(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points, bool swap)
+void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points, bool swap)
 {
     int width  = state->screen_width * widthP;
     int height = state->screen_height * heightP;
     int x = (state->screen_width  - width) / 2;
+    int y = state->screen_height * boxYp;
+    int tx = state->screen_width * tXp;
+    int ty = state->screen_height * tYp;
+    Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
+    Text_DejaVuSans(tx, ty, message, points, textColor);
+    if(swap)
+        eglSwapBuffers(state->display, state->surface);
+}
+
+//------------------------------------------------------------------------------
+void draw_txt_box(char * message, float widthP, float heightP, float boxXp, float boxYp, float tXp, float tYp, int points, bool swap)
+{
+    int width  = state->screen_width * widthP;
+    int height = state->screen_height * heightP;
+    int x = state->screen_height * boxXp;
     int y = state->screen_height * boxYp;
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
@@ -349,7 +365,7 @@ bool input_string(char * prompt, char * buf, int max)
         drawBGImage();
         //clear_screen(false);
         //redraw_results(false);
-        draw_txt_box(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
+        draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
         snprintf(temp, sizeof(formatStr),formatStr, key,
                 lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
         Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .10f, temp, numPointFontMed, textColor);
@@ -418,7 +434,7 @@ void show_big_message(char * title, char * message, bool pause)
 {
     int esc;
     redraw_results(false);
-    draw_txt_box(title, .95f, .50f, .05, .10f, .47f, numPointFontLarge, false);
+    draw_txt_box_cen(title, .95f, .50f, .05, .10f, .47f, numPointFontLarge, false);
     Text_DejaVuSans_Rollover(state->screen_width  * .10f,
                              state->screen_height * .40f,
                              state->screen_width  * .85f,
@@ -566,6 +582,48 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
+    menu->bCenterX = true;
+    menu->bCenterY = false;
+}
+//------------------------------------------------------------------------------
+void init_small_menu(tMenuState * menu, char * title)
+{
+    menu->title = title;
+    menu->titlePer.xPer = .10f;
+    menu->titlePer.yPer = .87f;
+    //menu->titlePer.wPer = 0;
+    //menu->titlePer.hPer = 0;
+    menu->selectedIndex = 0;
+    menu->scrollIndex 	= 0;
+    menu->maxItems = 8;
+    menu->txtOffset.x = state->screen_height * .20f;
+    menu->txtOffset.y = state->screen_width  * .10f;
+    menu->winPer.xPer = .05f;
+    menu->winPer.yPer = .47f;
+    menu->winPer.wPer = .50f;
+    menu->winPer.hPer = .50f;
+    calc_rect_bounds(&menu->winPer, &menu->winRect);
+    menu->numPointFontTitle = numPointFontLarge;
+    menu->numPointFont = numPointFontMed;
+    menu->selPer.xPer =  .085f;
+    menu->yStep = state->screen_height * .04f;
+    menu->selPer.wPer = .30f;
+    menu->selPer.hPer = .04f;
+    calc_rect_bounds(&menu->selPer, &menu->selRect);  
+
+    tRectPer rectPer;
+    rectPer.xPer = .45f;
+    rectPer.yPer = .88f;
+    rectPer.wPer = .04f;
+    rectPer.hPer = .04f;    
+    init_arrow(menu->upArrow, &rectPer, true);
+    rectPer.yPer = .53f;
+    init_arrow(menu->downArrow, &rectPer, false);      
+    menu->drawHeader = NULL;
+    menu->drawDetail = NULL;
+    menu->drawFooter = NULL;
+    menu->bCenterX = false;
+    menu->bCenterY = false;
 }
 
 //------------------------------------------------------------------------------
@@ -589,6 +647,19 @@ void format_menu_detail(tMenuState * menu)
 }
 
 //------------------------------------------------------------------------------
+void main_menu_detail(tMenuState * menu)
+{      
+  if(menu->menuItems[menu->selectedItem].special == 1 || 
+     menu->menuItems[menu->selectedItem].special == 2)
+      Text_DejaVuSans(state->screen_width * .30,
+                      menu->txtRaster.y,
+                      (menu->menuItems[menu->selectedItem].special==1)?
+                      regionMenu.menuItems[regionMenu.selectedItem].description:
+                      regionMenu.menuItems[regionMenu.selectedItem].key,
+                      numPointFontMed, errorColor);
+}
+
+//------------------------------------------------------------------------------
 void init_format_menu(tMenuState * menu)
 {
     init_big_menu(menu, "Select format:");
@@ -598,7 +669,6 @@ void init_format_menu(tMenuState * menu)
     menu->txtOffset.y = state->screen_width  * .12f;
     menu->selPer.wPer = .76f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);  
-
 }
 
 //------------------------------------------------------------------------------
@@ -632,14 +702,24 @@ int show_menu(tMenuState * menu)
     do
     {
         drawBGImage();
-        draw_txt_box(menu->title, 
-                     menu->winPer.wPer, 
-                     menu->winPer.hPer, 
-                     //menu->winPer.xPer,
-                     menu->winPer.yPer, 
-                     menu->titlePer.xPer,
-                     menu->titlePer.yPer, 
-                     menu->numPointFontTitle, false);
+        if (menu->bCenterX)
+            draw_txt_box_cen(menu->title, 
+                         menu->winPer.wPer, 
+                         menu->winPer.hPer, 
+                         //menu->winPer.xPer,
+                         menu->winPer.yPer, 
+                         menu->titlePer.xPer,
+                         menu->titlePer.yPer, 
+                         menu->numPointFontTitle, false);
+        else        
+            draw_txt_box(menu->title, 
+                         menu->winPer.wPer, 
+                         menu->winPer.hPer, 
+                         menu->winPer.xPer,
+                         menu->winPer.yPer, 
+                         menu->titlePer.xPer,
+                         menu->titlePer.yPer, 
+                         menu->numPointFontTitle, false);
   
         menu->selRect.y = state->screen_height - 
             (menu->selectedIndex * menu->yStep) - (menu->yStep / 3.0f) - menu->txtOffset.y;
