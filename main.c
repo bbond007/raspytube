@@ -116,16 +116,17 @@ int main(int argc, char **argv)
         youtube_search("raspberry+pi");
 
     int key;
+    int esc;
     int result;
 
     do
     {
-        key = toupper(readKb()); //wait for keypress
+        key = toupper(readKb(&esc)); //wait for keypress
         switch (key)
         {
 
         case ESC_KEY:
-            key = HandleESC();
+            key = esc;
             switch(key)
             {
             case CUR_UP :

@@ -191,63 +191,6 @@ void init_ui_var()
     }
 }
 
-//------------------------------------------------------------------------------
-
-unsigned int HandleESC()
-{
-    int key;
-    if (!kbHit())
-    {
-        return ESC_KEY;
-    }
-    else
-    {
-        key = readKb();
-        switch(key)
-        {
-        case '[':
-            if(kbHit())
-            {
-                key = readKb();
-                switch(key) //cursor movement
-                {
-                case CUR_R:
-                    return CUR_R;
-                    break;
-
-                case CUR_L:
-                    return CUR_L;
-                    break;
-
-                case CUR_UP:
-                    return CUR_UP;
-                    break;
-
-                case CUR_DWN:
-                    return CUR_DWN;
-                    break;
-                }
-            }
-            break;
-        case 'O' :
-            if(kbHit()) //function keys
-            {
-                key = readKb();
-                switch(key)
-                {
-                case FUN_1:
-                    //eglSwapBuffers(state->display, state->surface);
-                    DoSnapshot();
-                    show_message("Snapshot Saved!", true, ERROR_POINT);
-                    return FUN_1;
-                    break;
-                }
-            }
-            break;
-        }
-    }
-    return 0;
-}
 
 //------------------------------------------------------------------------------
 //
@@ -297,7 +240,9 @@ void clear_screen(bool swap)
 //------------------------------------------------------------------------------
 int show_selection_info(struct result_rec * rec)
 {
-    int key = 0x00;   
+    int key = 0x00;
+    int esc = 0x00;
+       
     if(rec->description)
     {
         redraw_results(false);
@@ -365,10 +310,10 @@ int show_selection_info(struct result_rec * rec)
                         image_width,
                         image_height);
             eglSwapBuffers(state->display, state->surface);
-            key = readKb();
+            key = readKb(&esc);
             if(key == ESC_KEY)
             {
-                key = HandleESC();
+                key = esc;
                 if(key == CUR_L || key == CUR_R || 
                    key == CUR_UP || key == CUR_DWN)
                     break;
@@ -386,6 +331,8 @@ int show_selection_info(struct result_rec * rec)
 bool input_string(char * prompt, char * buf, int max)
 {
     int key = 0x00;
+    int esc = 0x00;
+    
     int endPos;
     int lastkeys[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     char temp[30];
@@ -415,7 +362,7 @@ bool input_string(char * prompt, char * buf, int max)
         for (i = (sizeof(lastkeys) / sizeof(int))-1; i > 0; i--)
             lastkeys[i] = lastkeys[i-1];
         lastkeys[0] = key;
-        key = readKb();
+        key = readKb(&esc);
         switch (key)
         {
         case DEL_KEY:
@@ -425,7 +372,7 @@ bool input_string(char * prompt, char * buf, int max)
             break;
 
         case ESC_KEY:
-            key = HandleESC();
+            key = esc;
             switch (key)
             {
             case ESC_KEY:
@@ -466,6 +413,7 @@ bool input_string(char * prompt, char * buf, int max)
 //------------------------------------------------------------------------------
 void show_big_message(char * title, char * message, bool pause)
 {
+    int esc;
     redraw_results(false);
     draw_txt_box(title, .95f, .50f, .05, .10f, .47f, numPointFontLarge, false);
     Text_DejaVuSans_Rollover(state->screen_width  * .10f,
@@ -479,7 +427,7 @@ void show_big_message(char * title, char * message, bool pause)
     {
         dumpKb();
         eglSwapBuffers(state->display, state->surface);
-        readKb();
+        readKb(&esc);
     }
 }
 
@@ -494,6 +442,7 @@ void show_message(char * message, bool error, int points)
     int ty = state->screen_height * .55f;
     
     int key = ESC_KEY;
+    int esc = 0;
     do
     {
         redraw_results(false);
@@ -513,9 +462,9 @@ void show_message(char * message, bool error, int points)
         if(error)
         {
             dumpKb();
-            key = readKb();
+            key = readKb(&esc);
             if(key == ESC_KEY)
-                key = HandleESC();
+                key = esc;
             dumpKb();
             redraw_results(true);
         }
@@ -676,6 +625,7 @@ int show_menu(tMenuState * menu)
     int scrollIndexSave   = menu->scrollIndex;
     int selectedIndexSave = menu->selectedIndex;
     int key;   
+    int esc;
     do
     {
         drawBGImage();
@@ -757,12 +707,12 @@ int show_menu(tMenuState * menu)
         eglSwapBuffers(state->display, state->surface);
 
         
-        key = toupper(readKb());
+        key = toupper(readKb(&esc));
         switch (key)
         {
 
         case ESC_KEY:
-            key = HandleESC();
+            key = esc;
             switch(key)
             {
             case CUR_UP:
@@ -803,6 +753,65 @@ int show_menu(tMenuState * menu)
 
 //------------------------------------------------------------------------------
 
+unsigned int handleESC()
+{
+    int key;
+    key = getchar();
+    if (key == EOF)
+    {
+        return ESC_KEY;
+    }
+    else
+    {
+        switch(key)
+        {
+        case '[':
+            if(key != EOF)
+            {
+                key = getchar();
+                switch(key) //cursor movement
+                {
+                case CUR_R:
+                    return CUR_R;
+                    break;
+
+                case CUR_L:
+                    return CUR_L;
+                    break;
+
+                case CUR_UP:
+                    return CUR_UP;
+                    break;
+
+                case CUR_DWN:
+                    return CUR_DWN;
+                    break;
+                }
+            }
+            break;
+        case 'O' :
+            if(key != EOF) //function keys
+            {
+                key = getchar();
+                switch(key)
+                {
+                case FUN_1:
+                    //eglSwapBuffers(state->display, state->surface);
+                    DoSnapshot();
+                    show_message("Snapshot Saved!", true, ERROR_POINT);
+                    return FUN_1;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    return 0;
+}
+
+
+//------------------------------------------------------------------------------
+
 bool kbHit(void)
 {
     int ch;
@@ -817,6 +826,21 @@ bool kbHit(void)
     return false;
 }
 
+
+//------------------------------------------------------------------------------
+int readKb(int * esc)
+{
+    int key = getchar(); 				// standard getchar call
+    if (key == ESC_KEY)
+    {
+        fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
+        *esc = handleESC();
+        fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
+    }
+    //else play_sample(&asiKbClick, false);    
+    return key;
+}
+    
 //------------------------------------------------------------------------------
 void dumpKb()
 {
@@ -827,14 +851,6 @@ void dumpKb()
     }   
     fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
 }
-//------------------------------------------------------------------------------
-int readKb()
-{
-    int key = getchar(); 				// standard getchar call
-    //play_sample(&asiKbClick, false);
-    return key;
-}
-
 //------------------------------------------------------------------------------
 void initKb()
 {
