@@ -24,10 +24,12 @@
 static int ttflags;
 static struct termios oldt;
 static struct termios newt;
+/* sounds disabled because it sucked
 static AudioSampleInfo asiKbClick;
 extern const signed char soundraw_data[];
 extern const unsigned int soundraw_size;
-
+*/
+static VGImage bgImage = 0;
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
@@ -36,7 +38,7 @@ int numPointFontTiny;
 int numPointFontSmall;
 int numPointFontMed;
 int numPointFontLarge;
-int numThumbWidth     = 13;
+int numThumbWidth     = 15;
 int numResults        = 10;
 int numFormat         = 0;
 int numStart          = 1;
@@ -59,6 +61,20 @@ extern unsigned char *download_file(char * host, char * fileName, unsigned int *
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
 
+//------------------------------------------------------------------------------
+void setBGImage()
+{
+    if(bgImage != 0)
+        vgDestroyImage(bgImage);
+    bgImage = createImageFromScreen();
+}
+
+//------------------------------------------------------------------------------
+void drawBGImage()
+{
+    if(bgImage != 0)
+        vgSetPixels(0,0, bgImage, 0, 0, state->screen_width, state->screen_height);
+}
 
 //------------------------------------------------------------------------------
 struct result_rec * init_result_rec()
@@ -382,7 +398,8 @@ bool input_string(char * prompt, char * buf, int max)
     strcpy(save, buf);
     do
     {
-        clear_screen(false);
+        drawBGImage();
+        //clear_screen(false);
         //redraw_results(false);
         draw_txt_box(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
         sprintf(temp, "%02X->%02X:%02X:%02X:%02X:%02X:%02X:%02X", key,
@@ -661,8 +678,7 @@ int show_menu(tMenuState * menu)
     int key;   
     do
     {
-        //redraw_results(false);
-        clear_screen(false);
+        drawBGImage();
         draw_txt_box(menu->title, 
                      menu->winPer.wPer, 
                      menu->winPer.hPer, 

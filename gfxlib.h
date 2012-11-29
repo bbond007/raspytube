@@ -28,6 +28,7 @@ void DoSnapshot();
 VGImage ResizeImage(VGImage vgImageSource, int width, int desired_height);
 VGImage createImageFromJpeg(const char *filename, int height);
 VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_height);
+VGImage createImageFromScreen();
 VGPath newpath();
 extern STATE_T _state, *state;
 

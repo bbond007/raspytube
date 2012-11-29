@@ -669,8 +669,24 @@ void DoSnapshot()
     }
 
     write_jpeg_file(outputFile, bitmapData, state->screen_width, state->screen_height);
-
-    //fwrite(bitmapData, 1, bitmapSize, outputFile);
     fclose(outputFile);
     free(bitmapData);
+}
+
+//------------------------------------------------------------------------------
+VGImage createImageFromScreen()
+{
+    unsigned int stride = state->screen_width * 4;
+    unsigned int bitmapSize = stride * state->screen_height;
+    unsigned char * bitmapData = malloc(bitmapSize);;
+    vgReadPixels(bitmapData, stride,
+                 VG_sABGR_8888,
+                 0,0,
+                 state->screen_width, state->screen_height);
+
+    VGImageFormat rgbaFormat = VG_sABGR_8888;
+    VGImage vgImage = vgCreateImage(rgbaFormat, state->screen_width, state->screen_height, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(vgImage, bitmapData, stride, rgbaFormat, 0, 0, state->screen_width, state->screen_height);
+    free(bitmapData);
+    return vgImage;
 }

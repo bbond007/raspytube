@@ -251,20 +251,7 @@ VGImage OMXJPEG::CreateImageFromBuf(unsigned char *buf, unsigned int bufLength, 
         else
             stStride = (outputWidth + (16 - remainder )) * 4;
 
-/* 
-        unsigned char * tempLine = (unsigned char *) malloc(stStride);
-        unsigned char * top = m_pHeaderOutput->pBuffer;
-        unsigned char * bot = &m_pHeaderOutput->pBuffer[outputHeight * stStride]; 
-        for (int iLine = 0; iLine < (outputHeight / 2); iLine++)
-        {
-            bot -= stStride;
-            memcpy(tempLine, bot, stStride);
-            memcpy(bot, top, stStride);
-            memcpy(top, tempLine, stStride);
-            top += stStride;
-        }
-        free(tempLine);
- */   
+   
         VGImageFormat rgbaFormat = VG_sABGR_8888;
         vgImage = vgCreateImage(rgbaFormat, outputWidth, outputHeight, VG_IMAGE_QUALITY_BETTER);
         vgImageSubData(vgImage, &m_pHeaderOutput->pBuffer[stStride * outputHeight], stStride * -1, rgbaFormat, 0, 0, outputWidth, outputHeight);

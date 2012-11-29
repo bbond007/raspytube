@@ -176,15 +176,12 @@ int main(int argc, char **argv)
             break;
 
         case 'T' :
-            //if(selected_rec != NULL)
-            //    if(selected_rec->thumbLarge != NULL)
-            //        test_hardware_jpeg(selected_rec->thumbLarge);
-            
-            //result = show_format_menu(&formatMenu);
-            show_message("This is a test.", true, ERROR_POINT);
+            show_message("This is a error test.", true, ERROR_POINT);
             break;
 
         case 'R':
+            redraw_results(false);
+            setBGImage();
             region =  show_menu(&regionMenu);
             if(region > -1)
             {
@@ -207,6 +204,8 @@ int main(int argc, char **argv)
             break;
 
         case 'F' :
+            redraw_results(false);
+            setBGImage();
             result = show_format_menu(&formatMenu);
             //show_youtube_formats();
             dumpKb();
@@ -254,6 +253,8 @@ int main(int argc, char **argv)
             searchStr[0] = 0x00;
 
         case 'S' : //modify existing search
+            redraw_results(false);
+            setBGImage();
             replace_char_str(searchStr, '+', ' ');
             result = input_string("Search:", searchStr, 50);
             if(result)

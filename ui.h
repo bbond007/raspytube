@@ -114,7 +114,8 @@ void init_format_menu(tMenuState * menu);
 int show_format_menu(tMenuState * menu);
 unsigned int HandleESC();
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
-
+void drawBGImage();
+void setBGImage();
 bool kbHit(void);
 int readKb();
 void dumpKb();
