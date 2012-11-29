@@ -607,7 +607,7 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->numPointFont = numPointFontMed;
     menu->selPer.xPer =  .085f;
     menu->yStep = state->screen_height * .04f;
-    menu->selPer.wPer = .30f;
+    menu->selPer.wPer = .35f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);  
 
@@ -651,7 +651,7 @@ void main_menu_detail(tMenuState * menu)
 {      
   if(menu->menuItems[menu->selectedItem].special == 1 || 
      menu->menuItems[menu->selectedItem].special == 2)
-      Text_DejaVuSans(state->screen_width * .30,
+      Text_DejaVuSans(state->screen_width * .25,
                       menu->txtRaster.y,
                       (menu->menuItems[menu->selectedItem].special==1)?
                       regionMenu.menuItems[regionMenu.selectedItem].description:
