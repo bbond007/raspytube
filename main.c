@@ -92,6 +92,7 @@ int main(int argc, char **argv)
     init_ogl(state);
     load_DejaVuSans_font();
     init_ui_var();
+    initKb();
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
@@ -287,8 +288,9 @@ int main(int argc, char **argv)
     while (key != 'Q' && (key != ESC_KEY || kbHit()));
     clear_output();
     unload_DejaVuSans_font();
+    restoreKb();
     exit_func();
-    system("reset");
+//    system("reset");
     return 0;
 }
 //------------------------------------------------------------------------------

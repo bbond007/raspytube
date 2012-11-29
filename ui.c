@@ -17,7 +17,16 @@
 #include "gfxlib.h"
 #include "videoformats.h"
 #include "ui.h"
+#include "audio.h"
 //#include "menus.h"
+//stuff for the keyboard. 
+
+static int ttflags;
+static struct termios oldt;
+static struct termios newt;
+static AudioSampleInfo asiKbClick;
+extern const signed char soundraw_data[];
+extern const unsigned int soundraw_size;
 
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
@@ -497,7 +506,7 @@ void show_message(char * message, bool error, int points)
         else
             break;
         
-    }while (key != ESC_KEY);
+    }while (key != ESC_KEY && key != RTN_KEY);
 }
 
 //------------------------------------------------------------------------------
@@ -776,22 +785,15 @@ int show_menu(tMenuState * menu)
     return menu->selectedItem;
 }
 
+
 //------------------------------------------------------------------------------
 
 bool kbHit(void)
 {
-    struct termios oldt, newt;
     int ch;
-    int oldf;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+    fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
     ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    fcntl(STDIN_FILENO, F_SETFL, oldf);
+    fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     if(ch != EOF)
     {
         ungetc(ch, stdin);
@@ -803,28 +805,42 @@ bool kbHit(void)
 //------------------------------------------------------------------------------
 void dumpKb()
 {
-    while(kbHit())
-        readKb();
+    fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
+    while (getchar()!= EOF)
+    {
+       // :)
+    }   
+    fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
 }
 //------------------------------------------------------------------------------
 int readKb()
 {
-    int ch;
-    struct termios oldt;
-    struct termios newt;
-    tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
-    newt = oldt; 				// copy old settings to new settings
-    newt.c_lflag &= ~(ICANON | ECHO); 		// change settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly
-    ch = getchar(); 				// standard getchar call
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
-    return ch; 					// return received char
+    int key = getchar(); 				// standard getchar call
+    //play_sample(&asiKbClick, false);
+    return key;
 }
 
 //------------------------------------------------------------------------------
+void initKb()
+{
+    tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
+    newt = oldt; 				// copy old settings to new settings
+    newt.c_lflag &= ~(ICANON | ECHO); 		// change settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly   
+    ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
+//  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
+}
+
+//------------------------------------------------------------------------------
+void restoreKb()
+{
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
+//  delete_sample(&asiKbClick);
+}
+//------------------------------------------------------------------------------
 
 void clear_output()
-{
+{    
     struct result_rec * temp_rec = first_rec;
     struct result_rec * next_rec;
     while (temp_rec != NULL)

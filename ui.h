@@ -118,6 +118,8 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 bool kbHit(void);
 int readKb();
 void dumpKb();
+void initKb();
+void restoreKb();
 
 extern struct result_rec * first_rec;
 extern struct result_rec * last_rec;
