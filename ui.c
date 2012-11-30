@@ -638,14 +638,44 @@ void format_menu_detail(tMenuState * menu)
 //------------------------------------------------------------------------------
 void main_menu_detail(tMenuState * menu)
 {
-    if(menu->menuItems[menu->selectedItem].special == 1 ||
-            menu->menuItems[menu->selectedItem].special == 2)
-        Text_DejaVuSans(state->screen_width * .25,
-                        menu->txtRaster.y,
-                        (menu->menuItems[menu->selectedItem].special==1)?
-                        regionMenu.menuItems[regionMenu.selectedItem].description:
-                        regionMenu.menuItems[regionMenu.selectedItem].key,
-                        numPointFontMed, errorColor);
+    char * videoFormat = NULL;
+    char * resolution;
+    char * container;
+    char * number;
+    char formatStr[] = "%s / %s / %s";
+
+    if(menu->menuItems[menu->selectedItem].special > 0)
+    {
+        char * descr = NULL;
+        switch(menu->menuItems[menu->selectedItem].special)
+        {
+
+        case 1:
+            descr = regionMenu.menuItems[regionMenu.selectedItem].description;
+            break;
+        case 2:
+            descr = regionMenu.menuItems[regionMenu.selectedItem].key;
+            break;
+        case 3:
+            number     = supported_formats[numFormat + 1][0];
+            container  = supported_formats[numFormat + 1][1];
+            resolution = supported_formats[numFormat + 1][2];
+            videoFormat = malloc(strlen(container)  +
+                                 strlen(resolution) +
+                                 strlen(formatStr)  - 5);
+            sprintf(videoFormat, formatStr, number, container, resolution);
+            descr = videoFormat;
+            break;;
+        }
+
+        if(descr != NULL)
+            Text_DejaVuSans(state->screen_width * .25,
+                            menu->txtRaster.y,
+                            descr,
+                            numPointFontMed, errorColor);
+        if(videoFormat != NULL)
+            free(videoFormat);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -866,7 +896,7 @@ int handleESC()
                 case TERM_FUN_2:
                     return FUN_2;
                 default:
-                    while(getchar() != EOF); 
+                    while(getchar() != EOF);
                 }
             }
             break;

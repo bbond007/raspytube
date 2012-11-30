@@ -50,6 +50,7 @@ static bool youtube_search(char * searchStr);
 static void play_video (char * url);
 unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
+static void do_search(char * searchStr);
 
 #define PORT 80
 #define USERAGENT "RASPITUBE 1.0"
@@ -186,11 +187,17 @@ int main(int argc, char **argv)
                 {
                     switch(result)
                     {
-                    case 4:
+                    case 1:
+                        show_format_menu(&formatMenu);
+                        break;
+                    case 2:
+                        do_search(searchStr);
+                        break;
+                    case 5:
                         show_menu(&regionMenu);
                         break;
                     default:
-                        sprintf(txt, "item #%d\nkey->%s\ndescription->%s",
+                        sprintf(txt, "item #%d\nkey->%s\ndescription->%s\n**UNDER CONSTRUCTION**",
                                 result,
                                 mainMenuItems[result].key,
                                 mainMenuItems[result].description);
@@ -281,20 +288,7 @@ int main(int argc, char **argv)
         case 'S' : //modify existing search
             redraw_results(false);
             setBGImage();
-            replace_char_str(searchStr, '+', ' ');
-            result = input_string("Search:", searchStr, 50);
-            if(result)
-            {
-                replace_char_str(searchStr, ' ', '+');
-                clear_output();
-                numStart = 1;
-                clear_screen(true);
-                youtube_search(searchStr);
-                if (selected_rec == NULL)
-                    show_message("Search returned 0 results!", true, ERROR_POINT);
-            }
-            else
-                redraw_results(true);
+            do_search(searchStr);
             break;
 
         case RTN_KEY:
@@ -319,6 +313,26 @@ int main(int argc, char **argv)
 //    system("reset");
     return 0;
 }
+//------------------------------------------------------------------------------
+
+static void do_search(char * searchStr)
+{
+    replace_char_str(searchStr, '+', ' ');
+    int result = input_string("Search:", searchStr, 50);
+    if(result)
+    {
+        replace_char_str(searchStr, ' ', '+');
+        clear_output();
+        numStart = 1;
+        clear_screen(true);
+        youtube_search(searchStr);
+        if (selected_rec == NULL)
+            show_message("Search returned 0 results!", true, ERROR_POINT);
+    }
+    else
+        redraw_results(true);
+}
+
 //------------------------------------------------------------------------------
 static void play_video (char * url)
 {
