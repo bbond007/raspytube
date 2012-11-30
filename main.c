@@ -51,41 +51,19 @@ static void play_video (char * url);
 unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 static void do_search(char * searchStr);
+static void do_user_search(char * userStr);
+static void do_cur_up();
+static void do_cur_down();
+static void do_cur_right(char * searchStr);
+static void do_cur_left(char * searchStr);
 
-#define PORT 80
 #define USERAGENT "RASPITUBE 1.0"
+#define PORT 80
 #define HOST "gdata.youtube.com"
 #define AUTHOR binarybond007@gmail.com
 tMenuState regionMenu;
 tMenuState mainMenu;
     
-//------------------------------------------------------------------------------
-
-void do_cur_up()
-{
-    if (selected_rec != NULL)
-    {
-        if(selected_rec->prev != NULL)
-            selected_rec = selected_rec->prev;
-        else
-            selected_rec = last_rec;
-
-        redraw_results(true);
-    }
-}
-
-//------------------------------------------------------------------------------
-void do_cur_down()
-{
-    if (selected_rec != NULL)
-    {
-        if(selected_rec->next != NULL)
-            selected_rec = selected_rec->next;
-        else
-            selected_rec = first_rec;
-        redraw_results(true);
-    }
-}
 //------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
@@ -99,6 +77,7 @@ int main(int argc, char **argv)
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
+    char userStr[100] = "";
     mainMenu.menuItems = mainMenuItems;
     init_small_menu(&mainMenu, "Main Menu:");
     mainMenu.drawDetail = &main_menu_detail;
@@ -122,6 +101,7 @@ int main(int argc, char **argv)
 
     int key;
     int result;
+    int result2;
 
     do
     {
@@ -140,26 +120,12 @@ int main(int argc, char **argv)
             break;
 
         case CUR_R:
-            if(numStart < 500)
-            {
-                numStart += numResults;
-                clear_output();
-                clear_screen(true);
-                youtube_search(searchStr);
-            }
+            do_cur_right(searchStr);
             dumpKb();
             break;
 
         case CUR_L:
-            if (numStart > 1)
-            {
-                numStart -= numResults;
-                if(numStart < 1)
-                    numStart = 1;
-                clear_output();
-                clear_screen(true);
-                youtube_search(searchStr);
-            }
+            do_cur_left(searchStr);
             dumpKb();
             break;
 
@@ -193,6 +159,10 @@ int main(int argc, char **argv)
                     case 2:
                         do_search(searchStr);
                         break;
+                    case 3:
+                    case 4:
+                        do_user_search(userStr);
+                        break;
                     case 6:
                     case 7:
                     case 8:
@@ -221,7 +191,9 @@ int main(int argc, char **argv)
                     }
                 }
             }
-            while (result != -1 && result  !=  2 && !(result >= 6 && result <= 13));
+            while (result !=  -1 && 
+                   !(result >= 2 && result <= 4) && 
+                   !(result >= 6 && result <= 13));
             dumpKb();
             redraw_results(true);
             break;
@@ -279,10 +251,14 @@ int main(int argc, char **argv)
                     switch(result)
                     {
                     case CUR_L :
+                        do_cur_left(searchStr);
+                        break;
+                    case CUR_R:
+                        do_cur_right(searchStr);
+                        break;
                     case CUR_UP :
                         do_cur_up();
                         break;
-                    case CUR_R:
                     case CUR_DWN:
                         do_cur_down();
                         break;
@@ -328,8 +304,61 @@ int main(int argc, char **argv)
 //    system("reset");
     return 0;
 }
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+static void do_cur_up()
+{
+    if (selected_rec != NULL)
+    {
+        if(selected_rec->prev != NULL)
+            selected_rec = selected_rec->prev;
+        else
+            selected_rec = last_rec;
+
+        redraw_results(true);
+    }
+}
+
+//------------------------------------------------------------------------------
+static void do_cur_down()
+{
+    if (selected_rec != NULL)
+    {
+        if(selected_rec->next != NULL)
+            selected_rec = selected_rec->next;
+        else
+            selected_rec = first_rec;
+        redraw_results(true);
+    }
+}
+
+//------------------------------------------------------------------------------
+static void do_cur_right(char * searchStr)
+{
+    if(numStart < 500)
+    {
+         numStart += numResults;
+         clear_output();
+         clear_screen(true);
+         youtube_search(searchStr);
+    }
+}
+
+//------------------------------------------------------------------------------
+static void do_cur_left(char * searchStr)
+{
+    if (numStart > 1)
+    {
+         numStart -= numResults;
+         if(numStart < 1)
+             numStart = 1;
+         clear_output();
+         clear_screen(true);
+         youtube_search(searchStr);
+    }
+}
+
+//------------------------------------------------------------------------------
 static void do_search(char * searchStr)
 {
     mainMenu.selectedItem = 2;
@@ -344,6 +373,29 @@ static void do_search(char * searchStr)
         youtube_search(searchStr);
         if (selected_rec == NULL)
             show_message("Search returned 0 results!", true, ERROR_POINT);
+    }
+    else
+        redraw_results(true);
+}
+
+//------------------------------------------------------------------------------
+static void do_user_search(char * userStr)
+{
+    char caption[] = "Search ";
+    char * prompt = malloc(strlen(mainMenuItems[mainMenu.selectedItem].description) + + strlen(caption)+ 2);
+    strcpy(prompt, caption);
+    strcat(prompt, mainMenuItems[mainMenu.selectedItem].description);
+    strcat(prompt, ":");
+    int result = input_string(prompt, userStr, 50);
+    free(prompt);
+    if(result)
+    {
+        clear_output();
+        numStart = 1;
+        clear_screen(true);
+        youtube_search(userStr);
+        if (selected_rec == NULL)
+            show_message("User search returned 0 results!", true, ERROR_POINT);
     }
     else
         redraw_results(true);
@@ -373,7 +425,6 @@ static void play_video (char * url)
         sprintf(youtube_dl_command, youtube_dl_format, request_format, server, page);
         free(freeMe);
         FILE * fp = popen(youtube_dl_command, "r");
-        //sleep(2);
         unsigned int i = strlen(url2);
         free(youtube_dl_command);
         do
@@ -896,13 +947,15 @@ static char *get_ip(char *host)
 static char *build_youtube_query(char *host, char *searchStr, int results, int startIndex)
 {
     char * query;
+    char tempBegin[] = "GET /feeds/api/";
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     char * temp; 
-    char * tempBegin    = mainMenuItems[mainMenu.selectedItem].key;
+    char * tempMid = mainMenuItems[mainMenu.selectedItem].key;
     char country[6] = "";
-    temp = malloc(strlen(tempBegin) + strlen(tempEnd) + 1);
+    temp = malloc(strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1);
     temp[0] = 0x00;
     strcat(temp, tempBegin);
+    strcat(temp, tempMid);
     strcat(temp, tempEnd);
     if (mainMenuItems[mainMenu.selectedItem].special == 2)
     {
@@ -920,7 +973,7 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
                       strlen(temp) + 30);     
     sprintf(query, temp, searchStr, results, startIndex, host, USERAGENT);
     free(temp);
-    printf("*******\n%s\n*******\n",  query);
+    //show_message(query, true, ERROR_POINT);
     return query;
 }
 
