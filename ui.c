@@ -19,7 +19,7 @@
 #include "ui.h"
 #include "audio.h"
 //#include "menus.h"
-//stuff for the keyboard. 
+//stuff for the keyboard.
 
 static int ttflags;
 static struct termios oldt;
@@ -257,8 +257,6 @@ void clear_screen(bool swap)
 int show_selection_info(struct result_rec * rec)
 {
     int key = 0x00;
-    int esc = 0x00;
-       
     if(rec->description)
     {
         redraw_results(false);
@@ -311,7 +309,7 @@ int show_selection_info(struct result_rec * rec)
         {
             redraw_results(false);
             if(infoStr != NULL && rec->description != NULL)
-                show_big_message(infoStr, rec->description, false);    
+                show_big_message(infoStr, rec->description, false);
 
             Roundrect(rectX,
                       rectY,
@@ -326,15 +324,18 @@ int show_selection_info(struct result_rec * rec)
                         image_width,
                         image_height);
             eglSwapBuffers(state->display, state->surface);
-            key = readKb(&esc);
-            if(key == ESC_KEY)
-            {
-                key = esc;
-                if(key == CUR_L || key == CUR_R || 
-                   key == CUR_UP || key == CUR_DWN)
-                    break;
-            }  
-        } while (key != ESC_KEY && key != RTN_KEY);
+            key = readKb();
+
+            if(key == CUR_L || key == CUR_R ||
+                    key == CUR_UP || key == CUR_DWN)
+                break;
+        }
+        while ( key != ESC_KEY &&
+                key != RTN_KEY &&
+                key != CUR_L &&
+                key != CUR_R &&
+                key != CUR_UP &&
+                key != CUR_DWN);
         if(infoStr != NULL) free(infoStr);
         vgDestroyImage(image);
         redraw_results(true);
@@ -347,8 +348,6 @@ int show_selection_info(struct result_rec * rec)
 bool input_string(char * prompt, char * buf, int max)
 {
     int key = 0x00;
-    int esc = 0x00;
-    
     int endPos;
     int lastkeys[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     char formatStr[] = "%02X->%02X:%02X:%02X:%02X:%02X:%02X:%02X";
@@ -367,7 +366,7 @@ bool input_string(char * prompt, char * buf, int max)
         //redraw_results(false);
         draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
         snprintf(temp, sizeof(formatStr),formatStr, key,
-                lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
+                 lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
         Text_DejaVuSans(state->screen_width * .10f, state->screen_height * .10f, temp, numPointFontMed, textColor);
         endPos = strlen(buf);
         buf[endPos] = '_';
@@ -376,12 +375,12 @@ bool input_string(char * prompt, char * buf, int max)
         buf[endPos] = 0x00;
         eglSwapBuffers(state->display, state->surface);
         int i = 0;
-        
+
         for (i = (sizeof(lastkeys) / sizeof(int))-1; i > 0; i--)
             lastkeys[i] = lastkeys[i-1];
-        
+
         lastkeys[0] = key;
-        key = readKb(&esc);
+        key = readKb();
         switch (key)
         {
         case DEL_KEY:
@@ -391,21 +390,15 @@ bool input_string(char * prompt, char * buf, int max)
             break;
 
         case ESC_KEY:
-            key = esc;
-            switch (key)
-            {
-            case ESC_KEY:
-                strcpy(buf, save);
-                break;
+            strcpy(buf, save);
+            break;
 
-            case CUR_L:
-                buf[0] = 0x00;
-                break;
+        case CUR_L:
+            buf[0] = 0x00;
+            break;
 
-            case CUR_R:
-                strcpy(buf, save);
-                break;
-            }
+        case CUR_R:
+            strcpy(buf, save);
             break;
 
         case RTN_KEY:
@@ -432,7 +425,6 @@ bool input_string(char * prompt, char * buf, int max)
 //------------------------------------------------------------------------------
 void show_big_message(char * title, char * message, bool pause)
 {
-    int esc;
     redraw_results(false);
     draw_txt_box_cen(title, .95f, .50f, .05, .10f, .47f, numPointFontLarge, false);
     Text_DejaVuSans_Rollover(state->screen_width  * .10f,
@@ -446,7 +438,7 @@ void show_big_message(char * title, char * message, bool pause)
     {
         dumpKb();
         eglSwapBuffers(state->display, state->surface);
-        readKb(&esc);
+        readKb();
     }
 }
 
@@ -459,38 +451,35 @@ void show_message(char * message, bool error, int points)
     int y = (state->screen_height - height) / 2;
     int tx = state->screen_width * .15f;
     int ty = state->screen_height * .55f;
-    
     int key = ESC_KEY;
-    int esc = 0;
     do
     {
         redraw_results(false);
-        
+
         if(error)
             Roundrect(x,y, width, height, 20, 20, 10, errorColor, selectedColor);
         else
             Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
-            Text_DejaVuSans_Rollover(tx, // X
-                                     ty, // Y
-                                     state->screen_width * .80f,
-                                     5,
-                                     state->screen_height * .05f,
-                                     message, points, textColor);
-                                     eglSwapBuffers(state->display, 
-                                     state->surface);
+        Text_DejaVuSans_Rollover(tx, // X
+                                 ty, // Y
+                                 state->screen_width * .80f,
+                                 5,
+                                 state->screen_height * .05f,
+                                 message, points, textColor);
+        eglSwapBuffers(state->display,
+                       state->surface);
         if(error)
         {
             dumpKb();
-            key = readKb(&esc);
-            if(key == ESC_KEY)
-                key = esc;
+            key = readKb();
             dumpKb();
             redraw_results(true);
         }
         else
             break;
-        
-    }while (key != ESC_KEY && key != RTN_KEY);
+
+    }
+    while (key != ESC_KEY && key != RTN_KEY);
 }
 
 //------------------------------------------------------------------------------
@@ -501,14 +490,14 @@ void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds)
     rectBounds->y = rectPer->yPer * state->screen_height;
     rectBounds->w = rectPer->wPer * state->screen_width;
     rectBounds->h = rectPer->hPer * state->screen_height;
-} 
+}
 //------------------------------------------------------------------------------
 
 void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY)
 {
     pointXY->x = pointPer->xPer * state->screen_width;
     pointXY->y = pointPer->yPer * state->screen_height;
-} 
+}
 
 //------------------------------------------------------------------------------
 
@@ -523,18 +512,18 @@ void init_arrow(VGfloat * xy, tRectPer * rectPer, bool bFlip)
     int y1 = state->screen_height * rectPer->yPer;
     int y2 = state->screen_height * rectPer->yPer;
     int yOffset = rectPer->hPer * state->screen_height;
-    
+
     if(bFlip)
         y1 += yOffset;
     else
         y2 += yOffset;
-        
-    p1.x = x3; 
-    p1.y = y1; 
-    p2.x = x1; 
-    p2.y = y2; 
-    p3.x = x2; 
-    p3.y = y2; 
+
+    p1.x = x3;
+    p1.y = y1;
+    p2.x = x1;
+    p2.y = y2;
+    p3.x = x2;
+    p3.y = y2;
     xy[0] = p1.x;
     xy[1] = p1.y;
     xy[2] = p2.x;
@@ -542,14 +531,14 @@ void init_arrow(VGfloat * xy, tRectPer * rectPer, bool bFlip)
     xy[4] = p3.x;
     xy[5] = p3.y;
     xy[6] = p1.x;
-    xy[7] = p1.y; 
+    xy[7] = p1.y;
 }
 
 //------------------------------------------------------------------------------
 void init_big_menu(tMenuState * menu, char * title)
 {
     menu->title = title;
-    menu->titlePer.xPer = .15f;
+    menu->titlePer.xPer = .10f;
     menu->titlePer.yPer = .87f;
     //menu->titlePer.wPer = 0;
     //menu->titlePer.hPer = 0;
@@ -569,16 +558,16 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->yStep = state->screen_height * .04f;
     menu->selPer.wPer = .50f;
     menu->selPer.hPer = .04f;
-    calc_rect_bounds(&menu->selPer, &menu->selRect);  
+    calc_rect_bounds(&menu->selPer, &menu->selRect);
 
     tRectPer rectPer;
     rectPer.xPer = .88f;
     rectPer.yPer = .88f;
     rectPer.wPer = .04f;
-    rectPer.hPer = .04f;    
+    rectPer.hPer = .04f;
     init_arrow(menu->upArrow, &rectPer, true);
     rectPer.yPer = .08f;
-    init_arrow(menu->downArrow, &rectPer, false);      
+    init_arrow(menu->downArrow, &rectPer, false);
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
@@ -609,16 +598,16 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->yStep = state->screen_height * .04f;
     menu->selPer.wPer = .35f;
     menu->selPer.hPer = .04f;
-    calc_rect_bounds(&menu->selPer, &menu->selRect);  
+    calc_rect_bounds(&menu->selPer, &menu->selRect);
 
     tRectPer rectPer;
     rectPer.xPer = .45f;
     rectPer.yPer = .88f;
     rectPer.wPer = .04f;
-    rectPer.hPer = .04f;    
+    rectPer.hPer = .04f;
     init_arrow(menu->upArrow, &rectPer, true);
     rectPer.yPer = .53f;
-    init_arrow(menu->downArrow, &rectPer, false);      
+    init_arrow(menu->downArrow, &rectPer, false);
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
@@ -631,9 +620,9 @@ void format_menu_header(tMenuState * menu)
 {
     int x;
     for (x = 0; x < AFORMAT_WIDTH; x++)
-            Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
-                            menu->txtRaster.y + menu->yStep,
-                            supported_formats[0][x], (x>=3)?numPointFontSmall:numPointFontMed, errorColor);
+        Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
+                        menu->txtRaster.y + menu->yStep,
+                        supported_formats[0][x], (x>=3)?numPointFontSmall:numPointFontMed, errorColor);
 }
 
 //------------------------------------------------------------------------------
@@ -641,22 +630,22 @@ void format_menu_detail(tMenuState * menu)
 {
     int x;
     for (x = 1; x < AFORMAT_WIDTH; x++)
-            Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
-                            menu->txtRaster.y,
-                            supported_formats[menu->selectedItem + 1][x],(x==3)?numPointFontSmall:numPointFontMed, textColor);
+        Text_DejaVuSans((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
+                        menu->txtRaster.y,
+                        supported_formats[menu->selectedItem + 1][x],(x==3)?numPointFontSmall:numPointFontMed, textColor);
 }
 
 //------------------------------------------------------------------------------
 void main_menu_detail(tMenuState * menu)
-{      
-  if(menu->menuItems[menu->selectedItem].special == 1 || 
-     menu->menuItems[menu->selectedItem].special == 2)
-      Text_DejaVuSans(state->screen_width * .25,
-                      menu->txtRaster.y,
-                      (menu->menuItems[menu->selectedItem].special==1)?
-                      regionMenu.menuItems[regionMenu.selectedItem].description:
-                      regionMenu.menuItems[regionMenu.selectedItem].key,
-                      numPointFontMed, errorColor);
+{
+    if(menu->menuItems[menu->selectedItem].special == 1 ||
+            menu->menuItems[menu->selectedItem].special == 2)
+        Text_DejaVuSans(state->screen_width * .25,
+                        menu->txtRaster.y,
+                        (menu->menuItems[menu->selectedItem].special==1)?
+                        regionMenu.menuItems[regionMenu.selectedItem].description:
+                        regionMenu.menuItems[regionMenu.selectedItem].key,
+                        numPointFontMed, errorColor);
 }
 
 //------------------------------------------------------------------------------
@@ -668,7 +657,7 @@ void init_format_menu(tMenuState * menu)
     menu->menuItems = NULL;
     menu->txtOffset.y = state->screen_width  * .12f;
     menu->selPer.wPer = .76f;
-    calc_rect_bounds(&menu->selPer, &menu->selRect);  
+    calc_rect_bounds(&menu->selPer, &menu->selRect);
 }
 
 //------------------------------------------------------------------------------
@@ -676,15 +665,15 @@ int show_format_menu(tMenuState * menu)
 {
     if(menu->menuItems == NULL)
     {
-         menu->menuItems = malloc(sizeof(tMenuItem) * (AFORMAT_HEIGHT + 1));
-         int i;
-         for (i = 1; i < AFORMAT_HEIGHT; i++)
-         {
-             menu->menuItems[i-1].key = supported_formats[i][0];
-             menu->menuItems[i-1].description = supported_formats[i][0];
-         }   
-         menu->menuItems[i-1].key = NULL;
-         menu->menuItems[i-1].description = NULL;
+        menu->menuItems = malloc(sizeof(tMenuItem) * (AFORMAT_HEIGHT + 1));
+        int i;
+        for (i = 1; i < AFORMAT_HEIGHT; i++)
+        {
+            menu->menuItems[i-1].key = supported_formats[i][0];
+            menu->menuItems[i-1].description = supported_formats[i][0];
+        }
+        menu->menuItems[i-1].key = NULL;
+        menu->menuItems[i-1].description = NULL;
     }
     int result = show_menu(menu);
     if(result != -1)
@@ -692,51 +681,50 @@ int show_format_menu(tMenuState * menu)
     return result;
 }
 //------------------------------------------------------------------------------
-#define SHOW_MENU_Y_CALC (state->screen_height - (y * menu->yStep) - menu->txtOffset.y) 
+#define SHOW_MENU_Y_CALC (state->screen_height - (y * menu->yStep) - menu->txtOffset.y)
 int show_menu(tMenuState * menu)
 {
     int scrollIndexSave   = menu->scrollIndex;
     int selectedIndexSave = menu->selectedIndex;
-    int key;   
-    int esc;
+    int key;
     do
     {
         drawBGImage();
         if (menu->bCenterX)
-            draw_txt_box_cen(menu->title, 
-                         menu->winPer.wPer, 
-                         menu->winPer.hPer, 
-                         //menu->winPer.xPer,
-                         menu->winPer.yPer, 
-                         menu->titlePer.xPer,
-                         menu->titlePer.yPer, 
-                         menu->numPointFontTitle, false);
-        else        
-            draw_txt_box(menu->title, 
-                         menu->winPer.wPer, 
-                         menu->winPer.hPer, 
+            draw_txt_box_cen(menu->title,
+                             menu->winPer.wPer,
+                             menu->winPer.hPer,
+                             //menu->winPer.xPer,
+                             menu->winPer.yPer,
+                             menu->titlePer.xPer,
+                             menu->titlePer.yPer,
+                             menu->numPointFontTitle, false);
+        else
+            draw_txt_box(menu->title,
+                         menu->winPer.wPer,
+                         menu->winPer.hPer,
                          menu->winPer.xPer,
-                         menu->winPer.yPer, 
+                         menu->winPer.yPer,
                          menu->titlePer.xPer,
-                         menu->titlePer.yPer, 
+                         menu->titlePer.yPer,
                          menu->numPointFontTitle, false);
-  
-        menu->selRect.y = state->screen_height - 
-            (menu->selectedIndex * menu->yStep) - (menu->yStep / 3.0f) - menu->txtOffset.y;
-        
+
+        menu->selRect.y = state->screen_height -
+                          (menu->selectedIndex * menu->yStep) - (menu->yStep / 3.0f) - menu->txtOffset.y;
+
         Roundrect(menu->selRect.x,
                   menu->selRect.y,
                   menu->selRect.w,
                   menu->selRect.h,
                   20, 20, 5, rectColor, selectedColor);
-        
+
         int y = 0;
         int count = 0;
-        
+
         menu->selectedItem = menu->scrollIndex;
         menu->txtRaster.x = menu->txtOffset.x;
-        menu->txtRaster.y = SHOW_MENU_Y_CALC; 
-                  
+        menu->txtRaster.y = SHOW_MENU_Y_CALC;
+
         if (menu->drawHeader != NULL)
             menu->drawHeader(menu);
 
@@ -745,28 +733,29 @@ int show_menu(tMenuState * menu)
         {
             if(count >= menu->scrollIndex)
             {
-                               
-                Text_DejaVuSans(menu->txtRaster.x, 
+
+                Text_DejaVuSans(menu->txtRaster.x,
                                 menu->txtRaster.y,
-                                currentItem->description, 
-                                numPointFontMed, 
+                                currentItem->description,
+                                numPointFontMed,
                                 textColor);
                 if (menu->drawDetail != NULL)
                     menu->drawDetail(menu);
                 y++;
-                
+
                 menu->selectedItem = y + menu->scrollIndex;
                 menu->txtRaster.x = menu->txtOffset.x;
-                menu->txtRaster.y = SHOW_MENU_Y_CALC; 
-                
+                menu->txtRaster.y = SHOW_MENU_Y_CALC;
+
                 if (y == menu->maxItems)
                     break;
             }
-            currentItem++;count++;
+            currentItem++;
+            count++;
         }
-        
+
         menu->selectedItem = menu->selectedIndex + menu->scrollIndex;
-        
+
         bool bMoreItems = false;
         if (currentItem->key != NULL || currentItem->description != NULL)
         {
@@ -774,51 +763,44 @@ int show_menu(tMenuState * menu)
             if(currentItem->key != NULL || currentItem->description != NULL)
                 bMoreItems = true;
         }
-       
+
         if (bMoreItems)
         {
-            Poly(menu->downArrow, 4, 5, selectedColor, bgColor, VG_TRUE); 
-        }   
-        
+            Poly(menu->downArrow, 4, 5, selectedColor, bgColor, VG_TRUE);
+        }
+
         if (menu->scrollIndex > 0)
         {
             Poly(menu->upArrow, 4, 5, selectedColor, bgColor, VG_TRUE);
-        }   
-                
+        }
+
         if (menu->drawFooter != NULL)
-            menu->drawFooter(menu);  
+            menu->drawFooter(menu);
         eglSwapBuffers(state->display, state->surface);
 
-        
-        key = toupper(readKb(&esc));
+
+        key = toupper(readKb());
         switch (key)
         {
 
-        case ESC_KEY:
-            key = esc;
-            switch(key)
-            {
-            case CUR_UP:
-                if (menu->selectedIndex > 0)
-                    menu->selectedIndex--;
-                else
-                    if(menu->scrollIndex > 0)
-                        menu->scrollIndex--;
-                break;
-
-            case CUR_DWN:  
-                if (menu->selectedIndex < menu->maxItems -1)
-                {
-                     currentItem = &menu->menuItems[menu->selectedIndex + menu->scrollIndex + 1];
-                     if(currentItem->key != NULL || currentItem->description != NULL)
-                        menu->selectedIndex++;
-                }
-                else if(bMoreItems) 
-                    menu->scrollIndex++;
-                    
-                break;
-            }
+        case CUR_UP:
+            if (menu->selectedIndex > 0)
+                menu->selectedIndex--;
+            else if(menu->scrollIndex > 0)
+                menu->scrollIndex--;
             break;
+
+        case CUR_DWN:
+            if (menu->selectedIndex < menu->maxItems -1)
+            {
+                currentItem = &menu->menuItems[menu->selectedIndex + menu->scrollIndex + 1];
+                if(currentItem->key != NULL || currentItem->description != NULL)
+                    menu->selectedIndex++;
+            }
+            else if(bMoreItems)
+                menu->scrollIndex++;
+
+            break;;
         }
     }
     while (key != 'Q' && key != RTN_KEY && key != ESC_KEY);
@@ -852,19 +834,19 @@ int handleESC()
                 key = getchar();
                 switch(key) //cursor movement
                 {
-                case CUR_R:
+                case TERM_CUR_R:
                     return CUR_R;
                     break;
 
-                case CUR_L:
+                case TERM_CUR_L:
                     return CUR_L;
                     break;
 
-                case CUR_UP:
+                case TERM_CUR_UP:
                     return CUR_UP;
                     break;
 
-                case CUR_DWN:
+                case TERM_CUR_DWN:
                     return CUR_DWN;
                     break;
                 }
@@ -909,31 +891,28 @@ bool kbHit(void)
 
 
 //------------------------------------------------------------------------------
-int readKb(int * esc)
+int readKb()
 {
     int key = getchar();
     if (key == ESC_KEY)
     {
         fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-        *esc = handleESC();
+        key = handleESC();
         fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     }
-    else
-    {
-        // play_sample(&asiKbClick, false);    
-        *esc = 0x00;
-    }
+    //else play_sample(&asiKbClick, false);
+
     return key;
 }
-    
+
 //------------------------------------------------------------------------------
 void dumpKb()
 {
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
     while (getchar()!= EOF)
     {
-       // :)
-    }   
+        // :)
+    }
     fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
 }
 //------------------------------------------------------------------------------
@@ -942,7 +921,7 @@ void initKb()
     tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
     newt = oldt; 				// copy old settings to new settings
     newt.c_lflag &= ~(ICANON | ECHO); 		// change settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly   
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly
     ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
 //  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
 }
@@ -956,7 +935,7 @@ void restoreKb()
 //------------------------------------------------------------------------------
 
 void clear_output()
-{    
+{
     struct result_rec * temp_rec = first_rec;
     struct result_rec * next_rec;
     while (temp_rec != NULL)

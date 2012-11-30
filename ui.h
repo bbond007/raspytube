@@ -131,7 +131,7 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 void drawBGImage();
 void setBGImage();
 bool kbHit(void);
-int readKb(int * esc);
+int readKb();
 void dumpKb();
 void initKb();
 void restoreKb();
@@ -168,8 +168,12 @@ extern VGfloat errorColor[];
 #define RTN_KEY 0x0a
 #define DEL_KEY 0x7f
 #define BSL_KEY 0x5c
-#define CUR_UP  'A'
-#define CUR_DWN 'B'
-#define CUR_R	'C'
-#define CUR_L 	'D'
-#define FUN_1 	'P'
+#define TERM_CUR_UP  'A'
+#define TERM_CUR_DWN 'B'
+#define TERM_CUR_R   'C'
+#define TERM_CUR_L   'D'
+#define CUR_UP  17
+#define CUR_DWN 18
+#define CUR_R   19
+#define CUR_L   20
+#define FUN_1 	1

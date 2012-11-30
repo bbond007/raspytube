@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     mainMenu.menuItems = mainMenuItems;
     init_small_menu(&mainMenu, "Main Menu:");
     mainMenu.drawDetail = &main_menu_detail;
-    
+
     regionMenu.menuItems = regionMenuItems;
     init_big_menu(&regionMenu, "Select region:");
     tMenuState formatMenu;
@@ -120,54 +120,46 @@ int main(int argc, char **argv)
         youtube_search("raspberry+pi");
 
     int key;
-    int esc;
     int result;
 
     do
     {
-        key = toupper(readKb(&esc)); //wait for keypress
+        key = toupper(readKb()); //wait for keypress
         switch (key)
         {
 
-        case ESC_KEY:
-            key = esc;
-            switch(key)
+        case CUR_UP :
+            do_cur_up();
+            dumpKb();
+            break;
+
+        case CUR_DWN:
+            do_cur_down();
+            dumpKb();
+            break;
+
+        case CUR_R:
+            if(numStart < 500)
             {
-            case CUR_UP :
-                do_cur_up();
-                dumpKb();
-                break;
-
-            case CUR_DWN:
-                do_cur_down();
-                dumpKb();
-                break;
-
-            case CUR_R:
-                if(numStart < 500)
-                {
-                    numStart += numResults;
-                    clear_output();
-                    clear_screen(true);
-                    youtube_search(searchStr);
-                }
-                dumpKb();
-                break;
-
-            case CUR_L:
-                if (numStart > 1)
-                {
-                    numStart -= numResults;
-                    if(numStart < 1)
-                        numStart = 1;
-                    clear_output();
-                    clear_screen(true);
-                    youtube_search(searchStr);
-                }
-                dumpKb();
-                break;
-
+                numStart += numResults;
+                clear_output();
+                clear_screen(true);
+                youtube_search(searchStr);
             }
+            dumpKb();
+            break;
+
+        case CUR_L:
+            if (numStart > 1)
+            {
+                numStart -= numResults;
+                if(numStart < 1)
+                    numStart = 1;
+                clear_output();
+                clear_screen(true);
+                youtube_search(searchStr);
+            }
+            dumpKb();
             break;
 
         case 'H' :
@@ -194,19 +186,20 @@ int main(int argc, char **argv)
                 {
                     switch(result)
                     {
-                        case 4: 
-                            show_menu(&regionMenu);
+                    case 4:
+                        show_menu(&regionMenu);
                         break;
-                        default:        
-                            sprintf(txt, "item #%d\nkey->%s\ndescription->%s",
-                            result,
-                            mainMenuItems[result].key,
-                            mainMenuItems[result].description);
-                            show_message(txt, true, ERROR_POINT);
+                    default:
+                        sprintf(txt, "item #%d\nkey->%s\ndescription->%s",
+                                result,
+                                mainMenuItems[result].key,
+                                mainMenuItems[result].description);
+                        show_message(txt, true, ERROR_POINT);
                         break;
                     }
                 }
-            } while (result != -1); 
+            }
+            while (result != -1);
             dumpKb();
             redraw_results(true);
             break;
@@ -277,7 +270,8 @@ int main(int argc, char **argv)
                         break;
                     }
                     dumpKb();
-                } while (result != ESC_KEY);
+                }
+                while (result != ESC_KEY);
             }
             break;
 
