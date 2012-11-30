@@ -55,9 +55,10 @@ static void do_search(char * searchStr);
 #define PORT 80
 #define USERAGENT "RASPITUBE 1.0"
 #define HOST "gdata.youtube.com"
-#define AUTHOR bbond007@gmail.com
+#define AUTHOR binarybond007@gmail.com
 tMenuState regionMenu;
-
+tMenuState mainMenu;
+    
 //------------------------------------------------------------------------------
 
 void do_cur_up()
@@ -98,17 +99,16 @@ int main(int argc, char **argv)
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
-    tMenuState mainMenu;
     mainMenu.menuItems = mainMenuItems;
     init_small_menu(&mainMenu, "Main Menu:");
     mainMenu.drawDetail = &main_menu_detail;
-
     regionMenu.menuItems = regionMenuItems;
     init_big_menu(&regionMenu, "Select region:");
     tMenuState formatMenu;
     init_format_menu(&formatMenu);
     char txt[100];
 
+    mainMenu.selectedItem = 2;
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -193,6 +193,21 @@ int main(int argc, char **argv)
                     case 2:
                         do_search(searchStr);
                         break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                        numStart = 1;
+                        clear_output();
+                        clear_screen(true);
+                        youtube_search(NULL);
+                        if (selected_rec == NULL)
+                            show_message("Region search returned 0 results!", true, ERROR_POINT);
+                        break;
                     case 5:
                         show_menu(&regionMenu);
                         break;
@@ -206,7 +221,7 @@ int main(int argc, char **argv)
                     }
                 }
             }
-            while (result != -1);
+            while (result != -1 && result  !=  2 && !(result >= 6 && result <= 13));
             dumpKb();
             redraw_results(true);
             break;
@@ -317,6 +332,7 @@ int main(int argc, char **argv)
 
 static void do_search(char * searchStr)
 {
+    mainMenu.selectedItem = 2;
     replace_char_str(searchStr, '+', ' ');
     int result = input_string("Search:", searchStr, 50);
     if(result)
@@ -879,12 +895,32 @@ static char *get_ip(char *host)
 
 static char *build_youtube_query(char *host, char *searchStr, int results, int startIndex)
 {
-    char *query;
-    char *tpl = "GET /feeds/api/videos?v=2&alt=jsonc&q=%s&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
-    if(searchStr[0] == '/')
-        searchStr++;
-    query = (char *)malloc(strlen(host)+strlen(searchStr)+strlen(USERAGENT)+strlen(tpl));
-    sprintf(query, tpl, searchStr, results, startIndex, host, USERAGENT);
+    char * query;
+    char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
+    char * temp; 
+    char * tempBegin    = mainMenuItems[mainMenu.selectedItem].key;
+    char country[6] = "";
+    temp = malloc(strlen(tempBegin) + strlen(tempEnd) + 1);
+    temp[0] = 0x00;
+    strcat(temp, tempBegin);
+    strcat(temp, tempEnd);
+    if (mainMenuItems[mainMenu.selectedItem].special == 2)
+    {
+        if (regionMenu.selectedItem > 0)
+        {
+            strcat(country, regionMenuItems[regionMenu.selectedItem].key);
+            strcat(country, "/");
+        }
+        searchStr = country;
+    }
+        
+    query = malloc (  strlen(host) + 
+                      strlen(searchStr)+
+                      strlen(USERAGENT)+
+                      strlen(temp) + 30);     
+    sprintf(query, temp, searchStr, results, startIndex, host, USERAGENT);
+    free(temp);
+    printf("*******\n%s\n*******\n",  query);
     return query;
 }
 
