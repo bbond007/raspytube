@@ -64,6 +64,11 @@ static void do_cur_left(char * searchStr);
 tMenuState regionMenu;
 tMenuState mainMenu;
     
+static void do_change_audio_dev();
+static void do_change_jpeg_dec();
+static void do_change_video_player();
+
+
 #define PICK_SEARCH_STR ((mainMenu.selectedItem == 3 || mainMenu.selectedItem == 4) ? userStr : searchStr)
 //------------------------------------------------------------------------------
 
@@ -130,11 +135,7 @@ int main(int argc, char **argv)
             break;
 
         case 'H' :
-            if (soundOutput == soHDMI)
-                soundOutput = soLOCAL;
-            else
-                soundOutput = soHDMI;
-
+            do_change_audio_dev();
             redraw_results(true);
             dumpKb();
             break;
@@ -163,6 +164,9 @@ int main(int argc, char **argv)
                     case 4:
                         do_user_search(userStr);
                         break;
+                    case 5:
+                        show_menu(&regionMenu);
+                        break;
                     case 6:
                     case 7:
                     case 8:
@@ -178,8 +182,17 @@ int main(int argc, char **argv)
                         if (selected_rec == NULL)
                             show_message("Region search returned 0 results!", true, ERROR_POINT);
                         break;
-                    case 5:
-                        show_menu(&regionMenu);
+                //  case 14:
+                //  case 15:
+                //      break;
+                    case 16:
+                        do_change_video_player();
+                        break;
+                    case 17:
+                        do_change_audio_dev();
+                        break;
+                    case 18:
+                        do_change_jpeg_dec();
                         break;
                     default:
                         sprintf(txt, "item #%d\nkey->%s\ndescription->%s\n**UNDER CONSTRUCTION**",
@@ -215,10 +228,7 @@ int main(int argc, char **argv)
             break;
 
         case 'X' :
-            if (jpegDecoder == jdOMX)
-                jpegDecoder = jdLibJpeg;
-            else
-                jpegDecoder = jdOMX;
+            do_change_jpeg_dec();
             redraw_results(true);
             break;
 
@@ -230,16 +240,11 @@ int main(int argc, char **argv)
             redraw_results(true);
             break;
 
-
         case 'P':
-            if (videoPlayer == vpOMXPlayer)
-                videoPlayer = vpMPlayer;
-            else
-                videoPlayer = vpOMXPlayer;
+            do_change_video_player();
             redraw_results(true);
             dumpKb();
             break;
-
 
         case 'I':
             if(selected_rec != NULL)
@@ -355,6 +360,33 @@ static void do_cur_left(char * searchStr)
          clear_screen(true);
          youtube_search(searchStr);
     }
+}
+
+//------------------------------------------------------------------------------
+static void do_change_audio_dev()
+{
+    if (soundOutput == soHDMI)
+       soundOutput = soLOCAL;
+    else
+       soundOutput = soHDMI;
+}    
+
+//------------------------------------------------------------------------------
+static void do_change_jpeg_dec()
+{
+     if (jpegDecoder == jdOMX)
+       jpegDecoder = jdLibJpeg;
+     else
+       jpegDecoder = jdOMX;                                           
+}
+
+//------------------------------------------------------------------------------
+static void do_change_video_player()
+{
+    if (videoPlayer == vpOMXPlayer)
+       videoPlayer = vpMPlayer;
+    else
+       videoPlayer = vpOMXPlayer;
 }
 
 //------------------------------------------------------------------------------

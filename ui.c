@@ -61,6 +61,9 @@ extern unsigned char *download_file(char * host, char * fileName, unsigned int *
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
 extern tMenuState regionMenu;
+extern tMenuItem videoMenuItems[];
+extern tMenuItem jpegMenuItems[];
+extern tMenuItem audioMenuItems[]; 
 
 //------------------------------------------------------------------------------
 void setBGImage()
@@ -651,12 +654,6 @@ void main_menu_detail(tMenuState * menu)
         {
 
         case 1:
-            descr = regionMenu.menuItems[regionMenu.selectedItem].description;
-            break;
-        case 2:
-            descr = regionMenu.menuItems[regionMenu.selectedItem].key;
-            break;
-        case 3:
             number     = supported_formats[numFormat + 1][0];
             container  = supported_formats[numFormat + 1][1];
             resolution = supported_formats[numFormat + 1][2];
@@ -666,6 +663,26 @@ void main_menu_detail(tMenuState * menu)
             sprintf(videoFormat, formatStr, number, container, resolution);
             descr = videoFormat;
             break;;
+
+        case 2:
+            descr = regionMenu.menuItems[regionMenu.selectedItem].description;
+            break;
+       
+        case 3:
+            descr = regionMenu.menuItems[regionMenu.selectedItem].key;
+            break;
+       
+        case 4:
+            descr = videoMenuItems[(int) videoPlayer].description;
+            break;
+            
+        case 5:
+            descr = audioMenuItems[(int) soundOutput].description;
+            break;
+            
+        case 6:
+            descr = jpegMenuItems[(int) jpegDecoder].description;
+            break;            
         }
 
         if(descr != NULL)
