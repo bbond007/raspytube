@@ -64,6 +64,7 @@ static void do_cur_left(char * searchStr);
 tMenuState regionMenu;
 tMenuState mainMenu;
     
+#define PICK_SEARCH_STR ((mainMenu.selectedItem == 3 || mainMenu.selectedItem == 4) ? userStr : searchStr)
 //------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
@@ -101,8 +102,7 @@ int main(int argc, char **argv)
 
     int key;
     int result;
-    int result2;
-
+    
     do
     {
         key = toupper(readKb()); //wait for keypress
@@ -120,12 +120,12 @@ int main(int argc, char **argv)
             break;
 
         case CUR_R:
-            do_cur_right(searchStr);
+            do_cur_right(PICK_SEARCH_STR);
             dumpKb();
             break;
 
         case CUR_L:
-            do_cur_left(searchStr);
+            do_cur_left(PICK_SEARCH_STR);
             dumpKb();
             break;
 
@@ -226,7 +226,6 @@ int main(int argc, char **argv)
             redraw_results(false);
             setBGImage();
             result = show_format_menu(&formatMenu);
-            //show_youtube_formats();
             dumpKb();
             redraw_results(true);
             break;
@@ -251,10 +250,10 @@ int main(int argc, char **argv)
                     switch(result)
                     {
                     case CUR_L :
-                        do_cur_left(searchStr);
+                        do_cur_left(PICK_SEARCH_STR);
                         break;
                     case CUR_R:
-                        do_cur_right(searchStr);
+                        do_cur_right(PICK_SEARCH_STR);
                         break;
                     case CUR_UP :
                         do_cur_up();
