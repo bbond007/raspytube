@@ -172,8 +172,13 @@ extern VGfloat errorColor[];
 #define TERM_CUR_DWN 'B'
 #define TERM_CUR_R   'C'
 #define TERM_CUR_L   'D'
+#define TERM_FUN_1   'P'
+#define TERM_FUN_2   'Q'
 #define CUR_UP  17
 #define CUR_DWN 18
 #define CUR_R   19
 #define CUR_L   20
-#define FUN_1 	1
+#define FUN_1 	1 
+#define FUN_2	2
+
+

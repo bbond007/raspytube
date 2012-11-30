@@ -858,12 +858,15 @@ int handleESC()
                 key = getchar();
                 switch(key)
                 {
-                case FUN_1:
-                    //eglSwapBuffers(state->display, state->surface);
+                case TERM_FUN_1:
                     DoSnapshot();
                     show_message("Snapshot Saved!", true, ERROR_POINT);
                     return FUN_1;
                     break;
+                case TERM_FUN_2:
+                    return FUN_2;
+                default:
+                    while(getchar() != EOF); 
                 }
             }
             break;
