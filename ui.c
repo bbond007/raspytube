@@ -297,8 +297,8 @@ int show_selection_info(struct result_rec * rec)
     {
         int w  = (state->screen_width  * .35f);
         int h  = (state->screen_height * .45f);
-        //tvImage = create_image_from_buf((unsigned char *)
-        tvImage = createImageFromBuf((unsigned char *)
+        //printf("TVImage->(%d, %d)\n", w, h);
+        tvImage = create_image_from_buf((unsigned char *)
            tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }
     
