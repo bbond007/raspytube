@@ -89,11 +89,10 @@ int main(int argc, char **argv)
     mainMenu.drawDetail = &main_menu_detail;
     regionMenu.menuItems = regionMenuItems;
     init_big_menu(&regionMenu, "Select region:");
+    regionMenu.selectedItem = 0;
     tMenuState formatMenu;
     init_format_menu(&formatMenu);
     char txt[100];
-
-    mainMenu.selectedItem = 2;
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -392,7 +391,6 @@ static void do_change_video_player()
 //------------------------------------------------------------------------------
 static void do_search(char * searchStr)
 {
-    mainMenu.selectedItem = 2;
     replace_char_str(searchStr, '+', ' ');
     int result = input_string("Search:", searchStr, 50);
     if(result)
@@ -977,18 +975,26 @@ static char *get_ip(char *host)
 
 static char *build_youtube_query(char *host, char *searchStr, int results, int startIndex)
 {
+    #define MAIN_MENU_SPEC_REGION 3
+    
     char * query;
     char tempBegin[] = "GET /feeds/api/";
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     char * temp; 
-    char * tempMid = mainMenuItems[mainMenu.selectedItem].key;
+    
+    char * tempMid = mainMenuItems[(mainMenu.selectedItem >=0 && 
+                                    mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?
+                                    mainMenu.selectedItem:2].key;
+                            
     char country[6] = "";
-    temp = malloc(strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1);
+    int sTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
+    temp = malloc(sTemp);
     temp[0] = 0x00;
     strcat(temp, tempBegin);
     strcat(temp, tempMid);
     strcat(temp, tempEnd);
-    if (mainMenuItems[mainMenu.selectedItem].special == 2)
+    
+    if (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)
     {
         if (regionMenu.selectedItem > 0)
         {
@@ -997,12 +1003,13 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
         }
         searchStr = country;
     }
-        
-    query = malloc (  strlen(host) + 
+      
+    int sQuery =  strlen(host) + 
                       strlen(searchStr)+
                       strlen(USERAGENT)+
-                      strlen(temp) + 30);     
-    sprintf(query, temp, searchStr, results, startIndex, host, USERAGENT);
+                      strlen(temp) + 30;
+    query = malloc (sQuery);     
+    snprintf(query, sQuery, temp, searchStr, results, startIndex, host, USERAGENT);
     free(temp);
     //show_message(query, true, ERROR_POINT);
     return query;
