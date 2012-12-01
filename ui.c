@@ -30,6 +30,8 @@ extern const signed char soundraw_data[];
 extern const unsigned int soundraw_size;
 */
 static VGImage bgImage = 0;
+static VGImage tvImage = 0;
+
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
@@ -42,7 +44,6 @@ int numThumbWidth     = 15;
 int numResults        = 10;
 int numFormat         = 0;
 int numStart          = 1;
-static VGImage tvImage       = 0;
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
 enum tJpegDecoder jpegDecoder = jdOMX;
@@ -186,7 +187,16 @@ VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desi
 }
 
 //------------------------------------------------------------------------------
+void free_ui_var()
+{
+    if (tvImage > 0)
+        vgDestroyImage(tvImage);
+        
+    if (bgImage > 0)
+        vgDestroyImage(bgImage);        
+}
 
+//------------------------------------------------------------------------------
 void init_ui_var()
 {
     if(state->screen_width >= 1920)
@@ -216,13 +226,6 @@ void init_ui_var()
         //   numThumbWidth     = 10;
         //   numResults        = 8;
     }
-    unsigned int tv_width  = (state->screen_width  * .35f);
-    unsigned int tv_height = (state->screen_height * .45f);
-    //printf("loading tv.png (%d, %d)", tv_width, tv_height); 
-   
-    tvImage = createImageFromBuf((unsigned char *)
-   // tvImage = create_image_from_buf((unsigned char *)
-          tv_jpeg_raw_data, tv_jpeg_raw_size, tv_width, tv_height);
 }
 
 
@@ -290,6 +293,15 @@ void clear_screen(bool swap)
 int show_selection_info(struct result_rec * rec)
 {
     int key = 0x00;
+    if(tvImage == 0)
+    {
+        int w  = (state->screen_width  * .35f);
+        int h  = (state->screen_height * .45f);
+        //tvImage = create_image_from_buf((unsigned char *)
+        tvImage = createImageFromBuf((unsigned char *)
+           tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
+    }
+    
     int offsetY      = (state->screen_height * .060f);
     int offsetX      = (state->screen_width  * .035f);
     int tv_width     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
@@ -300,6 +312,10 @@ int show_selection_info(struct result_rec * rec)
     int image_width  = tv_width  - (offsetX * 2);
     int imageX       = (state->screen_width - image_width) / 2;
     int imageY       = (state->screen_height - image_height) - (tv_height - image_height) / 2;
+    unsigned char * downloadData;
+    unsigned char * imageData;
+    unsigned int imageDataSize;
+    
     if(rec->description)
     {
         redraw_results(false);
@@ -318,7 +334,8 @@ int show_selection_info(struct result_rec * rec)
 
     if(rec->thumbLarge != NULL)
     {
-        VGImage image = load_jpeg(rec->thumbLarge, image_width, image_height);
+        VGImage image = load_jpeg2(rec->thumbLarge, image_width, image_height, 
+            &downloadData, &imageData, &imageDataSize);
      
 
         char * infoStr = NULL;
@@ -364,10 +381,22 @@ int show_selection_info(struct result_rec * rec)
 
             eglSwapBuffers(state->display, state->surface);
 
-            key = readKb();
-
-            if(key == CUR_L || key == CUR_R ||
-                    key == CUR_UP || key == CUR_DWN)
+            key = toupper(readKb());
+            if (key == 'H')
+            {
+                vgDestroyImage(image);
+                     image = OMXCreateImageFromBuf((unsigned char *)
+                        imageData, imageDataSize, image_width, image_height);
+            }
+            else
+            if (key == 'S')
+            {
+                vgDestroyImage(image);
+                     image = createImageFromBuf((unsigned char *)
+                        imageData, imageDataSize, image_width, image_height);
+            }
+            else if (key== CUR_L || key == CUR_R ||
+                     key == CUR_UP || key == CUR_DWN)
                 break;
         }
         while ( key != ESC_KEY &&
@@ -378,6 +407,8 @@ int show_selection_info(struct result_rec * rec)
                 key != CUR_DWN);
         if(infoStr != NULL) free(infoStr);
         vgDestroyImage(image);
+        if(downloadData != NULL)
+            free(downloadData);
         redraw_results(true);
     }
     else
@@ -1058,12 +1089,38 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
         downloadData = download_file(server, page, &fileSize);
         unsigned char * imageData = find_jpg_start(downloadData, &fileSize);
         if (imageData == NULL)
-            show_message("unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
+            show_message("LJ1:unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
         else
         {
             vgImage = create_image_from_buf(imageData, fileSize, width, height);
         }
         if(downloadData != NULL) free(downloadData);
+    }
+    if(freeMe != NULL)free(freeMe);
+    return vgImage;
+}
+
+//------------------------------------------------------------------------------
+VGImage load_jpeg2(char * url, unsigned int width, unsigned int height, 
+    unsigned char ** downloadData, unsigned char ** imageData, unsigned int * imageDataSize)
+{
+    VGImage vgImage  = 0;
+    char * server    = NULL;
+    char * page      = NULL;
+    (*downloadData)  = NULL;
+    (*imageData)     = NULL;
+    (*imageDataSize) = 0;
+    char * freeMe    = parse_url(url, &server, &page);
+    if(server != NULL && page != NULL)
+    {
+        (*downloadData)  = download_file(server, page, imageDataSize);
+        (*imageData)     = find_jpg_start(*downloadData, imageDataSize);
+        if ((*imageData) == NULL)
+            show_message("LJ2:unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
+        else
+        {
+            vgImage = create_image_from_buf((*imageData), (*imageDataSize), width, height);
+        }
     }
     if(freeMe != NULL)free(freeMe);
     return vgImage;

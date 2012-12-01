@@ -89,6 +89,7 @@ typedef enum tJpegDecoder {jdLibJpeg   = 1, jdOMX       = 0};
 //------------------------------------------------------------------------------
 
 void init_ui_var();
+void free_ui_var();
 struct result_rec * init_result_rec();
 void free_result_rec(struct result_rec * rec);
 void draw_txt_box(char * message, 
@@ -125,9 +126,12 @@ void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY);
 void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds);
 void init_big_menu(tMenuState * menu, char * title);
 void init_format_menu(tMenuState * menu);
+void init_format_menu(tMenuState * menu);
 int show_format_menu(tMenuState * menu);
 int handleESC();
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
+VGImage load_jpeg2(char * url, unsigned int width, unsigned int height, 
+    unsigned char ** downloadData, unsigned char ** imageData, unsigned int * imageDataSize);
 void drawBGImage();
 void setBGImage();
 bool kbHit(void);
