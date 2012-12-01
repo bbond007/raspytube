@@ -327,8 +327,8 @@ void ResizeBitmap8BITIDX(BITMAP * src, BITMAP * dst)
     int x_ratio = (int)((src->w<<16)/dst->w) +1;
     int y_ratio = (int)((src->h<<16)/dst->h) +1;
     int x2, y2, i, j;
-    unsigned char * psrc = (unsigned int *) src->data;
-    unsigned char * pdst = (unsigned int *) dst->data;
+    unsigned char * psrc = (unsigned char *) src->data;
+    unsigned char * pdst = (unsigned char *) dst->data;
     
     for (i=0; i<dst->h; i++)
     {

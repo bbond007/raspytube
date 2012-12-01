@@ -282,6 +282,8 @@ int main(int argc, char **argv)
         case 'S' : //modify existing search
             redraw_results(false);
             setBGImage();
+            mainMenu.scrollIndex   = 0;
+            mainMenu.selectedIndex = mainMenu.selectedItem = 2; 
             do_search(searchStr);
             break;
 
@@ -433,7 +435,6 @@ static void do_user_search(char * userStr)
 //------------------------------------------------------------------------------
 static void play_video (char * url)
 {
-
     char * server = NULL;
     char * page = NULL;
     char * freeMe = parse_url(url, &server, &page);
@@ -584,7 +585,6 @@ static void handle_output_jsonc(unsigned int iBracket, unsigned int iBrace, char
             temp_rec->prev = last_rec;
             last_rec->next = temp_rec;
             last_rec = temp_rec;
-
         }
     }
     char ** pColumn = get_lastrec_column(iBracket, iBrace, key);
@@ -858,7 +858,6 @@ cleanup:
 
     return 0;
 }
-
 
 //------------------------------------------------------------------------------
 unsigned char * download_file(char * host, char * fileName, unsigned int * fileSize)
