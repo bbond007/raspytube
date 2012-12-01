@@ -194,7 +194,7 @@ int main(int argc, char **argv)
                         do_change_jpeg_dec();
                         break;
                     default:
-                        sprintf(txt, "item #%d\nkey->%s\ndescription->%s\n**UNDER CONSTRUCTION**",
+                        snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n**UNDER CONSTRUCTION**",
                                 result,
                                 mainMenuItems[result].key,
                                 mainMenuItems[result].description);
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
             result =  show_menu(&regionMenu);
             if(result > -1)
             {
-                sprintf(txt, "item #%d\nkey->%s\ndescription->%s",
+                snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s",
                         result,
                         regionMenuItems[result].key,
                         regionMenuItems[result].description);
@@ -445,13 +445,15 @@ static void play_video (char * url)
     if(server != NULL && page != NULL)
     {
         if (numFormat > 0)
-            sprintf(request_format, "-f%s", supported_formats[numFormat+1][0]);
+            snprintf(request_format, sizeof(request_format), "-f%s", supported_formats[numFormat+1][0]);
         char youtube_dl_format[] = "youtube-dl %s -g http://%s/%s";
-        char * youtube_dl_command   = malloc(strlen(server) +
-                                             strlen(page) +
-                                             strlen(request_format) +
-                                             strlen(youtube_dl_format));
-        sprintf(youtube_dl_command, youtube_dl_format, request_format, server, page);
+        
+        size_t stCommand = strlen(server) +
+                           strlen(page) +
+                           strlen(request_format) +
+                           strlen(youtube_dl_format);
+        char * youtube_dl_command   = malloc(stCommand);
+        snprintf(youtube_dl_command, stCommand, youtube_dl_format, request_format, server, page);
         free(freeMe);
         FILE * fp = popen(youtube_dl_command, "r");
         unsigned int i = strlen(url2);
@@ -579,7 +581,6 @@ static void handle_output_jsonc(unsigned int iBracket, unsigned int iBrace, char
         {
             redraw_results(true);
             struct result_rec * temp_rec = init_result_rec();
-            //temp_rec->next = NULL;
             temp_rec->prev = last_rec;
             last_rec->next = temp_rec;
             last_rec = temp_rec;
@@ -982,18 +983,16 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     char * temp; 
     
-    char * tempMid = mainMenuItems[(mainMenu.selectedItem >=0 && 
-                                    mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?
-                                    mainMenu.selectedItem:2].key;
+    char * tempMid = mainMenuItems[
+        (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?mainMenu.selectedItem:2].key;
                             
     char country[6] = "";
-    int sTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
-    temp = malloc(sTemp);
+    size_t stTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
+    temp = malloc(stTemp);
     temp[0] = 0x00;
-    strcat(temp, tempBegin);
-    strcat(temp, tempMid);
-    strcat(temp, tempEnd);
-    
+    strncat(temp, tempBegin, stTemp);
+    strncat(temp, tempMid,   stTemp);
+    strncat(temp, tempEnd,   stTemp);
     if (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)
     {
         if (regionMenu.selectedItem > 0)
@@ -1004,12 +1003,12 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
         searchStr = country;
     }
       
-    int sQuery =  strlen(host) + 
-                      strlen(searchStr)+
-                      strlen(USERAGENT)+
-                      strlen(temp) + 30;
-    query = malloc (sQuery);     
-    snprintf(query, sQuery, temp, searchStr, results, startIndex, host, USERAGENT);
+    size_t stQuery = strlen(host) + 
+                     strlen(searchStr)+
+                     strlen(USERAGENT)+
+                     strlen(temp) + 30;
+    query = malloc (stQuery);     
+    snprintf(query, stQuery, temp, searchStr, results, startIndex, host, USERAGENT);
     free(temp);
     //show_message(query, true, ERROR_POINT);
     return query;
@@ -1022,8 +1021,9 @@ static char *build_file_request(char *host, char * fileName)
     char *tpl = "GET /%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     if(fileName[0] == '/')
         fileName++;
-    query = (char *)malloc(strlen(host)+strlen(fileName)+strlen(USERAGENT)+strlen(tpl));
-    sprintf(query, tpl, fileName, host, USERAGENT);
+    size_t stQuery = strlen(host)+strlen(fileName)+strlen(USERAGENT)+strlen(tpl);
+    query = (char *)malloc(stQuery);
+    snprintf(query, stQuery, tpl, fileName, host, USERAGENT);
     return query;
 }
 /* now convert on the fly with fgetc

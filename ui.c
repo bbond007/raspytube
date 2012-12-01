@@ -287,12 +287,12 @@ int show_selection_info(struct result_rec * rec)
             char * T = strchr(rec->date, 'T'); //remove after T - time unwanted
             if (T != NULL) *T= 0x00;
             char formatStr[] = "Info: #%s : %s : %s";
-            int size = strlen(rec->id)   +
+            size_t size = strlen(rec->id)   +
                        strlen(rec->date) +
                        strlen(rec->user) +
                        strlen(formatStr);
             infoStr = malloc(size);
-            sprintf(infoStr, formatStr, rec->id, rec->user, rec->date);
+            snprintf(infoStr, size, formatStr, rec->id, rec->user, rec->date);
             if (T != NULL) *T= 'T';
         }
         else
@@ -426,7 +426,7 @@ bool input_string(char * prompt, char * buf, int max)
             if(strchr(validChars, toupper(key)) != NULL &&  strlen(buf) < max - 3)
             {
                 cstr[0] = (char) key;
-                strcat(buf, cstr);
+                strncat(buf, cstr,  max);
             }
             break;
         }
@@ -672,10 +672,11 @@ void main_menu_detail(tMenuState * menu)
             number     = supported_formats[numFormat + 1][0];
             container  = supported_formats[numFormat + 1][1];
             resolution = supported_formats[numFormat + 1][2];
-            videoFormat = malloc(strlen(container)  +
-                                 strlen(resolution) +
-                                 strlen(formatStr)  - 5);
-            sprintf(videoFormat, formatStr, number, container, resolution);
+            size_t size = strlen(container)  +
+                          strlen(resolution) +
+                          strlen(formatStr)  - 5;
+            videoFormat = malloc(size);
+            snprintf(videoFormat, size, formatStr, number, container, resolution);
             descr = videoFormat;
             break;;
 
@@ -1149,7 +1150,7 @@ void redraw_results(bool swap)
     if (numStart != 1)
     {
         char numStartStr[10];
-        sprintf(numStartStr, "<-%d", numStart-1);
+        snprintf(numStartStr, sizeof(numStartStr), "<-%d", numStart-1);
         Text_DejaVuSans(0, state->screen_height * .50f, numStartStr, numPointFontMed, textColor);
     }
 
