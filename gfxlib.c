@@ -19,6 +19,7 @@
 #include "GLES/gl.h"
 #include "gfxlib.h"
 #include "DejaVuSans.inc"
+#include "lodepng.h"
 
 STATE_T _state, *state=&_state;
 VGPath DejaVuSans_Paths[DejaVuSans_glyphCount];
@@ -27,9 +28,56 @@ VGPath DejaVuSans_Paths[DejaVuSans_glyphCount];
 void show_message(char * message, bool error, int points);
 extern int numPointFontMed;
 
+VGImageFormat getRGBAFormat()
+{
+    unsigned int lilEndianTest = 1;
+    // Check for endianness
+    if (((unsigned char *)&lilEndianTest)[0] == 1)
+        return VG_sABGR_8888;
+    else
+        return VG_sRGBA_8888;
+}
+
+
+VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height)
+{
+    VGImage img = 0;
+    unsigned int error;
+    BITMAP bitmap;
+    error = lodepng_decode32_file(&bitmap.data, &bitmap.w, &bitmap.h, filename);
+    char errorStr[128];
+    if(error)
+    {
+        snprintf(errorStr, sizeof(errorStr),
+                 "error %u: %s\n", error, lodepng_error_text(error));
+        show_message(errorStr, TRUE, ERROR_POINT);
+        return 0;
+    }
+    bitmap.bpp    = 4;
+    bitmap.stride = bitmap.w * bitmap.bpp;
+    BITMAP * pBitmap = &bitmap;
+    if(desired_width != bitmap.w || desired_height != bitmap.h)
+    {
+        BITMAP newBM;
+        newBM.w = desired_width;
+        newBM.h = desired_height;
+        newBM.bpp = 4;
+        newBM.stride = newBM.w * newBM.bpp;
+        newBM.data = malloc(newBM.stride * newBM.h);
+        ResizeBitmapRGBA(&bitmap, &newBM);
+        pBitmap = &newBM;
+        free(bitmap.data);
+    }
+    img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(img, &pBitmap->data[pBitmap->h * pBitmap->stride],
+                   pBitmap->stride * -1, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
+    free(pBitmap->data);
+    return img;
+}
+
 // createImageFromJpeg decompresses a JPEG image to the standard image format
 // source: https://github.com/ileben/ShivaVG/blob/master/examples/test_image.c
-VGImage createImageFromJpeg(const char *filename, int desired_height)
+VGImage createImageFromJpeg(const char *filename, int desired_width, int desired_height)
 {
     FILE *infile;
     struct jpeg_decompress_struct jdc;
@@ -39,24 +87,12 @@ VGImage createImageFromJpeg(const char *filename, int desired_height)
     unsigned int bbpp;
 
     VGImage img;
-    VGubyte *data;
-    unsigned int width;
-    unsigned int height;
-    unsigned int dstride;
-    unsigned int dbpp;
-
+    
+    BITMAP bitmap;
+    BITMAP * pBitmap = &bitmap;
     VGubyte *brow;
     VGubyte *drow;
     unsigned int x;
-    unsigned int lilEndianTest = 1;
-    VGImageFormat rgbaFormat;
-
-    // Check for endianness
-    if (((unsigned char *)&lilEndianTest)[0] == 1)
-        rgbaFormat = VG_sABGR_8888;
-    else
-        rgbaFormat = VG_sRGBA_8888;
-
     // Try to open image file
     infile = fopen(filename, "rb");
     if (infile == NULL)
@@ -76,7 +112,8 @@ VGImage createImageFromJpeg(const char *filename, int desired_height)
     // Read header and start
     jpeg_read_header(&jdc, TRUE);
     jdc.scale_num = 1;
-
+    jdc.scale_denom = 1;
+    /*
     if(desired_height > jdc.image_height)
         jdc.scale_denom = 1;
     else if(desired_height > (jdc.image_height / 2))
@@ -85,33 +122,33 @@ VGImage createImageFromJpeg(const char *filename, int desired_height)
         jdc.scale_denom = 4;
     else
         jdc.scale_denom = 8;
-
+    */
     jpeg_start_decompress(&jdc);
-    width = jdc.output_width;
-    height = jdc.output_height;
+    bitmap.w  = jdc.output_width;
+    bitmap.h = jdc.output_height;
 
 
     // Allocate buffer using jpeg allocator
     bbpp = jdc.output_components;
-    bstride = width * bbpp;
+    bstride = bitmap.w * bbpp;
     buffer = (*jdc.mem->alloc_sarray)
              ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
 
     // Allocate image data buffer
-    dbpp = 4;
-    dstride = width * dbpp;
-    data = (VGubyte *) malloc(dstride * height);
+    bitmap.bpp = 4;
+    bitmap.stride = bitmap.w * bitmap.bpp;
+    bitmap.data = (VGubyte *) malloc(bitmap.stride * bitmap.h);
 
     // Iterate until all scanlines processed
-    while (jdc.output_scanline < height)
+    while (jdc.output_scanline < bitmap.h)
     {
 
         // Read scanline into buffer
         jpeg_read_scanlines(&jdc, buffer, 1);
-        drow = data + (height - jdc.output_scanline) * dstride;
+        drow = bitmap.data + (bitmap.h - jdc.output_scanline) * bitmap.stride;
         brow = buffer[0];
         // Expand to RGBA
-        for (x = 0; x < width; ++x, drow += dbpp, brow += bbpp)
+        for (x = 0; x < bitmap.w; ++x, drow += bitmap.bpp, brow += bbpp)
         {
             switch (bbpp)
             {
@@ -131,22 +168,31 @@ VGImage createImageFromJpeg(const char *filename, int desired_height)
         }
     }
 
-    // Create VG image
-    img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
+    if(desired_width != bitmap.w || desired_height != bitmap.h)
+    {
+        BITMAP newBM;
+        newBM.w = desired_width;
+        newBM.h = desired_height;
+        newBM.bpp = 4;
+        newBM.stride = newBM.w * newBM.bpp;
+        newBM.data = malloc(newBM.stride * newBM.h);
+        ResizeBitmapRGBA(&bitmap, &newBM);
+        pBitmap = &newBM;
+        free(bitmap.data);
+    }
 
+    img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(img, pBitmap->data, pBitmap->stride, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
     // Cleanup
     jpeg_destroy_decompress(&jdc);
-    fclose(infile);
-    free(data);
-
+    free(pBitmap->data);
+    return img;
     return img;
 
 }
 
-VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_height)
+VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
 {
-
     struct jpeg_decompress_struct jdc;
     struct jpeg_error_mgr jerr;
     JSAMPARRAY buffer;
@@ -154,23 +200,11 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
     unsigned int bbpp;
 
     VGImage img;
-    VGubyte *data;
-    unsigned int width;
-    unsigned int height;
-    unsigned int dstride;
-    unsigned int dbpp;
-
+    BITMAP  bitmap;
+    BITMAP * pBitmap = &bitmap;
     VGubyte *brow;
     VGubyte *drow;
     unsigned int x;
-    unsigned int lilEndianTest = 1;
-    VGImageFormat rgbaFormat;
-
-    // Check for endianness
-    if (((unsigned char *)&lilEndianTest)[0] == 1)
-        rgbaFormat = VG_sABGR_8888;
-    else
-        rgbaFormat = VG_sRGBA_8888;
 
     // Setup default error handling
     jdc.err = jpeg_std_error(&jerr);
@@ -183,42 +217,44 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
     // Read header and start
     jpeg_read_header(&jdc, TRUE);
     jdc.scale_num = 1;
+    jdc.scale_denom = 1;
 
-    if(desired_height > jdc.image_height)
-        jdc.scale_denom = 1;
-    else if(desired_height > (jdc.image_height / 2))
-        jdc.scale_denom = 2;
-    else if(desired_height > (jdc.image_height / 4))
-        jdc.scale_denom = 4;
-    else
-        jdc.scale_denom = 8;
-
+    /*
+        if(desired_height > jdc.image_height)
+            jdc.scale_denom = 1;
+        else if(desired_height > (jdc.image_height / 2))
+            jdc.scale_denom = 2;
+        else if(desired_height > (jdc.image_height / 4))
+            jdc.scale_denom = 4;
+        else
+            jdc.scale_denom = 8;
+    */
     jpeg_start_decompress(&jdc);
-    width = jdc.output_width;
-    height = jdc.output_height;
+    bitmap.w = jdc.output_width;
+    bitmap.h = jdc.output_height;
 
 
     // Allocate buffer using jpeg allocator
     bbpp = jdc.output_components;
-    bstride = width * bbpp;
+    bstride = bitmap.w * bbpp;
     buffer = (*jdc.mem->alloc_sarray)
              ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
 
     // Allocate image data buffer
-    dbpp = 4;
-    dstride = width * dbpp;
-    data = (VGubyte *) malloc(dstride * height);
+    bitmap.bpp = 4;
+    bitmap.stride = bitmap.w * bitmap.bpp;
+    bitmap.data = malloc(bitmap.stride * bitmap.h);
 
     // Iterate until all scanlines processed
-    while (jdc.output_scanline < height)
+    while (jdc.output_scanline < bitmap.h)
     {
 
         // Read scanline into buffer
         jpeg_read_scanlines(&jdc, buffer, 1);
-        drow = data + (height - jdc.output_scanline) * dstride;
+        drow = bitmap.data + (bitmap.h - jdc.output_scanline) * bitmap.stride;
         brow = buffer[0];
         // Expand to RGBA
-        for (x = 0; x < width; ++x, drow += dbpp, brow += bbpp)
+        for (x = 0; x < bitmap.w; ++x, drow += bitmap.bpp, brow += bbpp)
         {
             switch (bbpp)
             {
@@ -238,14 +274,47 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
         }
     }
 
-    // Create VG image
-    img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
+    if(desired_width != bitmap.w || desired_height != bitmap.h)
+    {
+        BITMAP newBM;
+        newBM.w = desired_width;
+        newBM.h = desired_height;
+        newBM.bpp = 4;
+        newBM.stride = newBM.w * newBM.bpp;
+        newBM.data = malloc(newBM.stride * newBM.h);
+        ResizeBitmapRGBA(&bitmap, &newBM);
+        pBitmap = &newBM;
+        free(bitmap.data);
+    }
 
+    img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(img, pBitmap->data, pBitmap->stride, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
     // Cleanup
     jpeg_destroy_decompress(&jdc);
-    free(data);
+    free(pBitmap->data);
     return img;
+}
+
+//------------------------------------------------------------------------------
+
+void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst)
+{
+    // EDIT: added +1 to account for an early rounding problem
+    int x_ratio = (int)((src->w<<16)/dst->w) +1;
+    int y_ratio = (int)((src->h<<16)/dst->h) +1;
+    int x2, y2, i, j;
+    unsigned int * psrc = (unsigned int *) src->data;
+    unsigned int * pdst = (unsigned int *) dst->data;
+    
+    for (i=0; i<dst->h; i++)
+    {
+        for (j=0; j<dst->w; j++)
+        {
+            x2 = ((j*x_ratio)>>16) ;
+            y2 = ((i*y_ratio)>>16) ;
+            pdst[(i*dst->w)+j] = psrc[(y2*src->w)+x2] ;
+        }
+    }
 }
 //------------------------------------------------------------------------------
 //
@@ -255,17 +324,7 @@ VGImage ResizeImage(VGImage src, int width, int height)
     int orig_height = vgGetParameteri(src, VG_IMAGE_HEIGHT);
     //printf("(%d, %d)\n", orig_width, orig_height);
 
-    VGImageFormat rgbaFormat;
-    unsigned int lilEndianTest = 1;
-
-
-    // Check for endianness
-    if (((unsigned char *)&lilEndianTest)[0] == 1)
-        rgbaFormat = VG_sABGR_8888;
-    else
-        rgbaFormat = VG_sRGBA_8888;
-
-    VGImage dst = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
+    VGImage dst = vgCreateImage(getRGBAFormat(), width, height, VG_IMAGE_QUALITY_BETTER);
     /*
     	vgCopyImage(dst, VGint dx, VGint dy,
                                  VGImage src, VGint sx, VGint sy,
@@ -684,9 +743,10 @@ VGImage createImageFromScreen()
                  0,0,
                  state->screen_width, state->screen_height);
 
-    VGImageFormat rgbaFormat = VG_sABGR_8888;
-    VGImage vgImage = vgCreateImage(rgbaFormat, state->screen_width, state->screen_height, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(vgImage, bitmapData, stride, rgbaFormat, 0, 0, state->screen_width, state->screen_height);
+    //VGImageFormat rgbaFormat = VG_sABGR_8888;
+    VGImage vgImage = vgCreateImage(getRGBAFormat(), state->screen_width, state->screen_height, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(vgImage, bitmapData,
+                   stride, getRGBAFormat(), 0, 0, state->screen_width, state->screen_height);
     free(bitmapData);
     return vgImage;
 }

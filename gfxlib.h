@@ -1,3 +1,12 @@
+
+typedef struct BITMAP            /* a bitmap structure */
+{
+    int w, h;                     /* width and height in pixels */
+    int stride;
+    int bpp;
+    unsigned char * data;
+} BITMAP;
+
 typedef struct
 {
     uint32_t screen_width;
@@ -8,7 +17,7 @@ typedef struct
     EGLContext context;
 } STATE_T;
 
-
+void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst);
 void Roundrect(VGfloat x, VGfloat y,VGfloat w, VGfloat h, VGfloat rw, VGfloat rh, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]);
 void loadfont(const int *Points, const int *PointIndices, const unsigned char *Instructions, const int *InstructionIndices, const int *InstructionCounts, int ng, VGPath *glyphs);
 void init_ogl(STATE_T *state);
@@ -26,9 +35,11 @@ void Text_DejaVuSans(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat
 void Text_DejaVuSans_Rollover(VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4]);
 void DoSnapshot();  
 VGImage ResizeImage(VGImage vgImageSource, int width, int desired_height);
-VGImage createImageFromJpeg(const char *filename, int height);
-VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_height);
+VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height);
+VGImage createImageFromJpeg(const char *filename, int desired_width, int desired_height);
+VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height);
 VGImage createImageFromScreen();
+
 VGPath newpath();
 extern STATE_T _state, *state;
 

@@ -42,7 +42,7 @@ int numThumbWidth     = 15;
 int numResults        = 10;
 int numFormat         = 0;
 int numStart          = 1;
-
+static VGImage tvImage       = 0;
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
 enum tJpegDecoder jpegDecoder = jdOMX;
@@ -193,6 +193,8 @@ void init_ui_var()
         //   numThumbWidth     = 10;
         //   numResults        = 8;
     }
+    
+    tvImage = 0;//createImageFromPNG("tv.png", 128, 128);
 }
 
 
@@ -271,8 +273,9 @@ int show_selection_info(struct result_rec * rec)
 
     if(rec->thumbLarge != NULL)
     {
-        unsigned int image_width  = (state->screen_width  * .30f);
+        unsigned int image_width  = (state->screen_width  * .25f);
         unsigned int image_height = (state->screen_height * .35f);
+
         VGImage image = load_jpeg(rec->thumbLarge, image_width, image_height);
         image_width  = vgGetParameteri(image, VG_IMAGE_WIDTH);
         image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);
@@ -314,19 +317,31 @@ int show_selection_info(struct result_rec * rec)
             if(infoStr != NULL && rec->description != NULL)
                 show_big_message(infoStr, rec->description, false);
 
-            Roundrect(rectX,
-                      rectY,
-                      rect_width,
-                      rect_height,
-                      20, 20, 10, rectColor2, selectedColor);
-
+            if(tvImage > 0)
+                vgSetPixels(rectX,
+                            rectY,
+                            tvImage,
+                            0, 0,
+                            rect_width,
+                            rect_height);
+            else
+                Roundrect(rectX,
+                          rectY,
+                          rect_width,
+                          rect_height,
+                          20, 20, 10, rectColor2, selectedColor);
+            
+           // printf("\n(%d, %d)\n", rect_width, rect_height);
+            
             vgSetPixels(imageX,
                         imageY,
                         image,
                         0, 0,
                         image_width,
                         image_height);
+
             eglSwapBuffers(state->display, state->surface);
+
             key = readKb();
 
             if(key == CUR_L || key == CUR_R ||
@@ -922,9 +937,7 @@ int handleESC()
     return 0;
 }
 
-
 //------------------------------------------------------------------------------
-
 bool kbHit(void)
 {
     int ch;
@@ -939,7 +952,6 @@ bool kbHit(void)
     return false;
 }
 
-
 //------------------------------------------------------------------------------
 int readKb()
 {
@@ -951,7 +963,6 @@ int readKb()
         fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     }
     //else play_sample(&asiKbClick, false);
-
     return key;
 }
 
@@ -1034,7 +1045,7 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
                 break;
 
             case jdLibJpeg:
-                vgImage = createImageFromBuf(imageData, fileSize, height);
+                vgImage = createImageFromBuf(imageData, fileSize, width, height);
                 break;
 
             default:
