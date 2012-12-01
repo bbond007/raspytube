@@ -64,7 +64,8 @@ extern tMenuState regionMenu;
 extern tMenuItem videoMenuItems[];
 extern tMenuItem jpegMenuItems[];
 extern tMenuItem audioMenuItems[]; 
-
+extern const char tv_jpeg_raw_data[];
+extern const unsigned int tv_jpeg_raw_size;
 //------------------------------------------------------------------------------
 void setBGImage()
 {
@@ -163,6 +164,28 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
 }
 
 //------------------------------------------------------------------------------
+VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
+{
+  
+    switch (jpegDecoder)
+    {
+            case jdOMX:
+                return OMXCreateImageFromBuf((unsigned char *)
+                        buf, bufSize, desired_width, desired_height);
+                break;
+
+            case jdLibJpeg:
+                return createImageFromBuf((unsigned char *)
+                        buf, bufSize, desired_width, desired_height);
+                break;
+            default:
+                show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
+                break;
+    }
+    return 0;
+}
+
+//------------------------------------------------------------------------------
 
 void init_ui_var()
 {
@@ -193,8 +216,13 @@ void init_ui_var()
         //   numThumbWidth     = 10;
         //   numResults        = 8;
     }
-    
-    tvImage = 0;//createImageFromPNG("tv.png", 128, 128);
+    unsigned int tv_width  = (state->screen_width  * .35f);
+    unsigned int tv_height = (state->screen_height * .45f);
+    //printf("loading tv.png (%d, %d)", tv_width, tv_height); 
+   
+    tvImage = createImageFromBuf((unsigned char *)
+   // tvImage = create_image_from_buf((unsigned char *)
+          tv_jpeg_raw_data, tv_jpeg_raw_size, tv_width, tv_height);
 }
 
 
@@ -262,10 +290,27 @@ void clear_screen(bool swap)
 int show_selection_info(struct result_rec * rec)
 {
     int key = 0x00;
+    int offsetY      = (state->screen_height * .060f);
+    int offsetX      = (state->screen_width  * .035f);
+    int tv_width     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
+    int tv_height    = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
+    int tvX          = (state->screen_width  - tv_width) / 2;
+    int tvY          = (state->screen_height - tv_height);
+    int image_height = tv_height - (offsetY * 2);
+    int image_width  = tv_width  - (offsetX * 2);
+    int imageX       = (state->screen_width - image_width) / 2;
+    int imageY       = (state->screen_height - image_height) - (tv_height - image_height) / 2;
     if(rec->description)
     {
         redraw_results(false);
-        show_big_message("Info: loading...", rec->description, false);
+        show_big_message("Info: loading...", rec->description, false);    
+        vgSetPixels(tvX,
+                    tvY,
+                    tvImage,
+                    0, 0,
+                    tv_width,
+                    tv_height);
+       
         eglSwapBuffers(state->display, state->surface);
     }
     else //description not found.
@@ -273,12 +318,8 @@ int show_selection_info(struct result_rec * rec)
 
     if(rec->thumbLarge != NULL)
     {
-        unsigned int image_width  = (state->screen_width  * .25f);
-        unsigned int image_height = (state->screen_height * .35f);
-
         VGImage image = load_jpeg(rec->thumbLarge, image_width, image_height);
-        image_width  = vgGetParameteri(image, VG_IMAGE_WIDTH);
-        image_height = vgGetParameteri(image, VG_IMAGE_HEIGHT);
+     
 
         char * infoStr = NULL;
 
@@ -301,38 +342,19 @@ int show_selection_info(struct result_rec * rec)
                 show_big_message("Info: ???", rec->description, false);
         }
 
-
-        int offsetY      = (state->screen_height * .02f);
-        int offsetX      = (state->screen_width  * .02f);
-        int imageY       = (state->screen_height - image_height) - offsetX;
-        int imageX       = (state->screen_width  - image_width) / 2;
-        int rect_height  = image_height + (offsetY * 2);
-        int rect_width   = image_width  + (offsetX * 2);
-        int rectX        = (state->screen_width  - rect_width) / 2;
-        int rectY        = (state->screen_height - rect_height);
-
         do
         {
             redraw_results(false);
             if(infoStr != NULL && rec->description != NULL)
                 show_big_message(infoStr, rec->description, false);
 
-            if(tvImage > 0)
-                vgSetPixels(rectX,
-                            rectY,
-                            tvImage,
-                            0, 0,
-                            rect_width,
-                            rect_height);
-            else
-                Roundrect(rectX,
-                          rectY,
-                          rect_width,
-                          rect_height,
-                          20, 20, 10, rectColor2, selectedColor);
-            
-           // printf("\n(%d, %d)\n", rect_width, rect_height);
-            
+            vgSetPixels(tvX,
+                        tvY,
+                        tvImage,
+                        0, 0,
+                        tv_width,
+                        tv_height);
+                   
             vgSetPixels(imageX,
                         imageY,
                         image,
@@ -444,7 +466,7 @@ bool input_string(char * prompt, char * buf, int max)
 void show_big_message(char * title, char * message, bool pause)
 {
     redraw_results(false);
-    draw_txt_box_cen(title, .95f, .50f, .05, .10f, .47f, numPointFontLarge, false);
+    draw_txt_box_cen(title, .95f, .47f, .04, .10f, .45f, numPointFontLarge, false);
     Text_DejaVuSans_Rollover(state->screen_width  * .10f,
                              state->screen_height * .40f,
                              state->screen_width  * .85f,
@@ -1039,20 +1061,7 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
             show_message("unable to find jpeg start 0xFF 0xD8", true, ERROR_POINT);
         else
         {
-            switch (jpegDecoder)
-            {
-            case jdOMX:
-                vgImage = OMXCreateImageFromBuf(imageData, fileSize, width, height);
-                break;
-
-            case jdLibJpeg:
-                vgImage = createImageFromBuf(imageData, fileSize, width, height);
-                break;
-
-            default:
-                show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
-                break;
-            }
+            vgImage = create_image_from_buf(imageData, fileSize, width, height);
         }
         if(downloadData != NULL) free(downloadData);
     }

@@ -38,7 +38,7 @@ VGImageFormat getRGBAFormat()
         return VG_sRGBA_8888;
 }
 
-
+/*
 VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height)
 {
     VGImage img = 0;
@@ -56,7 +56,8 @@ VGImage createImageFromPNG(const char *filename, int desired_width, int desired_
     bitmap.bpp    = 4;
     bitmap.stride = bitmap.w * bitmap.bpp;
     BITMAP * pBitmap = &bitmap;
-    if(desired_width != bitmap.w || desired_height != bitmap.h)
+    if((desired_width != bitmap.w || desired_height != bitmap.h) && 
+       (desired_width != 0 && desired_height != 0))
     {
         BITMAP newBM;
         newBM.w = desired_width;
@@ -74,7 +75,7 @@ VGImage createImageFromPNG(const char *filename, int desired_width, int desired_
     free(pBitmap->data);
     return img;
 }
-
+*/
 // createImageFromJpeg decompresses a JPEG image to the standard image format
 // source: https://github.com/ileben/ShivaVG/blob/master/examples/test_image.c
 VGImage createImageFromJpeg(const char *filename, int desired_width, int desired_height)
@@ -168,7 +169,9 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
         }
     }
 
-    if(desired_width != bitmap.w || desired_height != bitmap.h)
+    if((desired_width != bitmap.w || desired_height != bitmap.h) && 
+       (desired_width != 0 && desired_height != 0))
+   
     {
         BITMAP newBM;
         newBM.w = desired_width;
@@ -274,7 +277,8 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
         }
     }
 
-    if(desired_width != bitmap.w || desired_height != bitmap.h)
+    if((desired_width != bitmap.w || desired_height != bitmap.h) && 
+       (desired_width != 0 && desired_height != 0))
     {
         BITMAP newBM;
         newBM.w = desired_width;
@@ -296,7 +300,6 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
 }
 
 //------------------------------------------------------------------------------
-
 void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst)
 {
     // EDIT: added +1 to account for an early rounding problem
@@ -316,6 +319,28 @@ void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst)
         }
     }
 }
+
+//------------------------------------------------------------------------------
+void ResizeBitmap8BITIDX(BITMAP * src, BITMAP * dst)
+{
+    // EDIT: added +1 to account for an early rounding problem
+    int x_ratio = (int)((src->w<<16)/dst->w) +1;
+    int y_ratio = (int)((src->h<<16)/dst->h) +1;
+    int x2, y2, i, j;
+    unsigned char * psrc = (unsigned int *) src->data;
+    unsigned char * pdst = (unsigned int *) dst->data;
+    
+    for (i=0; i<dst->h; i++)
+    {
+        for (j=0; j<dst->w; j++)
+        {
+            x2 = ((j*x_ratio)>>16) ;
+            y2 = ((i*y_ratio)>>16) ;
+            pdst[(i*dst->w)+j] = psrc[(y2*src->w)+x2] ;
+        }
+    }
+}
+
 //------------------------------------------------------------------------------
 //
 VGImage ResizeImage(VGImage src, int width, int height)
