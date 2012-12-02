@@ -304,6 +304,7 @@ int main(int argc, char **argv)
     while (key != 'Q' && (key != ESC_KEY || kbHit()));
     clear_output();
     unload_DejaVuSans_font();
+    free_ui_var();
     restoreKb();
     exit_func();
 //    system("reset");
