@@ -87,6 +87,12 @@ typedef struct _tMenuState
 typedef enum tVideoPlayer {vpMPlayer   = 1, vpOMXPlayer = 0};
 typedef enum tSoundOutput {soHDMI      = 1, soLOCAL     = 0};
 typedef enum tJpegDecoder {jdLibJpeg   = 1, jdOMX       = 0};
+typedef enum tFont	  
+{
+    fontUndefined  = -1,
+    fontDejaVuSans = 0,
+    fontTopazPlus  = 1
+} tFont;
 //------------------------------------------------------------------------------
 
 void init_ui_var();
@@ -133,6 +139,9 @@ int handleESC();
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 VGImage load_jpeg2(char * url, unsigned int width, unsigned int height, 
     unsigned char ** downloadData, unsigned char ** imageData, unsigned int * imageDataSize);
+void set_font(tFontfont);
+tFont get_font();
+
 void drawBGImage();
 void setBGImage();
 bool kbHit(void);
@@ -141,7 +150,7 @@ void dumpKb();
 void initKb();
 void restoreKb();
 void main_menu_detail(tMenuState * menu);
-
+void font_menu_detail(tMenuState * menu);
 extern struct result_rec * first_rec;
 extern struct result_rec * last_rec;
 extern struct result_rec * selected_rec;

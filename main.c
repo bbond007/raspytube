@@ -63,11 +63,11 @@ static void do_cur_left(char * searchStr);
 #define AUTHOR binarybond007@gmail.com
 tMenuState regionMenu;
 tMenuState mainMenu;
+tMenuState fontMenu;
     
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
 static void do_change_video_player();
-
 
 #define PICK_SEARCH_STR ((mainMenu.selectedItem == 3 || mainMenu.selectedItem == 4) ? userStr : searchStr)
 //------------------------------------------------------------------------------
@@ -77,7 +77,6 @@ int main(int argc, char **argv)
     bcm_host_init();
     memset( state, 0, sizeof( *state ) );
     init_ogl(state);
-    load_DejaVuSans_font();
     init_ui_var();
     initKb();
     clear_output();
@@ -86,6 +85,10 @@ int main(int argc, char **argv)
     char userStr[100] = "";
     mainMenu.menuItems = mainMenuItems;
     init_small_menu(&mainMenu, "Main Menu:");
+    init_small_menu(&fontMenu, "Font menu:");
+    fontMenu.menuItems  = fontMenuItems;
+    fontMenu.drawDetail = &font_menu_detail;
+    fontMenu.selectedIndex = (int) get_font();
     mainMenu.drawDetail = &main_menu_detail;
     regionMenu.menuItems = regionMenuItems;
     init_big_menu(&regionMenu, "Select region:");
@@ -106,7 +109,7 @@ int main(int argc, char **argv)
 
     int key;
     int result;
-    
+    int resultFont;
     do
     {
         key = toupper(readKb()); //wait for keypress
@@ -193,6 +196,11 @@ int main(int argc, char **argv)
                     case 18:
                         do_change_jpeg_dec();
                         break;
+                    case 19:
+                       resultFont = show_menu(&fontMenu);     
+                       if(resultFont != -1)
+                           set_font((int) resultFont);
+                       break;
                     default:
                         snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n**UNDER CONSTRUCTION**",
                                 result,

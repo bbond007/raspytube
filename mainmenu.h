@@ -21,7 +21,8 @@ tMenuItem mainMenuItems[] =
     {"Video Player", 		"VP",						   4},
     {"Audo Device", 		"AD",						   5},	
     {"JPEG Decoder",		"JD",	 					   6},
-    {NULL, 			NULL,         				    	   7}
+    {"Font", 			"FONT",					           7},		
+    {NULL, 			NULL,         				    	   0}
 };
 
 
@@ -44,6 +45,13 @@ tMenuItem jpegMenuItems[] =
 {
     {"OMX",	      	"OMX", 			      0},
     {"LIBJPEG",	      	"LIBJPEG",                    0},
+    {NULL, 		NULL, 			      0}
+};
+     	
+tMenuItem fontMenuItems[] =
+{
+    {"DejaVuSans",	"DVS", 			      0},
+    {"TopazPlus",	"TP", 		              0},
     {NULL, 		NULL, 			      0}
 };
      	

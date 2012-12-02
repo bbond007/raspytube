@@ -19,11 +19,12 @@
 #include "GLES/gl.h"
 #include "gfxlib.h"
 #include "DejaVuSans.inc"
+#include "TopazPlus.inc"
 #include "lodepng.h"
 
 STATE_T _state, *state=&_state;
 VGPath DejaVuSans_Paths[DejaVuSans_glyphCount];
-
+VGPath TopazPlus_Paths[TopazPlus_glyphCount];
 #define ERROR_POINT (numPointFontMed)
 void show_message(char * message, bool error, int points);
 extern int numPointFontMed;
@@ -453,6 +454,17 @@ void Text_DejaVuSans_Rollover(VGfloat x, VGfloat y, VGfloat maxlength, int maxLi
 }
 
 //------------------------------------------------------------------------------
+void Text_TopazPlus(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4])
+{
+    Text(x, y, s, pointsize, fillcolor, TopazPlus_Paths, TopazPlus_characterMap, TopazPlus_glyphAdvances, VG_FILL_PATH);
+}
+
+//------------------------------------------------------------------------------
+void Text_TopazPlus_Rollover(VGfloat x, VGfloat y, VGfloat maxlength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4])
+{
+    Text_Rollover(x, y, maxlength, maxLines, yStep, s, pointsize, fillcolor, TopazPlus_Paths, TopazPlus_characterMap, TopazPlus_glyphAdvances, VG_FILL_PATH);
+}
+//------------------------------------------------------------------------------
 void load_DejaVuSans_font()
 {
     loadfont(DejaVuSans_glyphPoints, DejaVuSans_glyphPointIndices,
@@ -460,11 +472,23 @@ void load_DejaVuSans_font()
              DejaVuSans_glyphInstructionCounts, DejaVuSans_glyphCount,
              DejaVuSans_Paths);
 }
-
+//------------------------------------------------------------------------------
+void load_TopazPlus_font()
+{
+    loadfont(TopazPlus_glyphPoints, TopazPlus_glyphPointIndices,
+             TopazPlus_glyphInstructions, TopazPlus_glyphInstructionIndices,
+             TopazPlus_glyphInstructionCounts, TopazPlus_glyphCount,
+             TopazPlus_Paths);
+}
 //------------------------------------------------------------------------------
 void unload_DejaVuSans_font()
 {
     unloadfont(DejaVuSans_Paths, DejaVuSans_glyphCount);
+}
+//------------------------------------------------------------------------------
+void unload_TopazPlus_font()
+{
+    unloadfont(TopazPlus_Paths, TopazPlus_glyphCount);
 }
 
 //------------------------------------------------------------------------------
