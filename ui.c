@@ -89,6 +89,7 @@ struct result_rec * init_result_rec()
     if (new_rec != NULL)
     {
         new_rec->image       = 0;
+        new_rec->largeImage  = 0;
         new_rec->id          = NULL;
         new_rec->title       = NULL;
         new_rec->date        = NULL;
@@ -130,6 +131,8 @@ void free_result_rec(struct result_rec * rec)
             free(rec->thumbLarge);
         if(rec->image > 0)
             vgDestroyImage(rec->image);
+        if(rec->image > 0)
+            vgDestroyImage(rec->largeImage);
         free(rec);
     }
 }
@@ -312,8 +315,8 @@ int show_selection_info(struct result_rec * rec)
     int image_width  = tv_width  - (offsetX * 2);
     int imageX       = (state->screen_width - image_width) / 2;
     int imageY       = (state->screen_height - image_height) - (tv_height - image_height) / 2;
-    unsigned char * downloadData;
-    unsigned char * imageData;
+    unsigned char * downloadData = NULL;
+    unsigned char * imageData = NULL;
     unsigned int imageDataSize;
     
     if(rec->description)
@@ -334,9 +337,9 @@ int show_selection_info(struct result_rec * rec)
 
     if(rec->thumbLarge != NULL)
     {
-        VGImage image = load_jpeg2(rec->thumbLarge, image_width, image_height, 
-            &downloadData, &imageData, &imageDataSize);
-     
+        if (rec->largeImage == 0)
+            rec->largeImage = load_jpeg2(rec->thumbLarge, image_width, image_height, 
+                &downloadData, &imageData, &imageDataSize);
 
         char * infoStr = NULL;
 
@@ -374,7 +377,7 @@ int show_selection_info(struct result_rec * rec)
                    
             vgSetPixels(imageX,
                         imageY,
-                        image,
+                        rec->largeImage,
                         0, 0,
                         image_width,
                         image_height);
@@ -382,17 +385,17 @@ int show_selection_info(struct result_rec * rec)
             eglSwapBuffers(state->display, state->surface);
 
             key = toupper(readKb());
-            if (key == 'H')
+            if (key == 'H' && imageData != NULL)
             {
-                vgDestroyImage(image);
-                     image = OMXCreateImageFromBuf((unsigned char *)
+                vgDestroyImage(-rec->largeImage);
+                     rec->largeImage = OMXCreateImageFromBuf((unsigned char *)
                         imageData, imageDataSize, image_width, image_height);
             }
             else
-            if (key == 'S')
+            if (key == 'S' && imageData != NULL)
             {
-                vgDestroyImage(image);
-                     image = createImageFromBuf((unsigned char *)
+                vgDestroyImage(rec->largeImage);
+                     rec->largeImage = createImageFromBuf((unsigned char *)
                         imageData, imageDataSize, image_width, image_height);
             }
             else if (key== CUR_L || key == CUR_R ||
@@ -406,7 +409,7 @@ int show_selection_info(struct result_rec * rec)
                 key != CUR_UP &&
                 key != CUR_DWN);
         if(infoStr != NULL) free(infoStr);
-        vgDestroyImage(image);
+        //vgDestroyImage(image);
         if(downloadData != NULL)
             free(downloadData);
         redraw_results(true);

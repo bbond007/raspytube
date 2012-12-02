@@ -14,7 +14,8 @@ struct result_rec
     char * url;
     char * thumbSmall;
     char * thumbLarge;
-    VGImage image; 
+    VGImage image;
+    VGImage largeImage; 
     struct result_rec * next;
     struct result_rec * prev;
 };
