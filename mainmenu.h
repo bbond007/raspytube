@@ -48,13 +48,6 @@ tMenuItem jpegMenuItems[] =
     {NULL, 		NULL, 			      0}
 };
      	
-tMenuItem fontMenuItems[] =
-{
-    {"DejaVuSans",	"DVS", 			      0},
-    {"TopazPlus",	"TP", 		              0},
-    {NULL, 		NULL, 			      0}
-};
-     	
-     	
+    	
 
      	

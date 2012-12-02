@@ -1,3 +1,16 @@
+typedef struct tFontDef
+{
+    char * name;
+    const int *Points; 
+    const int *PointIndices; 
+    const unsigned char *Instructions; 
+    const int *InstructionIndices; 
+    const int *InstructionCounts;
+    const int *glyphAdvances;
+    const short * characterMap; 
+    const int glyphCount;
+    VGPath *glyphs;
+} tFontDef;
 
 typedef struct BITMAP            /* a bitmap structure */
 {
@@ -17,26 +30,22 @@ typedef struct
     EGLContext context;
 } STATE_T;
 
+
+void load_font(tFontDef * fontDef);
+void unload_font(tFontDef * fontDef);
 void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst);
 void Roundrect(VGfloat x, VGfloat y,VGfloat w, VGfloat h, VGfloat rw, VGfloat rh, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]);
 void loadfont(const int *Points, const int *PointIndices, const unsigned char *Instructions, const int *InstructionIndices, const int *InstructionCounts, int ng, VGPath *glyphs);
 void init_ogl(STATE_T *state);
 void exit_func(void);
-void Text(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4], VGPath *glyphs, const short *characterMap, const int *glyphAdvances, VGbitfield renderFlags);
-void Text_Rollover(VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4], VGPath *glyphs, const short *characterMap, const int *glyphAdvances, VGbitfield renderFlags);
+void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4], VGbitfield renderFlags);
+void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, 
+  VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4], VGbitfield renderFlags);
 void Poly(VGfloat *xy, VGint n, VGfloat sw, VGfloat fill[4], VGfloat stroke[4], VGboolean dofill);
 void setfill(float color[4]);
 void setstroke(float color[4], float width);
 void Roundrect(VGfloat x, VGfloat y,VGfloat w, VGfloat h, VGfloat rw, VGfloat rh, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]);
 void unloadfont(VGPath *glyphs, int n);
-void load_DejaVuSans_font();
-void unload_DejaVuSans_font();
-void Text_DejaVuSans(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4]);
-void Text_DejaVuSans_Rollover(VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4]);
-void load_TopazPlus_font();
-void unload_TopazPlus_font();
-void Text_TopazPlus(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4]);
-void Text_TopazPlus_Rollover(VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4]);
 void DoSnapshot();  
 VGImage ResizeImage(VGImage vgImageSource, int width, int desired_height);
 VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height);

@@ -18,6 +18,7 @@
 #include "videoformats.h"
 #include "ui.h"
 #include "audio.h"
+#include "fonts.inc"
 //#include "menus.h"
 //stuff for the keyboard.
 
@@ -32,8 +33,8 @@ extern const unsigned int soundraw_size;
 static VGImage bgImage = 0;
 static VGImage tvImage = 0;
 
-static void (*textXY)(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4]);
-static void (*textXY_Rollover) (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4]);
+//static void (*textXY)(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4]);
+//static void (*textXY_Rollover) (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4]);
 
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
@@ -65,6 +66,7 @@ extern unsigned char *download_file(char * host, char * fileName, unsigned int *
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
 extern tMenuState regionMenu;
+extern tMenuState fontMenu;
 extern tMenuItem videoMenuItems[];
 extern tMenuItem jpegMenuItems[];
 extern tMenuItem audioMenuItems[];
@@ -194,6 +196,18 @@ VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desi
 }
 
 //------------------------------------------------------------------------------
+void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4])
+{
+    Text(&fontDefs[fontMenu.selectedItem], x, y, s, pointsize, fillcolor, VG_FILL_PATH);
+}
+
+//------------------------------------------------------------------------------
+void textXY_Rollover (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4])
+{
+    Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH);
+}
+
+//------------------------------------------------------------------------------
 void free_ui_var()
 {
     if (tvImage > 0)
@@ -202,43 +216,38 @@ void free_ui_var()
     if (bgImage > 0)
         vgDestroyImage(bgImage);    
     
-    unload_TopazPlus_font(); 
-    unload_DejaVuSans_font();        
+    int i;
+    for(i=0; i < fontCount; i++)
+        unload_font(&fontDefs[i]);
+    if(fontMenu.menuItems!= NULL)
+        free(fontMenu.menuItems);       
 }
 
 //------------------------------------------------------------------------------
-void set_font(tFont font)
+void set_font(int font)
 {
-    switch(font)
-    {
-        case fontTopazPlus:
-            textXY = &Text_TopazPlus;
-            textXY_Rollover = &Text_TopazPlus_Rollover;
-        break;
-        
-        case fontDejaVuSans:
-            textXY = &Text_DejaVuSans;
-            textXY_Rollover = &Text_DejaVuSans_Rollover;
-        break;
-    }
+    fontMenu.selectedItem = font;
 }
 //------------------------------------------------------------------------------
-tFont get_font()
+int get_font()
 {
-     if(textXY ==  &Text_TopazPlus)
-         return fontTopazPlus;
-     else if(textXY == &Text_DejaVuSans)
-         return fontDejaVuSans;
-     else
-         return fontUndefined;
+     return fontMenu.selectedIndex;
 }
     
 //------------------------------------------------------------------------------
 void init_ui_var()
 {
-    load_TopazPlus_font();
-    load_DejaVuSans_font();
-    set_font(fontDejaVuSans);	
+    int i;
+    fontMenu.menuItems = malloc(sizeof(tMenuItem) * (fontCount + 1));
+    for (i = 0; i < fontCount; i++)
+    {
+         load_font(&fontDefs[i]);
+         fontMenu.menuItems[i].key = fontDefs[i].name;
+         fontMenu.menuItems[i].description = fontDefs[i].name;
+    }
+    fontMenu.menuItems[i].key = NULL;
+    fontMenu.menuItems[i].description = NULL;
+    
     if(state->screen_width >= 1920)
     {
         numPointFontTiny  = 10;
@@ -793,7 +802,7 @@ void main_menu_detail(tMenuState * menu)
             descr = jpegMenuItems[(int) jpegDecoder].description;
             break;            
         case 7:
-            descr = fontMenuItems[(int) get_font()].description;
+            descr = fontMenu.menuItems[(int) get_font()].description;
             break;            
 
         }
@@ -811,13 +820,10 @@ void main_menu_detail(tMenuState * menu)
 //------------------------------------------------------------------------------
 void font_menu_detail(tMenuState * menu)
 {
-     tFont saveFont = get_font();
-     set_font((tFont) menu->selectedItem);
-     textXY(state->screen_width * .25,
+     Text(&fontDefs[menu->selectedItem], state->screen_width * .25,
              menu->txtRaster.y,
              "ABCDEFG1234...",
-             numPointFontMed, errorColor);
-     set_font(saveFont);
+             numPointFontMed, errorColor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
 void init_format_menu(tMenuState * menu)

@@ -18,13 +18,9 @@
 #include "EGL/egl.h"
 #include "GLES/gl.h"
 #include "gfxlib.h"
-#include "DejaVuSans.inc"
-#include "TopazPlus.inc"
 #include "lodepng.h"
 
 STATE_T _state, *state=&_state;
-VGPath DejaVuSans_Paths[DejaVuSans_glyphCount];
-VGPath TopazPlus_Paths[TopazPlus_glyphCount];
 #define ERROR_POINT (numPointFontMed)
 void show_message(char * message, bool error, int points);
 extern int numPointFontMed;
@@ -398,6 +394,29 @@ void  loadfont(const int *Points, const int *PointIndices, const unsigned char *
 }
 
 //------------------------------------------------------------------------------
+// loadfont loads font path data
+void  load_font(tFontDef * fontDef)
+{
+    int i;
+    size_t size = fontDef->glyphCount*sizeof(VGPath);
+    fontDef->glyphs = malloc(size);
+    memset(fontDef->glyphs, 0, size);
+    for(i=0; i < fontDef->glyphCount; i++)
+    {
+        const int* p = &fontDef->Points[fontDef->PointIndices[i]*2];
+        const unsigned char* instructions = &fontDef->Instructions[fontDef->InstructionIndices[i]];
+        int ic = fontDef->InstructionCounts[i];
+
+        VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_32, 1.0f/65536.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+        fontDef->glyphs[i] = path;
+        if(ic)
+        {
+            vgAppendPathData(path, ic, instructions, p);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 
 VGPath newpath()
 {
@@ -415,6 +434,19 @@ void unloadfont(VGPath *glyphs, int n)
         vgDestroyPath(glyphs[i]);
     }
 }
+
+//------------------------------------------------------------------------------
+// unloadfont frees font path data
+void unload_font(tFontDef * fontDef)
+{
+    int i;
+    for(i=0; i<fontDef->glyphCount; i++)
+    {
+        vgDestroyPath(fontDef->glyphs[i]);
+    }
+    free(fontDef->glyphs);
+}
+
 
 //------------------------------------------------------------------------------
 // setfill sets the fill color
@@ -441,59 +473,10 @@ void setstroke(float color[4], float width)
     vgDestroyPaint(strokePaint);
 }
 
-//------------------------------------------------------------------------------
-void Text_DejaVuSans(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4])
-{
-    Text(x, y, s, pointsize, fillcolor, DejaVuSans_Paths, DejaVuSans_characterMap, DejaVuSans_glyphAdvances, VG_FILL_PATH);
-}
-
-//------------------------------------------------------------------------------
-void Text_DejaVuSans_Rollover(VGfloat x, VGfloat y, VGfloat maxlength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4])
-{
-    Text_Rollover(x, y, maxlength, maxLines, yStep, s, pointsize, fillcolor, DejaVuSans_Paths, DejaVuSans_characterMap, DejaVuSans_glyphAdvances, VG_FILL_PATH);
-}
-
-//------------------------------------------------------------------------------
-void Text_TopazPlus(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4])
-{
-    Text(x, y, s, pointsize, fillcolor, TopazPlus_Paths, TopazPlus_characterMap, TopazPlus_glyphAdvances, VG_FILL_PATH);
-}
-
-//------------------------------------------------------------------------------
-void Text_TopazPlus_Rollover(VGfloat x, VGfloat y, VGfloat maxlength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4])
-{
-    Text_Rollover(x, y, maxlength, maxLines, yStep, s, pointsize, fillcolor, TopazPlus_Paths, TopazPlus_characterMap, TopazPlus_glyphAdvances, VG_FILL_PATH);
-}
-//------------------------------------------------------------------------------
-void load_DejaVuSans_font()
-{
-    loadfont(DejaVuSans_glyphPoints, DejaVuSans_glyphPointIndices,
-             DejaVuSans_glyphInstructions, DejaVuSans_glyphInstructionIndices,
-             DejaVuSans_glyphInstructionCounts, DejaVuSans_glyphCount,
-             DejaVuSans_Paths);
-}
-//------------------------------------------------------------------------------
-void load_TopazPlus_font()
-{
-    loadfont(TopazPlus_glyphPoints, TopazPlus_glyphPointIndices,
-             TopazPlus_glyphInstructions, TopazPlus_glyphInstructionIndices,
-             TopazPlus_glyphInstructionCounts, TopazPlus_glyphCount,
-             TopazPlus_Paths);
-}
-//------------------------------------------------------------------------------
-void unload_DejaVuSans_font()
-{
-    unloadfont(DejaVuSans_Paths, DejaVuSans_glyphCount);
-}
-//------------------------------------------------------------------------------
-void unload_TopazPlus_font()
-{
-    unloadfont(TopazPlus_Paths, TopazPlus_glyphCount);
-}
 
 //------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4], VGPath *glyphs, const short *characterMap, const int *glyphAdvances, VGbitfield renderFlags)
+void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4], VGbitfield renderFlags)
 {
     float size = (float)pointsize;
     float xx = x;
@@ -504,7 +487,7 @@ void Text(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[
     for(i=0; i < (int)strlen(s); i++)
     {
         unsigned int character = (unsigned int)s[i];
-        int glyph = characterMap[character];
+        int glyph = fontDef->characterMap[character];
         if( glyph == -1 )
         {
             continue;	//glyph is undefined
@@ -519,14 +502,17 @@ void Text(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[
 
         vgLoadMatrix(mm);
         vgMultMatrix(mat);
-        vgDrawPath(glyphs[glyph], renderFlags);
-        xx += size * glyphAdvances[glyph] / 65536.0f;
+        vgDrawPath(fontDef->glyphs[glyph], renderFlags);
+        xx += size * fontDef->glyphAdvances[glyph] / 65536.0f;
     }
     vgLoadMatrix(mm);
 }
+
+
 //------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text_Rollover(VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4], VGPath *glyphs, const short *characterMap, const int *glyphAdvances, VGbitfield renderFlags)
+void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, 
+  VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4], VGbitfield renderFlags)
 {
     float size = (float)pointsize;
     float xx = x;
@@ -539,11 +525,9 @@ void Text_Rollover(VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, VGfloa
     for(i=0; i < (int)strlen(s); i++)
     {
         unsigned int character = (unsigned int)s[i];
-        int glyph = characterMap[character];
+        int glyph = fontDef->characterMap[character];
         if( glyph != -1 )
         {
-
-
             VGfloat mat[9] =
             {
                 size,	0.0f,	0.0f,
@@ -553,8 +537,8 @@ void Text_Rollover(VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, VGfloa
 
             vgLoadMatrix(mm);
             vgMultMatrix(mat);
-            vgDrawPath(glyphs[glyph], renderFlags);
-            xx += size * glyphAdvances[glyph] / 65536.0f;
+            vgDrawPath(fontDef->glyphs[glyph], renderFlags);
+            xx += size * fontDef->glyphAdvances[glyph] / 65536.0f;
         }
         if(character == '\n' || (xx >= maxLength && !isalnum(character))) //autoroll
         {

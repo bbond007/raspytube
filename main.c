@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     mainMenu.menuItems = mainMenuItems;
     init_small_menu(&mainMenu, "Main Menu:");
     init_small_menu(&fontMenu, "Font menu:");
-    fontMenu.menuItems  = fontMenuItems;
+    //fontMenu.menuItems  = fontMenuItems;
     fontMenu.drawDetail = &font_menu_detail;
     fontMenu.selectedIndex = (int) get_font();
     mainMenu.drawDetail = &main_menu_detail;
@@ -311,11 +311,9 @@ int main(int argc, char **argv)
     }
     while (key != 'Q' && (key != ESC_KEY || kbHit()));
     clear_output();
-    unload_DejaVuSans_font();
     free_ui_var();
     restoreKb();
     exit_func();
-//    system("reset");
     return 0;
 }
 
