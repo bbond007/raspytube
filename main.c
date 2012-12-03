@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         if(strlen(argv[1]) < sizeof(searchStr))
             strcpy(searchStr, argv[1]);
         else
-            show_message("argv[1] too big!!!", true, ERROR_POINT);
+            show_message("argv[1] too big!!!", 0xDEADBEEF, ERROR_POINT);
     }
     else
         youtube_search("raspberry+pi");
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
             break;
 
         case 'T' :
-            show_message("This is a error test.", true, ERROR_POINT);
+            show_message("This is a error test.", 0xDEADBEEF, ERROR_POINT);
             break;
 
         case 'M':

@@ -20,6 +20,18 @@ tFontDef fontDefs[] =
 	     DejaVuSans_characterMap,
 	     DejaVuSans_glyphCount,
              NULL
+	},	
+	{   
+	    "Topaz Plus",
+	     TopazPlus_glyphPoints, 
+	     TopazPlus_glyphPointIndices,
+             TopazPlus_glyphInstructions, 
+	     TopazPlus_glyphInstructionIndices,
+             TopazPlus_glyphInstructionCounts, 
+	     TopazPlus_glyphAdvances,
+	     TopazPlus_characterMap,
+	     TopazPlus_glyphCount,
+             NULL
 	},
 	{    
 	    "Star Avenu",
@@ -33,18 +45,7 @@ tFontDef fontDefs[] =
 	     StarAvenu_glyphCount,		
              NULL
 	},
-	{   
-	     "Topaz Plus",
-	     TopazPlus_glyphPoints, 
-	     TopazPlus_glyphPointIndices,
-             TopazPlus_glyphInstructions, 
-	     TopazPlus_glyphInstructionIndices,
-             TopazPlus_glyphInstructionCounts, 
-	     TopazPlus_glyphAdvances,
-	     TopazPlus_characterMap,
-	     TopazPlus_glyphCount,
-             NULL
-	},
+	
 	{
 	     "PriceDown",
 	     PriceDown_glyphPoints, 

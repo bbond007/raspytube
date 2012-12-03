@@ -34,6 +34,7 @@ typedef struct
 void load_font(tFontDef * fontDef);
 void unload_font(tFontDef * fontDef);
 void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst);
+void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]);
 void Roundrect(VGfloat x, VGfloat y,VGfloat w, VGfloat h, VGfloat rw, VGfloat rh, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]);
 void loadfont(const int *Points, const int *PointIndices, const unsigned char *Instructions, const int *InstructionIndices, const int *InstructionCounts, int ng, VGPath *glyphs);
 void init_ogl(STATE_T *state);

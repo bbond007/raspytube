@@ -117,7 +117,7 @@ void clear_screen(bool swap);
 bool input_string(char * prompt, char * buf, int max);
 void show_big_message(char * title, char * message, bool Pause);
 int  show_selection_info(struct result_rec * rec);
-void show_message(char * message, bool error, int points);
+void show_message(char * message, int error, int points);
 void clear_output();
 void redraw_results(bool swap);
 void replace_char_str(char * buf,  char old, char new);

@@ -371,6 +371,17 @@ void Roundrect(
     vgDestroyPath(path);
 }
 
+//------------------------------------------------------------------------------
+// Rect makes a rectangle  at the specified location and dimensions, applying style
+void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]) 
+{
+	VGPath path = newpath();
+	vguRect(path, x, y, w, h);
+	setfill(fill);
+	setstroke(stroke, sw);
+	vgDrawPath(path, VG_FILL_PATH | VG_STROKE_PATH);
+	vgDestroyPath(path);
+}
 
 //------------------------------------------------------------------------------
 // loadfont loads font path data

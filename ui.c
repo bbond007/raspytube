@@ -248,6 +248,14 @@ void init_ui_var()
     fontMenu.menuItems[i].key = NULL;
     fontMenu.menuItems[i].description = NULL;
     
+    if(tvImage == 0)
+    {
+        int w  = (state->screen_width  * .35f);
+        int h  = (state->screen_height * .45f);
+           tvImage = create_image_from_buf((unsigned char *)
+           tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
+    }
+    
     if(state->screen_width >= 1920)
     {
         numPointFontTiny  = 10;
@@ -342,14 +350,6 @@ void clear_screen(bool swap)
 int show_selection_info(struct result_rec * rec)
 {
     int key = 0x00;
-    if(tvImage == 0)
-    {
-        int w  = (state->screen_width  * .35f);
-        int h  = (state->screen_height * .45f);
-        //printf("TVImage->(%d, %d)\n", w, h);
-        tvImage = create_image_from_buf((unsigned char *)
-           tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
-    }
     
     int offsetY      = (state->screen_height * .060f);
     int offsetX      = (state->screen_width  * .035f);
@@ -560,32 +560,74 @@ void show_big_message(char * title, char * message, bool pause)
         eglSwapBuffers(state->display, state->surface);
         readKb();
     }
+
 }
 
 //------------------------------------------------------------------------------
-void show_message(char * message, bool error, int points)
+void show_message(char * message, int error, int points)
 {
-    int width  = state->screen_width * .8f;
-    int height = state->screen_height * .4f;
-    int x = (state->screen_width  - width) / 2;
-    int y = (state->screen_height - height) / 2;
-    int tx = state->screen_width * .15f;
-    int ty = state->screen_height * .55f;
+    int offsetY      = (state->screen_height * .060f);
+    int offsetX      = (state->screen_width  * .035f);
+    int tv_width     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
+    int tv_height    = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
+    int tvX          = (state->screen_width  - tv_width) / 2;
+    int tvY          = (state->screen_height - tv_height) / 2;
+    int image_height = tv_height - (offsetY * 2);
+    int image_width  = tv_width  - (offsetX * 2);
+    int imageX       = (state->screen_width - image_width)   / 2;
+    int imageY       = (state->screen_height - image_height) / 2;
+    int tx 	     = imageX  + state->screen_width  * .03f;
+    int ty 	     = imageY  + image_height - offsetX;
+    int guru_width   = image_width  * .95f;
+    int guru_height  = image_height * .25f;
+    int guruX        = (state->screen_width - guru_width)   / 2;
+    int guruY        = imageY  + image_height - guru_height -  (state->screen_width  * .007f);
+
+    char * errorStr = NULL; 
     int key = ESC_KEY;
+    if(error)
+    {
+         char formatStr[] = "GURU MEDITATION #%08X\n\n%s";
+         size_t sErrorStr = strlen(formatStr) + strlen(message) + 8;
+         errorStr = malloc(sErrorStr);
+         snprintf(errorStr, sErrorStr, formatStr, error, message);
+         printf("ERROR->%d\n", error);
+    }
+           
     do
     {
-        redraw_results(false);
-
+        redraw_results(false);   
+        vgSetPixels(tvX,
+                tvY,
+                tvImage,
+                0, 0,
+                tv_width,
+                tv_height);
+       
         if(error)
-            Roundrect(x,y, width, height, 20, 20, 10, errorColor, selectedColor);
-        else
-            Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
-        textXY_Rollover(tx, // X
+        {
+            Roundrect(imageX, imageY,  image_width, image_height, 20, 20, 10, bgColor, bgColor);
+            Rect(guruX, guruY, guru_width, guru_height, 10, bgColor, errorColor);
+            Text_Rollover ( &fontDefs[1], //Topaz font
+                        tx, // X
                         ty, // Y
                         state->screen_width * .80f,
                         5,
                         state->screen_height * .05f,
-                        message, points, textColor);
+                        errorStr, points, errorColor, VG_FILL_PATH);
+        }
+        else
+        {
+            Roundrect(imageX,  imageY, image_width, image_height, 20, 20, 10, rectColor, bgColor);
+            Text_Rollover ( &fontDefs[1], //Topaz font
+                        tx, // X
+                        ty, // Y
+                        state->screen_width * .80f,
+                        7,
+                        state->screen_height * .05f,
+                        message, points, textColor, VG_FILL_PATH);
+        }
+                       
         eglSwapBuffers(state->display,
                        state->surface);
         if(error)
@@ -600,6 +642,8 @@ void show_message(char * message, bool error, int points)
 
     }
     while (key != ESC_KEY && key != RTN_KEY);
+    if(errorStr != NULL)
+        free(errorStr);
 }
 
 //------------------------------------------------------------------------------
