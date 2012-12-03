@@ -596,7 +596,9 @@ void show_message(char * message, int error, int points)
            
     do
     {
-        redraw_results(false);   
+        if(error)
+            redraw_results(false);
+           
         vgSetPixels(tvX,
                 tvY,
                 tvImage,

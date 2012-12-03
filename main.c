@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         if(strlen(argv[1]) < sizeof(searchStr))
             strcpy(searchStr, argv[1]);
         else
-            show_message("argv[1] too big!!!", 0xDEADBEEF, ERROR_POINT);
+            show_message("argv[1] too big!!!", 10, ERROR_POINT);
     }
     else
         youtube_search("raspberry+pi");
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
                         clear_screen(true);
                         youtube_search(NULL);
                         if (selected_rec == NULL)
-                            show_message("Region search returned 0 results!", true, ERROR_POINT);
+                            show_message("Region search returned 0 results!", 1, ERROR_POINT);
                         break;
                 //  case 14:
                 //  case 15:
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
                                 result,
                                 mainMenuItems[result].key,
                                 mainMenuItems[result].description);
-                        show_message(txt, true, ERROR_POINT);
+                        show_message(txt, 2, ERROR_POINT);
                         break;
                     }
                 }
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
                         result,
                         regionMenuItems[result].key,
                         regionMenuItems[result].description);
-                show_message(txt, true, ERROR_POINT);
+                show_message(txt, 3, ERROR_POINT);
             }
             dumpKb();
             redraw_results(true);
@@ -301,7 +301,7 @@ int main(int argc, char **argv)
                 if (selected_rec->url != NULL)
                     play_video(selected_rec->url);
                 else
-                    show_message("Unable to play:\n\nselected_rec->url==NULL", true, ERROR_POINT);
+                    show_message("Unable to play:\n\nselected_rec->url==NULL", 4, ERROR_POINT);
             }
             break;
 
@@ -410,7 +410,7 @@ static void do_search(char * searchStr)
         clear_screen(true);
         youtube_search(searchStr);
         if (selected_rec == NULL)
-            show_message("Search returned 0 results!", true, ERROR_POINT);
+            show_message("Search returned 0 results!", 5, ERROR_POINT);
     }
     else
         redraw_results(true);
@@ -433,7 +433,7 @@ static void do_user_search(char * userStr)
         clear_screen(true);
         youtube_search(userStr);
         if (selected_rec == NULL)
-            show_message("User search returned 0 results!", true, ERROR_POINT);
+            show_message("User search returned 0 results!", 6, ERROR_POINT);
     }
     else
         redraw_results(true);
@@ -448,8 +448,9 @@ static void play_video (char * url)
     char url2[4096] = "";
     char request_format[6] = "";
     int status;
-
-    show_message(url, false, 20);
+    redraw_results(false);
+    show_message("Calling youtube_dl...", false, numPointFontMed);
+    //show_message(url, false, 20);
     if(server != NULL && page != NULL)
     {
         if (numFormat > 0)
@@ -490,15 +491,13 @@ static void play_video (char * url)
         url2[i] = 0x00;
         fclose(fp);
         clear_screen(false);
-
         switch(videoPlayer)
         {
         case vpMPlayer:
-            draw_txt_box_cen("Starting Mplayer...", .50f, .50f, .30f, .30f, .55f, 40, true);
-            //clear_screen(true);
+            show_message("Calling youtube_dl...DONE\nStarting Mplayer...", false, numPointFontMed);
             break;
         case vpOMXPlayer:
-            draw_txt_box_cen("Starting OMXPlayer...", .50f, .50f, .30f, .30f, .55f, 40, true);
+            show_message("Calling youtube_dl...DONE\nStarting OMXPlayer...", false, numPointFontMed);
             break;
         }
 
