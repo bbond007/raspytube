@@ -53,14 +53,26 @@ enum tVideoPlayer videoPlayer = vpOMXPlayer;
 enum tJpegDecoder jpegDecoder = jdOMX;
 #define ERROR_POINT  (numPointFontMed)
 
-VGfloat textColor[4]        = {  5,  5,  5,1};
-VGfloat rectColor[4]        = {  0,  0,  5,1};
-VGfloat rectColor2[4]       = {  0,  0,  0,1};
-VGfloat outlineColor[4]     = {  0,  0,  3,1};
-VGfloat outlineColor2[4]    = {  2,  5,  2,1};
-VGfloat selectedColor[4]    = {  2,1.5,  0,1};
-VGfloat bgColor[4]          = {  0,  0,  0,1};
-VGfloat errorColor[4]       = {  4,  0,  0,1};
+tColorDef colorScheme[] =
+{
+    {5.0f,  5.0f,  5.0f,  1.0f},
+    {0.0f,  0.0f,  5.0f,  1.0f},
+    {0.0f,  0.0f,  0.0f,  1.0f},
+    {0.0f,  0.0f,  3.0f,  1.0f},
+    {2.0f,  5.0f,  2.0f,  1.0f},
+    {2.0f,  1.5f,  0.0f,  1.0f},
+    {0.0f,  0.0f,  0.0f,  1.0f},
+    {4.0f,  0.0f,  0.0f,  1.0f}
+};
+
+tColorDef * textColor        = &colorScheme[0];
+tColorDef * rectColor        = &colorScheme[1];
+tColorDef * rectColor2       = &colorScheme[2];
+tColorDef * outlineColor     = &colorScheme[3];
+tColorDef * outlineColor2    = &colorScheme[4];
+tColorDef * selectedColor    = &colorScheme[5];
+tColorDef * bgColor          = &colorScheme[6];
+tColorDef * errorColor       = &colorScheme[7];
 
 extern unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
@@ -196,15 +208,15 @@ VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desi
 }
 
 //------------------------------------------------------------------------------
-void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4])
+void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor)
 {
     Text(&fontDefs[fontMenu.selectedItem], x, y, s, pointsize, fillcolor, VG_FILL_PATH);
 }
 
 //------------------------------------------------------------------------------
-void textXY_Rollover (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4])
+void textXY_Rollover (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor)
 {
-    Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH);
+    Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH, false);
 }
 
 //------------------------------------------------------------------------------
@@ -339,7 +351,7 @@ void draw_txt_box(char * message, float widthP, float heightP, float boxXp, floa
 void clear_screen(bool swap)
 {
     glClear( GL_COLOR_BUFFER_BIT );
-    vgSetfv(VG_CLEAR_COLOR, 4, bgColor);
+    vgSetfv(VG_CLEAR_COLOR, 4, (VGfloat *) bgColor);
     vgClear(0, 0, state->screen_width, state->screen_height);
     vgLoadIdentity();
     if(swap)
@@ -587,7 +599,7 @@ void show_message(char * message, int error, int points)
     int key = ESC_KEY;
     if(error)
     {
-         char formatStr[] = "GURU MEDITATION #%08X\n\n%s";
+         char formatStr[] = "~7GURU MEDITATION #%08X\n\n~0%s";
          size_t sErrorStr = strlen(formatStr) + strlen(message) + 8;
          errorStr = malloc(sErrorStr);
          snprintf(errorStr, sErrorStr, formatStr, error, message);
@@ -614,9 +626,9 @@ void show_message(char * message, int error, int points)
                         tx, // X
                         ty, // Y
                         state->screen_width * .80f,
-                        5,
+                        6,
                         state->screen_height * .05f,
-                        errorStr, points, errorColor, VG_FILL_PATH);
+                        errorStr, points, &colorScheme[0], VG_FILL_PATH, true);
         }
         else
         {
@@ -625,9 +637,9 @@ void show_message(char * message, int error, int points)
                         tx, // X
                         ty, // Y
                         state->screen_width * .80f,
-                        7,
+                        8,
                         state->screen_height * .05f,
-                        message, points, textColor, VG_FILL_PATH);
+                        message, points, &colorScheme[0], VG_FILL_PATH, true);
         }
                        
         eglSwapBuffers(state->display,

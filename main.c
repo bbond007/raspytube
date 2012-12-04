@@ -202,7 +202,7 @@ int main(int argc, char **argv)
                            set_font((int) resultFont);
                        break;
                     default:
-                        snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n**UNDER CONSTRUCTION**",
+                        snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n~5**UNDER CONSTRUCTION**",
                                 result,
                                 mainMenuItems[result].key,
                                 mainMenuItems[result].description);
@@ -494,10 +494,10 @@ static void play_video (char * url)
         switch(videoPlayer)
         {
         case vpMPlayer:
-            show_message("Calling youtube_dl...DONE\nStarting Mplayer...", false, numPointFontMed);
+            show_message("Calling youtube_dl...~7DONE~0\nStarting Mplayer...", false, numPointFontMed);
             break;
         case vpOMXPlayer:
-            show_message("Calling youtube_dl...DONE\nStarting OMXPlayer...", false, numPointFontMed);
+            show_message("Calling youtube_dl...~7DONE~0\nStarting OMXPlayer...", false, numPointFontMed);
             break;
         }
 

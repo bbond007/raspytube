@@ -1,4 +1,4 @@
-// parts of this come from "shapes.c":
+// parts of thisKfFill come from "shapes.c":
 // shapes: minimal program to explore OpenVG
 // Anthony Starks (ajstarks@gmail.com)
 // and "test_image.c"
@@ -361,7 +361,7 @@ void Roundrect(
     VGfloat x, VGfloat y,
     VGfloat w, VGfloat h,
     VGfloat rw, VGfloat rh,
-    VGfloat sw, VGfloat fill[4], VGfloat stroke[4])
+    VGfloat sw, tColorDef * fill,  tColorDef *stroke)
 {
     VGPath path = newpath();
     vguRoundRect(path, x, y, w, h, rw, rh);
@@ -373,7 +373,7 @@ void Roundrect(
 
 //------------------------------------------------------------------------------
 // Rect makes a rectangle  at the specified location and dimensions, applying style
-void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, VGfloat fill[4], VGfloat stroke[4]) 
+void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, tColorDef * fill, tColorDef * stroke) 
 {
 	VGPath path = newpath();
 	vguRect(path, x, y, w, h);
@@ -461,22 +461,22 @@ void unload_font(tFontDef * fontDef)
 
 //------------------------------------------------------------------------------
 // setfill sets the fill color
-void setfill(float color[4])
+void setfill(tColorDef * color)
 {
     VGPaint fillPaint = vgCreatePaint();
     vgSetParameteri(fillPaint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
-    vgSetParameterfv(fillPaint, VG_PAINT_COLOR, 4, color);
+    vgSetParameterfv(fillPaint, VG_PAINT_COLOR, 4, (VGfloat *) color);
     vgSetPaint(fillPaint, VG_FILL_PATH);
     vgDestroyPaint(fillPaint);
 }
 
 //------------------------------------------------------------------------------
 // setstroke sets the stroke color and width
-void setstroke(float color[4], float width)
+void setstroke(tColorDef * color, float width)
 {
     VGPaint strokePaint = vgCreatePaint();
     vgSetParameteri(strokePaint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
-    vgSetParameterfv(strokePaint, VG_PAINT_COLOR, 4, color);
+    vgSetParameterfv(strokePaint, VG_PAINT_COLOR, 4, (VGfloat *) color);
     vgSetPaint(strokePaint, VG_STROKE_PATH);
     vgSetf(VG_STROKE_LINE_WIDTH, width);
     vgSeti(VG_STROKE_CAP_STYLE, VG_CAP_BUTT);
@@ -484,10 +484,9 @@ void setstroke(float color[4], float width)
     vgDestroyPaint(strokePaint);
 }
 
-
 //------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4], VGbitfield renderFlags)
+void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags)
 {
     float size = (float)pointsize;
     float xx = x;
@@ -523,7 +522,7 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
 //------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
 void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, 
-  VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4], VGbitfield renderFlags)
+  VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags, bool bRichTXT)
 {
     float size = (float)pointsize;
     float xx = x;
@@ -531,25 +530,36 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, 
     int i;
     int iLines = 0;
     vgGetMatrix(mm);
-    setfill(fillcolor);
+    setfill(&fillcolor[0]);
 
-    for(i=0; i < (int)strlen(s); i++)
+    int max = (int)strlen(s);
+    
+    for(i=0; i < max; i++)
     {
         unsigned int character = (unsigned int)s[i];
-        int glyph = fontDef->characterMap[character];
-        if( glyph != -1 )
+        if(bRichTXT && character == '~' && (i+1) < max)
         {
-            VGfloat mat[9] =
-            {
-                size,	0.0f,	0.0f,
-                0.0f,	size,	0.0f,
-                xx,		y,		1.0f
-            };
+             char sColor[2] = {s[++i], 0x00};
+             int color = atoi(&sColor[0]);
+             setfill(&fillcolor[color]);
+        }
+        else
+        {
+            int glyph = fontDef->characterMap[character];
+            if( glyph != -1 )
+            {	
+                VGfloat mat[9] =
+                {
+                   size,	0.0f,	0.0f,
+                   0.0f,	size,	0.0f,
+                   xx,		y,	1.0f
+                };
 
-            vgLoadMatrix(mm);
-            vgMultMatrix(mat);
-            vgDrawPath(fontDef->glyphs[glyph], renderFlags);
-            xx += size * fontDef->glyphAdvances[glyph] / 65536.0f;
+                vgLoadMatrix(mm);
+                vgMultMatrix(mat);
+                vgDrawPath(fontDef->glyphs[glyph], renderFlags);
+                xx += size * fontDef->glyphAdvances[glyph] / 65536.0f;
+            }
         }
         if(character == '\n' || (xx >= maxLength && !isalnum(character))) //autoroll
         {
@@ -559,14 +569,14 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, 
             if (maxLines > 0 && iLines == maxLines)
                 break;
         }
+        
     }
     vgLoadMatrix(mm);
 }
 
-
 //------------------------------------------------------------------------------
 // Poly makes a stroked polyline or a stroked and filled polygon
-void Poly(VGfloat *xy, VGint n, VGfloat sw, VGfloat fill[4], VGfloat stroke[4], VGboolean dofill)
+void Poly(VGfloat *xy, VGint n, VGfloat sw, tColorDef * fill, tColorDef * stroke, VGboolean dofill)
 {
     VGPath path = newpath();
     VGbitfield pflag;

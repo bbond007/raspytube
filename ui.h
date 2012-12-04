@@ -163,14 +163,14 @@ extern enum tJpegDecoder jpegDecoder;
 
 #define ERROR_POINT (numPointFontMed)
 
-extern VGfloat textColor[];
-extern VGfloat rectColor[];
-extern VGfloat rectColor2[];
-extern VGfloat outlineColor[];
-extern VGfloat outlineColor2[];
-extern VGfloat selectedColor[];
-extern VGfloat bgColor[];
-extern VGfloat errorColor[];
+extern tColorDef * textColor;
+extern tColorDef * rectColor;
+extern tColorDef * rectColor2;
+extern tColorDef * outlineColor;
+extern tColorDef * outlineColor2;
+extern tColorDef * selectedColor;
+extern tColorDef * bgColor;
+extern tColorDef * errorColor;
 
 #define ESC_KEY 0x1b
 #define RTN_KEY 0x0a
