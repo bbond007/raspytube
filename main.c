@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     regionMenu.menuItems = regionMenuItems;
     set_menu_value(&regionMenu,0);    
     set_font(0);
-    set_title_font(7);
+    set_title_font(3);
     
     initKb();
     clear_output();

@@ -33,9 +33,6 @@ extern const unsigned int soundraw_size;
 static VGImage bgImage = 0;
 static VGImage tvImage = 0;
 
-//static void (*textXY)(VGfloat x, VGfloat y, const char* s, int pointsize, VGfloat fillcolor[4]);
-//static void (*textXY_Rollover) (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, VGfloat fillcolor[4]);
-
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
@@ -48,6 +45,7 @@ int numThumbWidth     = 15;
 int numResults        = 10;
 int numFormat         = 0;
 int numStart          = 1;
+int noRectPenSize;
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
 enum tJpegDecoder jpegDecoder = jdOMX;
@@ -94,14 +92,12 @@ void setBGImage()
         vgDestroyImage(bgImage);
     bgImage = createImageFromScreen();
 }
-
 //------------------------------------------------------------------------------
 void drawBGImage()
 {
     if(bgImage != 0)
         vgSetPixels(0,0, bgImage, 0, 0, state->screen_width, state->screen_height);
 }
-
 //------------------------------------------------------------------------------
 struct result_rec * init_result_rec()
 {
@@ -124,7 +120,6 @@ struct result_rec * init_result_rec()
     }
     return new_rec;
 }
-
 //------------------------------------------------------------------------------
 void free_result_rec(struct result_rec * rec)
 {
@@ -156,7 +151,6 @@ void free_result_rec(struct result_rec * rec)
         free(rec);
     }
 }
-
 //------------------------------------------------------------------------------
 char ** get_lastrec_column(int iBracket, int iBrace, char * key)
 {
@@ -186,7 +180,6 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
     else
         return NULL;
 }
-
 //------------------------------------------------------------------------------
 VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
 {
@@ -208,19 +201,16 @@ VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desi
     }
     return 0;
 }
-
 //------------------------------------------------------------------------------
 void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor)
 {
     Text(&fontDefs[fontMenu.selectedItem], x, y, s, pointsize, fillcolor, VG_FILL_PATH);
 }
-
 //------------------------------------------------------------------------------
 void textXY_Rollover (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor)
 {
     Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH, false);
 }
-
 //------------------------------------------------------------------------------
 void free_ui_var()
 {
@@ -276,7 +266,6 @@ int get_title_font()
 //------------------------------------------------------------------------------
 void init_font_menus()
 {
-
     init_small_menu(&fontMenu, "Font menu:");
     init_small_menu(&titleFontMenu, "Title Font menu:");
     
@@ -297,16 +286,14 @@ void init_font_menus()
     
 //------------------------------------------------------------------------------
 void init_ui_var()
-{
-    
+{   
     if(tvImage == 0)
     {
         int w  = (state->screen_width  * .35f);
         int h  = (state->screen_height * .45f);
            tvImage = create_image_from_buf((unsigned char *)
            tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
-    }
-    
+    }   
     if(state->screen_width >= 1920)
     {
         numPointFontTiny  = 10;
@@ -334,9 +321,9 @@ void init_ui_var()
         //   numThumbWidth     = 10;
         //   numResults        = 8;
     }
+    
+    noRectPenSize  = state->screen_width  * .005f;
 }
-
-
 //------------------------------------------------------------------------------
 //
 char * parse_url(char * url, char ** server, char ** page)
@@ -365,19 +352,18 @@ void draw_menu(tMenuState * menu)
               menu->winRect.y,
               menu->winRect.w,
               menu->winRect.h, 
-              20, 20, 10, rectColor, selectedColor);
+              30, 20, noRectPenSize, rectColor, selectedColor);
 
     Roundrect(menu->selRect.x,
               menu->selRect.y,
               menu->selRect.w,
               menu->selRect.h,
-              20, 20, 5, rectColor, selectedColor);
+              20, 20, noRectPenSize / 2, rectColor, selectedColor);
               
     Text(&fontDefs[titleFontMenu.selectedIndex],
         menu->titlePos.x, menu->titlePos.y, 
         menu->title, menu->numPointFontTitle, selectedColor, VG_FILL_PATH);        
 }
-
 //------------------------------------------------------------------------------
 void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points)
 {
@@ -387,10 +373,9 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int y = state->screen_height * boxYp;
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
-    Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
+    Roundrect(x,y, width, height, 20, 20, noRectPenSize, rectColor, selectedColor);
     Text(&fontDefs[titleFontMenu.selectedIndex],tx, ty, message, points, selectedColor, VG_FILL_PATH);
 }
-
 //------------------------------------------------------------------------------
 void clear_screen(bool swap)
 {
@@ -401,7 +386,6 @@ void clear_screen(bool swap)
     if(swap)
         eglSwapBuffers(state->display, state->surface);
 }
-
 //------------------------------------------------------------------------------
 int show_selection_info(struct result_rec * rec)
 {
@@ -532,7 +516,6 @@ bool input_string(char * prompt, char * buf, int max)
     char temp[strlen(formatStr) + 1];
     char cstr[2];
     cstr[1]=0x00;
-
     char * save = malloc(max+1);
     strcpy(save, buf);
     do
@@ -595,7 +578,6 @@ bool input_string(char * prompt, char * buf, int max)
     else
         return true;
 }
-
 //------------------------------------------------------------------------------
 void show_big_message(char * title, char * message)
 {
@@ -608,7 +590,6 @@ void show_big_message(char * title, char * message)
                     state->screen_height * .05f,
                     message, numPointFontMed, textColor);
 }
-
 //------------------------------------------------------------------------------
 void show_message(char * message, int error, int points)
 {
@@ -654,8 +635,8 @@ void show_message(char * message, int error, int points)
        
         if(error)
         {
-            Roundrect(imageX, imageY,  image_width, image_height, 20, 20, 10, bgColor, bgColor);
-            Rect(guruX, guruY, guru_width, guru_height, 10, bgColor, errorColor);
+            Roundrect(imageX, imageY,  image_width, image_height, 20, 20, noRectPenSize, bgColor, bgColor);
+            Rect(guruX, guruY, guru_width, guru_height, noRectPenSize, bgColor, errorColor);
             Text_Rollover ( &fontDefs[1], //Topaz font
                         tx, // X
                         ty, // Y
@@ -666,7 +647,7 @@ void show_message(char * message, int error, int points)
         }
         else
         {
-            Roundrect(imageX,  imageY, image_width, image_height, 20, 20, 10, rectColor, bgColor);
+            Roundrect(imageX,  imageY, image_width, image_height, 20, 20, noRectPenSize, rectColor, bgColor);
             Text_Rollover ( &fontDefs[1], //Topaz font
                         tx, // X
                         ty, // Y
@@ -693,9 +674,7 @@ void show_message(char * message, int error, int points)
     if(errorStr != NULL)
         free(errorStr);
 }
-
 //------------------------------------------------------------------------------
-
 void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds)
 {
     rectBounds->x = rectPer->xPer * state->screen_width;
@@ -704,7 +683,6 @@ void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds)
     rectBounds->h = rectPer->hPer * state->screen_height;
 }
 //------------------------------------------------------------------------------
-
 void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY)
 {
     pointXY->x = pointPer->xPer * state->screen_width;
@@ -712,7 +690,6 @@ void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY)
 }
 
 //------------------------------------------------------------------------------
-
 void init_arrow(VGfloat * xy, tRectPer * rectPer, bool bFlip)
 {
     tPointXY p1;
@@ -745,7 +722,6 @@ void init_arrow(VGfloat * xy, tRectPer * rectPer, bool bFlip)
     xy[6] = p1.x;
     xy[7] = p1.y;
 }
-
 //------------------------------------------------------------------------------
 void init_big_menu(tMenuState * menu, char * title)
 {
@@ -826,7 +802,6 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->bCenterX = false;
     menu->bCenterY = false;
 }
-
 //------------------------------------------------------------------------------
 void format_menu_header(tMenuState * menu)
 {
@@ -836,7 +811,6 @@ void format_menu_header(tMenuState * menu)
                         menu->txtRaster.y + menu->yStep,
                         supported_formats[0][x], (x>=3)?numPointFontSmall:numPointFontMed, errorColor);
 }
-
 //------------------------------------------------------------------------------
 void format_menu_detail(tMenuState * menu)
 {
@@ -846,7 +820,6 @@ void format_menu_detail(tMenuState * menu)
                menu->txtRaster.y,
                supported_formats[menu->selectedItem + 1][x],(x==3)?numPointFontSmall:numPointFontMed, textColor);
 }
-
 //------------------------------------------------------------------------------
 void main_menu_detail(tMenuState * menu)
 {
@@ -913,13 +886,12 @@ void main_menu_detail(tMenuState * menu)
             free(videoFormat);
     }
 }
-
 //------------------------------------------------------------------------------
 void font_menu_detail(tMenuState * menu)
 {
      Text(&fontDefs[menu->selectedItem], state->screen_width * .25,
              menu->txtRaster.y,
-             "ABCDEFG1234...",
+             "abcdefgABCDEFG01234...",
              numPointFontMed, errorColor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
@@ -1065,8 +1037,6 @@ int show_menu(tMenuState * menu)
     dumpKb();
     return menu->selectedItem;
 }
-
-
 //------------------------------------------------------------------------------
 int handleESC()
 {
@@ -1125,7 +1095,6 @@ int handleESC()
     }
     return 0;
 }
-
 //------------------------------------------------------------------------------
 bool kbHit(void)
 {
@@ -1140,7 +1109,6 @@ bool kbHit(void)
     }
     return false;
 }
-
 //------------------------------------------------------------------------------
 int readKb()
 {
@@ -1154,7 +1122,6 @@ int readKb()
     //else play_sample(&asiKbClick, false);
     return key;
 }
-
 //------------------------------------------------------------------------------
 void dumpKb()
 {
@@ -1175,7 +1142,6 @@ void initKb()
     ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
 //  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
 }
-
 //------------------------------------------------------------------------------
 void restoreKb()
 {
@@ -1183,7 +1149,6 @@ void restoreKb()
 //  delete_sample(&asiKbClick);
 }
 //------------------------------------------------------------------------------
-
 void clear_output()
 {
     struct result_rec * temp_rec = first_rec;
@@ -1199,7 +1164,6 @@ void clear_output()
     last_rec     = NULL;
     selected_rec = NULL;
 }
-
 //------------------------------------------------------------------------------
 void replace_char_str(char * buf,  char oldChar, char newChar)
 {
@@ -1208,7 +1172,6 @@ void replace_char_str(char * buf,  char oldChar, char newChar)
         if(buf[i] == oldChar)
             buf[i] = newChar;
 }
-
 //------------------------------------------------------------------------------
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
 {
@@ -1264,7 +1227,6 @@ VGImage load_jpeg2(char * url, unsigned int width, unsigned int height,
 //------------------------------------------------------------------------------
 void redraw_results(bool swap)
 {
-
     int step = state->screen_height / numResults;
     int halfStep = step / 2;
     int rectHeight = (int) ((float) step * .9f);
@@ -1272,7 +1234,7 @@ void redraw_results(bool swap)
     int rectWidth = state->screen_width - (rectOffset * 2);
     int rectWidth2 = state->screen_width / (numThumbWidth - 2);
     int jpegWidth =  state->screen_width / numThumbWidth;
-    //jpegWidth = (int)((jpegWidth / 16)) * 16;
+    jpegWidth = (int)((jpegWidth / 16)) * 16;
     int txtXoffset = rectWidth2 + (rectOffset * 1.2);
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
@@ -1293,18 +1255,18 @@ void redraw_results(bool swap)
 
         if (temp == selected_rec)
         {
-            Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, 6, rectColor, selectedColor);
+            Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, noRectPenSize, rectColor, selectedColor);
             if(temp->title != NULL)
                 textXY_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, numPointFontMed, selectedColor);
         }
         else
         {
-            Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, 2, rectColor, outlineColor);
+            Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, noRectPenSize, rectColor, outlineColor);
             if(temp->title != NULL)
                 textXY_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, numPointFontMed, textColor);
         }
 
-        Roundrect(rectOffset, y - rectDiff, rectWidth2, step, 20, 20, 2, rectColor2, outlineColor2);
+        Roundrect(rectOffset, y - rectDiff, rectWidth2, step, 20, 20, noRectPenSize / 2, rectColor2, outlineColor2);
 
         if(temp->thumbSmall != NULL)
         {
@@ -1316,7 +1278,6 @@ void redraw_results(bool swap)
         }
         temp = temp->next;
     }
-
 
     switch(videoPlayer)
     {
