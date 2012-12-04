@@ -64,6 +64,8 @@ static void do_cur_left(char * searchStr);
 tMenuState regionMenu;
 tMenuState mainMenu;
 tMenuState fontMenu;
+tMenuState titleFontMenu;
+tMenuState formatMenu;
     
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
@@ -78,24 +80,26 @@ int main(int argc, char **argv)
     memset( state, 0, sizeof( *state ) );
     init_ogl(state);
     init_ui_var();
+    //init menus...
+    init_small_menu(&mainMenu, "Main Menu:");
+    init_big_menu(&regionMenu, "Select region:");
+    init_format_menu(&formatMenu);
+    init_font_menus();
+    //init_small_menu(&fontMenu, "Font menu:");
+    //init_small_menu(&titleFontMenu, "Title Font menu:");    
+    mainMenu.menuItems = mainMenuItems;
+    mainMenu.drawDetail = &main_menu_detail;
+    regionMenu.menuItems = regionMenuItems;
+    set_menu_value(&regionMenu,0);    
+    set_font(0);
+    set_title_font(7);
+    
     initKb();
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
     char userStr[100] = "";
-    mainMenu.menuItems = mainMenuItems;
-    init_small_menu(&mainMenu, "Main Menu:");
-    init_small_menu(&fontMenu, "Font menu:");
-    //fontMenu.menuItems  = fontMenuItems;
-    fontMenu.drawDetail = &font_menu_detail;
-    fontMenu.selectedIndex = (int) get_font();
-    mainMenu.drawDetail = &main_menu_detail;
-    regionMenu.menuItems = regionMenuItems;
-    init_big_menu(&regionMenu, "Select region:");
-    regionMenu.selectedItem = 0;
-    tMenuState formatMenu;
-    init_format_menu(&formatMenu);
-    char txt[100];
+    char txt[200];
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -200,6 +204,11 @@ int main(int argc, char **argv)
                        resultFont = show_menu(&fontMenu);     
                        if(resultFont != -1)
                            set_font((int) resultFont);
+                       break;
+                    case 20:
+                       resultFont = show_menu(&titleFontMenu);     
+                           if(resultFont != -1)
+                             set_title_font((int) resultFont);
                        break;
                     default:
                         snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n~5**UNDER CONSTRUCTION**",

@@ -30,14 +30,14 @@ typedef struct _tMenuItem
 
 typedef struct _tPointPer
 {
-    float xPer;
-    float yPer;
+  float xPer;
+  float yPer;
 } tPointPer;
 
 typedef struct _tPointXY
 {
-    float x;
-    float y;
+  float x;
+  float y;
 } tPointXY;
 
 typedef struct _tRectPer
@@ -60,6 +60,7 @@ typedef struct _tMenuState
 {
     char * title;
     tPointPer titlePer;
+    tPointXY titlePos;
     tMenuItem * menuItems;
     int selectedIndex;
     int maxItems;
@@ -81,6 +82,7 @@ typedef struct _tMenuState
     void (*drawHeader) (struct _tMenuState * menu);
     void (*drawDetail) (struct _tMenuState * menu);
     void (*drawFooter) (struct _tMenuState * menu);
+    void (*keyPress)   (struct _tMenuState * menu, int key);
 } tMenuState; 
 //------------------------------------------------------------------------------
     
@@ -94,15 +96,6 @@ void init_ui_var();
 void free_ui_var();
 struct result_rec * init_result_rec();
 void free_result_rec(struct result_rec * rec);
-void draw_txt_box(char * message, 
-                  float widthP, 
-                  float heightP,
-                  float boxXp, 
-                  float boxYp, 
-                  float tXp, 
-                  float tYp, 
-                  int points, 
-                  bool swap);
 void draw_txt_box_cen(
                   char * message, 
                   float widthP, 
@@ -110,12 +103,11 @@ void draw_txt_box_cen(
                   float boxYp, 
                   float tXp, 
                   float tYp, 
-                  int points, 
-                  bool swap);
+                  int points);
 
 void clear_screen(bool swap);
 bool input_string(char * prompt, char * buf, int max);
-void show_big_message(char * title, char * message, bool Pause);
+void show_big_message(char * title, char * message);
 int  show_selection_info(struct result_rec * rec);
 void show_message(char * message, int error, int points);
 void clear_output();
@@ -126,16 +118,20 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key);
 int show_menu(tMenuState * menu);
 void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY);
 void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds);
+void init_font_menus();
 void init_big_menu(tMenuState * menu, char * title);
 void init_format_menu(tMenuState * menu);
-void init_format_menu(tMenuState * menu);
+void init_small_menu(tMenuState * menu, char * title);
+void set_menu_value(tMenuState * menu, int value);
 int show_format_menu(tMenuState * menu);
 int handleESC();
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height);
 VGImage load_jpeg2(char * url, unsigned int width, unsigned int height, 
     unsigned char ** downloadData, unsigned char ** imageData, unsigned int * imageDataSize);
 void set_font(int font);
+void set_title_font(int font);
 int get_font();
+int get_title_font();
 void drawBGImage();
 void setBGImage();
 bool kbHit(void);
@@ -151,7 +147,7 @@ extern struct result_rec * selected_rec;
 extern int numPointFontTiny;
 extern int numPointFontSmall;
 extern int numPointFontMed;
-extern int numPointFontlarge; 
+extern int numPointFontLarge; 
 extern int numThumbWidth;
 extern int numResults;
 extern int numFormat;

@@ -2,7 +2,7 @@
 
 tMenuItem mainMenuItems[] =
 {
-    {"Help / About",	      	"HELP\nbinarybond007@gmail.com\n",      	   0},     	
+    {"Help / About",	      	"HELP\n~5binarybond007@gmail.com\n",      	   0},     	
     {"Select Format", 	       	"SET_FORMAT",			      		   1}, 	 
     {"Regular search", 	    	"videos?v=2&alt=jsonc&q=%s",		           0},
     {"User Favorites",		"users/%s/favorites?v=2&alt=jsonc" ,	    	   0},
@@ -22,6 +22,7 @@ tMenuItem mainMenuItems[] =
     {"Audo Device", 		"AD",						   5},	
     {"JPEG Decoder",		"JD",	 					   6},
     {"Font", 			"FONT",					           7},		
+    {"Title Font", 		"TFONT",				           8},	
     {NULL, 			NULL,         				    	   0}
 };
 

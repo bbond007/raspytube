@@ -79,6 +79,8 @@ extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize
 extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
 extern tMenuState regionMenu;
 extern tMenuState fontMenu;
+extern tMenuState mainMenu;
+extern tMenuState titleFontMenu;
 extern tMenuItem videoMenuItems[];
 extern tMenuItem jpegMenuItems[];
 extern tMenuItem audioMenuItems[];
@@ -234,22 +236,51 @@ void free_ui_var()
     if(fontMenu.menuItems!= NULL)
         free(fontMenu.menuItems);       
 }
-
+//------------------------------------------------------------------------------
+void set_menu_value(tMenuState * menu, int value)
+{
+    
+    if(value > menu->maxItems)
+    {
+        menu->selectedIndex = value % menu->maxItems;
+        menu->scrollIndex = value / menu->maxItems;
+    }
+    else
+    {
+        menu->selectedIndex = value;
+        menu->scrollIndex = 0;
+    }
+    menu->selectedItem = value;
+}
 //------------------------------------------------------------------------------
 void set_font(int font)
 {
-    fontMenu.selectedItem = font;
+    set_menu_value(&fontMenu, font);
+}
+//------------------------------------------------------------------------------
+void set_title_font(int font)
+{
+     set_menu_value(&titleFontMenu, font);
 }
 //------------------------------------------------------------------------------
 int get_font()
 {
      return fontMenu.selectedIndex;
 }
-    
 //------------------------------------------------------------------------------
-void init_ui_var()
+int get_title_font()
 {
-    int i;
+     return titleFontMenu.selectedIndex;
+}
+
+//------------------------------------------------------------------------------
+void init_font_menus()
+{
+
+    init_small_menu(&fontMenu, "Font menu:");
+    init_small_menu(&titleFontMenu, "Title Font menu:");
+    
+    int i;   
     fontMenu.menuItems = malloc(sizeof(tMenuItem) * (fontCount + 1));
     for (i = 0; i < fontCount; i++)
     {
@@ -259,6 +290,14 @@ void init_ui_var()
     }
     fontMenu.menuItems[i].key = NULL;
     fontMenu.menuItems[i].description = NULL;
+    fontMenu.drawDetail = &font_menu_detail;
+    titleFontMenu.menuItems    = fontMenu.menuItems;
+    titleFontMenu.drawDetail   = fontMenu.drawDetail;    
+}
+    
+//------------------------------------------------------------------------------
+void init_ui_var()
+{
     
     if(tvImage == 0)
     {
@@ -318,7 +357,29 @@ char * parse_url(char * url, char ** server, char ** page)
 }
 
 //------------------------------------------------------------------------------
-void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points, bool swap)
+
+void draw_menu(tMenuState * menu)
+{
+    
+    Roundrect(menu->bCenterX?(state->screen_width - menu->winRect.w) / 2:menu->winRect.x,
+              menu->winRect.y,
+              menu->winRect.w,
+              menu->winRect.h, 
+              20, 20, 10, rectColor, selectedColor);
+
+    Roundrect(menu->selRect.x,
+              menu->selRect.y,
+              menu->selRect.w,
+              menu->selRect.h,
+              20, 20, 5, rectColor, selectedColor);
+              
+    Text(&fontDefs[titleFontMenu.selectedIndex],
+        menu->titlePos.x, menu->titlePos.y, 
+        menu->title, menu->numPointFontTitle, selectedColor, VG_FILL_PATH);        
+}
+
+//------------------------------------------------------------------------------
+void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points)
 {
     int width  = state->screen_width * widthP;
     int height = state->screen_height * heightP;
@@ -327,24 +388,7 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
     Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
-    textXY(tx, ty, message, points, textColor);
-    if(swap)
-        eglSwapBuffers(state->display, state->surface);
-}
-
-//------------------------------------------------------------------------------
-void draw_txt_box(char * message, float widthP, float heightP, float boxXp, float boxYp, float tXp, float tYp, int points, bool swap)
-{
-    int width  = state->screen_width * widthP;
-    int height = state->screen_height * heightP;
-    int x = state->screen_height * boxXp;
-    int y = state->screen_height * boxYp;
-    int tx = state->screen_width * tXp;
-    int ty = state->screen_height * tYp;
-    Roundrect(x,y, width, height, 20, 20, 10, rectColor, selectedColor);
-    textXY(tx, ty, message, points, textColor);
-    if(swap)
-        eglSwapBuffers(state->display, state->surface);
+    Text(&fontDefs[titleFontMenu.selectedIndex],tx, ty, message, points, selectedColor, VG_FILL_PATH);
 }
 
 //------------------------------------------------------------------------------
@@ -380,7 +424,7 @@ int show_selection_info(struct result_rec * rec)
     if(rec->description)
     {
         redraw_results(false);
-        show_big_message("Info: loading...", rec->description, false);    
+        show_big_message("Info: loading...", rec->description);    
         vgSetPixels(tvX,
                     tvY,
                     tvImage,
@@ -417,14 +461,14 @@ int show_selection_info(struct result_rec * rec)
         else
         {
             if(rec->description)
-                show_big_message("Info: ???", rec->description, false);
+                show_big_message("Info: ???", rec->description);
         }
 
         do
         {
             redraw_results(false);
             if(infoStr != NULL && rec->description != NULL)
-                show_big_message(infoStr, rec->description, false);
+                show_big_message(infoStr, rec->description);
 
             vgSetPixels(tvX,
                         tvY,
@@ -494,9 +538,7 @@ bool input_string(char * prompt, char * buf, int max)
     do
     {
         drawBGImage();
-        //clear_screen(false);
-        //redraw_results(false);
-        draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge, false);
+        draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
         snprintf(temp, sizeof(formatStr),formatStr, key,
                  lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
         textXY(state->screen_width * .10f, state->screen_height * .10f, temp, numPointFontMed, textColor);
@@ -555,24 +597,16 @@ bool input_string(char * prompt, char * buf, int max)
 }
 
 //------------------------------------------------------------------------------
-void show_big_message(char * title, char * message, bool pause)
+void show_big_message(char * title, char * message)
 {
     redraw_results(false);
-    draw_txt_box_cen(title, .95f, .47f, .04, .10f, .45f, numPointFontLarge, false);
+    draw_txt_box_cen(title, .95f, .47f, .04, .10f, .45f, numPointFontLarge);
     textXY_Rollover(state->screen_width  * .10f,
                     state->screen_height * .40f,
                     state->screen_width  * .85f,
                     7, //max no of lines
                     state->screen_height * .05f,
                     message, numPointFontMed, textColor);
-
-    if(pause)
-    {
-        dumpKb();
-        eglSwapBuffers(state->display, state->surface);
-        readKb();
-    }
-
 }
 
 //------------------------------------------------------------------------------
@@ -718,8 +752,7 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->title = title;
     menu->titlePer.xPer = .10f;
     menu->titlePer.yPer = .87f;
-    //menu->titlePer.wPer = 0;
-    //menu->titlePer.hPer = 0;
+    calc_point_xy(&menu->titlePer, &menu->titlePos);
     menu->selectedIndex = 0;
     menu->scrollIndex 	= 0;
     menu->maxItems = 18;
@@ -749,6 +782,7 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
+    menu->keyPress = NULL;
     menu->bCenterX = true;
     menu->bCenterY = false;
 }
@@ -758,8 +792,7 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->title = title;
     menu->titlePer.xPer = .10f;
     menu->titlePer.yPer = .87f;
-    //menu->titlePer.wPer = 0;
-    //menu->titlePer.hPer = 0;
+    calc_point_xy(&menu->titlePer, &menu->titlePos);
     menu->selectedIndex = 0;
     menu->scrollIndex 	= 0;
     menu->maxItems = 8;
@@ -789,6 +822,7 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
+    menu->keyPress = NULL;
     menu->bCenterX = false;
     menu->bCenterY = false;
 }
@@ -859,8 +893,13 @@ void main_menu_detail(tMenuState * menu)
         case 6:
             descr = jpegMenuItems[(int) jpegDecoder].description;
             break;            
+
         case 7:
             descr = fontMenu.menuItems[(int) get_font()].description;
+            break;            
+
+        case 8:
+            descr = titleFontMenu.menuItems[(int) get_title_font()].description;
             break;            
 
         }
@@ -925,34 +964,11 @@ int show_menu(tMenuState * menu)
     do
     {
         drawBGImage();
-        if (menu->bCenterX)
-            draw_txt_box_cen(menu->title,
-                             menu->winPer.wPer,
-                             menu->winPer.hPer,
-                             //menu->winPer.xPer,
-                             menu->winPer.yPer,
-                             menu->titlePer.xPer,
-                             menu->titlePer.yPer,
-                             menu->numPointFontTitle, false);
-        else
-            draw_txt_box(menu->title,
-                         menu->winPer.wPer,
-                         menu->winPer.hPer,
-                         menu->winPer.xPer,
-                         menu->winPer.yPer,
-                         menu->titlePer.xPer,
-                         menu->titlePer.yPer,
-                         menu->numPointFontTitle, false);
 
         menu->selRect.y = state->screen_height -
                           (menu->selectedIndex * menu->yStep) - (menu->yStep / 3.0f) - menu->txtOffset.y;
 
-        Roundrect(menu->selRect.x,
-                  menu->selRect.y,
-                  menu->selRect.w,
-                  menu->selRect.h,
-                  20, 20, 5, rectColor, selectedColor);
-
+        draw_menu(menu);
         int y = 0;
         int count = 0;
 
