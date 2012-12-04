@@ -1,4 +1,5 @@
 #include "DejaVuSans.inc"
+#include "Topaz.inc"
 #include "TopazPlus.inc"
 #include "StarAvenu.inc"
 #include "PriceDown.inc"
@@ -19,6 +20,18 @@ tFontDef fontDefs[] =
 	     DejaVuSans_glyphAdvances,
 	     DejaVuSans_characterMap,
 	     DejaVuSans_glyphCount,
+             NULL
+	},
+	{   
+	    "Topaz",
+	     Topaz_glyphPoints, 
+	     Topaz_glyphPointIndices,
+             Topaz_glyphInstructions, 
+	     Topaz_glyphInstructionIndices,
+             Topaz_glyphInstructionCounts, 
+	     Topaz_glyphAdvances,
+	     Topaz_characterMap,
+	     Topaz_glyphCount,
              NULL
 	},	
 	{   

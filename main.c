@@ -143,7 +143,7 @@ int main(int argc, char **argv)
             break;
 
         case 'T' :
-            show_message("This is a error test.", 0xDEADBEEF, ERROR_POINT);
+            show_message("TEST-->\n~0|0:~0X~0|1:~1X~0|2:~2X~0|3:~3X~0|4:~4X~0|5:~5X~0|6:~6X~0|7:~7X\n~5press [ESC]", 0xDEADBEEF, ERROR_POINT);
             break;
 
         case 'M':
@@ -494,10 +494,10 @@ static void play_video (char * url)
         switch(videoPlayer)
         {
         case vpMPlayer:
-            show_message("Calling youtube_dl...~7DONE~0\nStarting Mplayer...", false, numPointFontMed);
+            show_message("Calling youtube_dl...~5DONE~0\nStarting Mplayer...", false, numPointFontMed);
             break;
         case vpOMXPlayer:
-            show_message("Calling youtube_dl...~7DONE~0\nStarting OMXPlayer...", false, numPointFontMed);
+            show_message("Calling youtube_dl...~5DONE~0\nStarting OMXPlayer...", false, numPointFontMed);
             break;
         }
 

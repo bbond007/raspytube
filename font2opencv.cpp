@@ -352,7 +352,7 @@ int main (int argc, char * const argv[])
 
 
 	//print the number of glyphs and the character map
-	fprintf (f,"static const int %s_glyphCount = %d;\n",argv[3],glyphs);
+	fprintf (f,"#define %s_glyphCount %d\n",argv[3],glyphs);
 	fprintf (f,"static const short %s_characterMap[256] = {", argv[3]);
 	for(int i=0;i<256;i++)
 	{
