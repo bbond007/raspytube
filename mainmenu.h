@@ -47,16 +47,16 @@ tMenuItem jpegMenuItems[] =
      	
 tMenuItem guiMenuItems[] =
 {
-    {"Video Player", 	"VP",	        	      1},
-    {"Audo Device", 	"AD",			      2},	
-    {"JPEG Decoder",	"JD",	 		      3},
-    {"Font",		"FONT",			      4},
-    {"Title Font",	"TFONT",		      5},
-    {"Max Results", 	"MAX", 			      6},
-    {"Tiny Font", 	"TF",			      7},
-    {"Small Font", 	"SF",			      8},
-    {"Medium Font", 	"MF", 			      9},
-    {"large Font", 	"LF",			      10},
+    {"Video Player", 	 "VP",	        	      1},
+    {"Audo Device", 	 "AD",			      2},	
+    {"JPEG Decoder",	 "JD",	 		      3},
+    {"Font",		 "FONT",		      4},
+    {"Title Font",	 "TFONT",		      5},
+    {"Max Results", 	 "MAX", 		      6},
+    {"Tiny Font Size", 	 "TF",			      7},
+    {"Small Font Size",	 "SF",			      8},
+    {"Medium Font Size ","MF", 			      9},
+    {"Large Font Size",  "LF",			      10},
     {NULL,		NULL,			      0}
 };
 

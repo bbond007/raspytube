@@ -93,7 +93,7 @@ int main(int argc, char **argv)
     mainMenu.menuItems = mainMenuItems;
     mainMenu.drawDetail = &main_menu_detail;
     regionMenu.menuItems = &regionMenuItems;
-    guiMenu.menuItems = &guiMenuItems;
+    guiMenu.menuItems = guiMenuItems;
     guiMenu.drawDetail = &gui_menu_detail;
     set_menu_value(&regionMenu,0);    
     set_font(0);
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
                                 result,
                                 mainMenuItems[result].key,
                                 mainMenuItems[result].description);
-                        show_message(txt, 2, ERROR_POINT);
+                        show_message(txt, 0x08675309, ERROR_POINT);
                         break;
                     }
                 }

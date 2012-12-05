@@ -825,10 +825,10 @@ void init_small_menu(tMenuState * menu, char * title)
     rectPer.yPer = .53f;
     init_arrow(menu->downArrow, &rectPer, false);
 */
-    menu->upArrowPer.xPer = .45f;
+    menu->upArrowPer.xPer = .47f;
     menu->upArrowPer.yPer = .83f;
     calc_point_xy(&menu->upArrowPer, &menu->upArrowPos);
-    menu->downArrowPer.xPer = .45f;
+    menu->downArrowPer.xPer = .47f;
     menu->downArrowPer.yPer = .53f;
     calc_point_xy(&menu->downArrowPer, &menu->downArrowPos);
     
@@ -863,6 +863,7 @@ void gui_menu_detail(tMenuState * menu)
     if(menu->menuItems[menu->selectedItem].special > 0)
     {
         char * descr = NULL;
+        char temp[10];
         switch(menu->menuItems[menu->selectedItem].special)
         {
         case 1:
@@ -883,7 +884,33 @@ void gui_menu_detail(tMenuState * menu)
 
         case 5:
             descr = titleFontMenu.menuItems[(int) get_title_font()].description;
-            break; 
+            break;
+            
+        case 6: 
+            snprintf(temp, sizeof(temp), "[%d]", numResults);
+            descr = temp;
+            break;
+             
+        case 7: 
+            snprintf(temp, sizeof(temp), "[%d]", numPointFontTiny);
+            descr = temp;
+            break;
+        
+        case 8: 
+            snprintf(temp, sizeof(temp), "[%d]", numPointFontSmall);
+            descr = temp;
+            break;
+        
+        case 9: 
+            snprintf(temp, sizeof(temp), "[%d]", numPointFontMed);
+            descr = temp;
+            break;
+     
+        case 10: 
+            snprintf(temp, sizeof(temp), "[%d]", numPointFontLarge);
+            descr = temp;
+            break;
+                
         }
         
         if(descr != NULL)
@@ -1008,13 +1035,13 @@ int show_menu(tMenuState * menu)
             if(count >= menu->scrollIndex)
             {
 
+                menu->selectedItem = y + menu->scrollIndex;
+               
                 textXY(menu->txtRaster.x,
                      menu->txtRaster.y,
                      currentItem->description,
                      numPointFontMed,
                      textColor);
-                
-                menu->selectedItem = y + menu->scrollIndex;
                 
                 if (menu->drawDetail != NULL)
                     menu->drawDetail(menu);
