@@ -914,7 +914,8 @@ void main_menu_detail(tMenuState * menu)
             resolution = supported_formats[numFormat + 1][2];
             size_t size = strlen(container)  +
                           strlen(resolution) +
-                          strlen(formatStr)  - 5;
+                          strlen(number) +
+                          strlen(formatStr) - 5;
             videoFormat = malloc(size);
             snprintf(videoFormat, size, formatStr, number, container, resolution);
             descr = videoFormat;
