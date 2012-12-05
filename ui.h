@@ -75,8 +75,12 @@ typedef struct _tMenuState
     tRectPer selPer;
     tRectBounds winRect;
     tRectBounds selRect;
-    VGfloat upArrow[8];
-    VGfloat downArrow[8];
+    //VGfloat upArrow[8];
+    //VGfloat downArrow[8];
+    tPointPer upArrowPer;
+    tPointPer downArrowPer;
+    tPointXY upArrowPos;
+    tPointXY downArrowPos;
     bool bCenterX;
     bool bCenterY;
     void (*drawHeader) (struct _tMenuState * menu);

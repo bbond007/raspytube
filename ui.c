@@ -19,6 +19,9 @@
 #include "ui.h"
 #include "audio.h"
 #include "fonts.inc"
+#include "menu_arrow_up.inc"
+#include "menu_arrow_down.inc"
+
 //#include "menus.h"
 //stuff for the keyboard.
 
@@ -30,9 +33,10 @@ static AudioSampleInfo asiKbClick;
 extern const signed char soundraw_data[];
 extern const unsigned int soundraw_size;
 */
-static VGImage bgImage = 0;
-static VGImage tvImage = 0;
-
+static VGImage bgImage           = 0;
+static VGImage tvImage           = 0;
+static VGImage upArrowImage      = 0;
+static VGImage downArrowImage    = 0;
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
@@ -220,6 +224,12 @@ void free_ui_var()
     if (bgImage > 0)
         vgDestroyImage(bgImage);    
     
+    if(upArrowImage > 0)
+        vgDestroyImage(upArrowImage);
+    
+    if(downArrowImage > 0)
+        vgDestroyImage(downArrowImage);
+        
     int i;
     for(i=0; i < fontCount; i++)
         unload_font(&fontDefs[i]);
@@ -286,13 +296,28 @@ void init_font_menus()
 //------------------------------------------------------------------------------
 void init_ui_var()
 {   
+    int w, h;
     if(tvImage == 0)
     {
-        int w  = (state->screen_width  * .35f);
-        int h  = (state->screen_height * .45f);
+        w  = (state->screen_width  * .35f);
+        h  = (state->screen_height * .45f);
            tvImage = create_image_from_buf((unsigned char *)
            tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }   
+    
+    if(upArrowImage == 0)
+    {
+        w  = (state->screen_width  * .05f);
+        h  = (state->screen_height * .07f);
+        
+        upArrowImage = create_image_from_buf((unsigned char *)
+            menu_arrow_up_raw_data,  menu_arrow_up_raw_size, w, h);
+            
+        downArrowImage = create_image_from_buf((unsigned char *)
+            menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
+    }   
+    
+    
     if(state->screen_width >= 1920)
     {
         numPointFontTiny  = 10;
@@ -341,9 +366,7 @@ char * parse_url(char * url, char ** server, char ** page)
     *temp = 0x00;
     return buff;
 }
-
 //------------------------------------------------------------------------------
-
 void draw_menu(tMenuState * menu)
 {
     
@@ -745,7 +768,7 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->selPer.wPer = .50f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);
-
+/*
     tRectPer rectPer;
     rectPer.xPer = .88f;
     rectPer.yPer = .88f;
@@ -753,7 +776,14 @@ void init_big_menu(tMenuState * menu, char * title)
     rectPer.hPer = .04f;
     init_arrow(menu->upArrow, &rectPer, true);
     rectPer.yPer = .08f;
-    init_arrow(menu->downArrow, &rectPer, false);
+    init_arrow(menu->downArrow, &rectPer, false);    
+*/
+    menu->upArrowPer.xPer = .88f;
+    menu->upArrowPer.yPer = .83f;
+    calc_point_xy(&menu->upArrowPer, &menu->upArrowPos);
+    menu->downArrowPer.xPer = .88f;
+    menu->downArrowPer.yPer = .10f;
+    calc_point_xy(&menu->downArrowPer, &menu->downArrowPos); 
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
@@ -785,7 +815,7 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->selPer.wPer = .35f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);
-
+/*
     tRectPer rectPer;
     rectPer.xPer = .45f;
     rectPer.yPer = .88f;
@@ -794,6 +824,14 @@ void init_small_menu(tMenuState * menu, char * title)
     init_arrow(menu->upArrow, &rectPer, true);
     rectPer.yPer = .53f;
     init_arrow(menu->downArrow, &rectPer, false);
+*/
+    menu->upArrowPer.xPer = .45f;
+    menu->upArrowPer.yPer = .83f;
+    calc_point_xy(&menu->upArrowPer, &menu->upArrowPos);
+    menu->downArrowPer.xPer = .45f;
+    menu->downArrowPer.yPer = .53f;
+    calc_point_xy(&menu->downArrowPer, &menu->downArrowPos);
+    
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
@@ -1003,12 +1041,20 @@ int show_menu(tMenuState * menu)
 
         if (bMoreItems)
         {
-            Poly(menu->downArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
+            vgSetPixels(menu->downArrowPos.x, menu->downArrowPos.y, 
+                        downArrowImage, 0,0,
+                        vgGetParameteri(downArrowImage, VG_IMAGE_WIDTH),
+                        vgGetParameteri(downArrowImage, VG_IMAGE_HEIGHT));
+            //Poly(menu->downArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->scrollIndex > 0)
         {
-            Poly(menu->upArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
+             vgSetPixels(menu->upArrowPos.x, menu->upArrowPos.y, 
+                        upArrowImage, 0,0,
+                        vgGetParameteri(upArrowImage, VG_IMAGE_WIDTH),
+                        vgGetParameteri(upArrowImage, VG_IMAGE_HEIGHT));
+            //Poly(menu->upArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->drawFooter != NULL)
