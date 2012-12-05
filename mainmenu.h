@@ -18,11 +18,7 @@ tMenuItem mainMenuItems[] =
     {"Recently Featured",	"standardfeeds/%srecently_featured?v=2&alt=jsonc", 3},
     {"Playlist Search",		"playlists/snippets?v=2&alt=jsonc&q=%s",           0},
     {"Play Playlist", 		"playlists/%s?v=2&alt=jsonc" ,		           0},
-    {"Video Player", 		"VP",						   4},
-    {"Audo Device", 		"AD",						   5},	
-    {"JPEG Decoder",		"JD",	 					   6},
-    {"Font", 			"FONT",					           7},		
-    {"Title Font", 		"TFONT",				           8},	
+    {"GUI Menu",		"GUI",						   0},
     {NULL, 			NULL,         				    	   0}
 };
 
@@ -49,6 +45,21 @@ tMenuItem jpegMenuItems[] =
     {NULL, 		NULL, 			      0}
 };
      	
-    	
+tMenuItem guiMenuItems[] =
+{
+    {"Video Player", 	"VP",	        	      1},
+    {"Audo Device", 	"AD",			      2},	
+    {"JPEG Decoder",	"JD",	 		      3},
+    {"Font",		"FONT",			      4},
+    {"Title Font",	"TFONT",		      5},
+    {"Max Results", 	"MAX", 			      6},
+    {"Tiny Font", 	"TF",			      7},
+    {"Small Font", 	"SF",			      8},
+    {"Medium Font", 	"MF", 			      9},
+    {"large Font", 	"LF",			      10},
+    {NULL,		NULL,			      0}
+};
+
+    			        	
 
      	

@@ -6,6 +6,9 @@
 #include "PacFont.inc"
 #include "Gyparody.inc"
 #include "HydrogenWhiskey.inc"
+#include "RobotoRegular.inc"
+#include "Arial.inc"
+#include  "Teletext.inc"
 
 tFontDef fontDefs[] = 
 {
@@ -44,6 +47,42 @@ tFontDef fontDefs[] =
 	     TopazPlus_glyphAdvances,
 	     TopazPlus_characterMap,
 	     TopazPlus_glyphCount,
+             NULL
+	},
+	{   
+	    "Arial",
+	     Arial_glyphPoints, 
+	     Arial_glyphPointIndices,
+             Arial_glyphInstructions, 
+	     Arial_glyphInstructionIndices,
+             Arial_glyphInstructionCounts, 
+	     Arial_glyphAdvances,
+	     Arial_characterMap,
+	     Arial_glyphCount,
+             NULL
+	},
+	{   
+	    "Teletext",
+	     Teletext_glyphPoints, 
+	     Teletext_glyphPointIndices,
+             Teletext_glyphInstructions, 
+	     Teletext_glyphInstructionIndices,
+             Teletext_glyphInstructionCounts, 
+	     Teletext_glyphAdvances,
+	     Teletext_characterMap,
+	     Teletext_glyphCount,
+             NULL
+	},
+	{   
+	    "Roboto",
+	     RobotoRegular_glyphPoints, 
+	     RobotoRegular_glyphPointIndices,
+             RobotoRegular_glyphInstructions, 
+	     RobotoRegular_glyphInstructionIndices,
+             RobotoRegular_glyphInstructionCounts, 
+	     RobotoRegular_glyphAdvances,
+	     RobotoRegular_characterMap,
+	     RobotoRegular_glyphCount,
              NULL
 	},
 	{    

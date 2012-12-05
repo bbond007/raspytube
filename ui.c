@@ -228,8 +228,7 @@ void free_ui_var()
 }
 //------------------------------------------------------------------------------
 void set_menu_value(tMenuState * menu, int value)
-{
-    
+{    
     if(value > menu->maxItems)
     {
         menu->selectedIndex = value % menu->maxItems;
@@ -260,7 +259,7 @@ int get_font()
 //------------------------------------------------------------------------------
 int get_title_font()
 {
-     return titleFontMenu.selectedIndex;
+     return titleFontMenu.selectedItem;
 }
 
 //------------------------------------------------------------------------------
@@ -360,7 +359,7 @@ void draw_menu(tMenuState * menu)
               menu->selRect.h,
               20, 20, noRectPenSize / 2, rectColor, selectedColor);
               
-    Text(&fontDefs[titleFontMenu.selectedIndex],
+    Text(&fontDefs[titleFontMenu.selectedItem],
         menu->titlePos.x, menu->titlePos.y, 
         menu->title, menu->numPointFontTitle, selectedColor, VG_FILL_PATH);        
 }
@@ -374,7 +373,7 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
     Roundrect(x,y, width, height, 20, 20, noRectPenSize, rectColor, selectedColor);
-    Text(&fontDefs[titleFontMenu.selectedIndex],tx, ty, message, points, selectedColor, VG_FILL_PATH);
+    Text(&fontDefs[titleFontMenu.selectedItem],tx, ty, message, points, selectedColor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
 void clear_screen(bool swap)
@@ -821,6 +820,42 @@ void format_menu_detail(tMenuState * menu)
                supported_formats[menu->selectedItem + 1][x],(x==3)?numPointFontSmall:numPointFontMed, textColor);
 }
 //------------------------------------------------------------------------------
+void gui_menu_detail(tMenuState * menu)
+{
+    if(menu->menuItems[menu->selectedItem].special > 0)
+    {
+        char * descr = NULL;
+        switch(menu->menuItems[menu->selectedItem].special)
+        {
+        case 1:
+            descr = videoMenuItems[(int) videoPlayer].description;
+            break;
+            
+        case 2:
+            descr = audioMenuItems[(int) soundOutput].description;
+            break;
+            
+        case 3:
+            descr = jpegMenuItems[(int) jpegDecoder].description;
+            break;            
+
+        case 4:
+            descr = fontMenu.menuItems[(int) get_font()].description;
+            break;            
+
+        case 5:
+            descr = titleFontMenu.menuItems[(int) get_title_font()].description;
+            break; 
+        }
+        
+        if(descr != NULL)
+            textXY(state->screen_width * .25,
+                 menu->txtRaster.y,
+                 descr,
+                 numPointFontMed, errorColor);
+    }       
+}
+//------------------------------------------------------------------------------
 void main_menu_detail(tMenuState * menu)
 {
     char * videoFormat = NULL;
@@ -855,26 +890,6 @@ void main_menu_detail(tMenuState * menu)
             descr = regionMenu.menuItems[regionMenu.selectedItem].key;
             break;
        
-        case 4:
-            descr = videoMenuItems[(int) videoPlayer].description;
-            break;
-            
-        case 5:
-            descr = audioMenuItems[(int) soundOutput].description;
-            break;
-            
-        case 6:
-            descr = jpegMenuItems[(int) jpegDecoder].description;
-            break;            
-
-        case 7:
-            descr = fontMenu.menuItems[(int) get_font()].description;
-            break;            
-
-        case 8:
-            descr = titleFontMenu.menuItems[(int) get_title_font()].description;
-            break;            
-
         }
 
         if(descr != NULL)
@@ -939,15 +954,12 @@ int show_menu(tMenuState * menu)
 
         menu->selRect.y = state->screen_height -
                           (menu->selectedIndex * menu->yStep) - (menu->yStep / 3.0f) - menu->txtOffset.y;
-
-        draw_menu(menu);
         int y = 0;
         int count = 0;
-
-        menu->selectedItem = menu->scrollIndex;
+        menu->selectedItem = menu->selectedIndex + menu->scrollIndex;
+        draw_menu(menu);
         menu->txtRaster.x = menu->txtOffset.x;
         menu->txtRaster.y = SHOW_MENU_Y_CALC;
-
         if (menu->drawHeader != NULL)
             menu->drawHeader(menu);
 
@@ -962,11 +974,13 @@ int show_menu(tMenuState * menu)
                      currentItem->description,
                      numPointFontMed,
                      textColor);
+                
+                menu->selectedItem = y + menu->scrollIndex;
+                
                 if (menu->drawDetail != NULL)
                     menu->drawDetail(menu);
                 y++;
 
-                menu->selectedItem = y + menu->scrollIndex;
                 menu->txtRaster.x = menu->txtOffset.x;
                 menu->txtRaster.y = SHOW_MENU_Y_CALC;
 
@@ -989,12 +1003,12 @@ int show_menu(tMenuState * menu)
 
         if (bMoreItems)
         {
-            Poly(menu->downArrow, 4, 5, selectedColor, bgColor, VG_TRUE);
+            Poly(menu->downArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->scrollIndex > 0)
         {
-            Poly(menu->upArrow, 4, 5, selectedColor, bgColor, VG_TRUE);
+            Poly(menu->upArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->drawFooter != NULL)

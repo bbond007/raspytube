@@ -64,9 +64,11 @@ static void do_cur_left(char * searchStr);
 tMenuState regionMenu;
 tMenuState mainMenu;
 tMenuState fontMenu;
+tMenuState guiMenu;
 tMenuState titleFontMenu;
 tMenuState formatMenu;
-    
+
+static void do_gui_menu();
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
 static void do_change_video_player();
@@ -87,12 +89,15 @@ int main(int argc, char **argv)
     init_font_menus();
     //init_small_menu(&fontMenu, "Font menu:");
     //init_small_menu(&titleFontMenu, "Title Font menu:");    
+    init_small_menu(&guiMenu, "GUI menu:");
     mainMenu.menuItems = mainMenuItems;
     mainMenu.drawDetail = &main_menu_detail;
-    regionMenu.menuItems = regionMenuItems;
+    regionMenu.menuItems = &regionMenuItems;
+    guiMenu.menuItems = &guiMenuItems;
+    guiMenu.drawDetail = &gui_menu_detail;
     set_menu_value(&regionMenu,0);    
     set_font(0);
-    set_title_font(3);
+    set_title_font(4);
     
     initKb();
     clear_output();
@@ -113,7 +118,6 @@ int main(int argc, char **argv)
 
     int key;
     int result;
-    int resultFont;
     do
     {
         key = toupper(readKb()); //wait for keypress
@@ -192,24 +196,8 @@ int main(int argc, char **argv)
                 //  case 15:
                 //      break;
                     case 16:
-                        do_change_video_player();
+                        do_gui_menu();
                         break;
-                    case 17:
-                        do_change_audio_dev();
-                        break;
-                    case 18:
-                        do_change_jpeg_dec();
-                        break;
-                    case 19:
-                       resultFont = show_menu(&fontMenu);     
-                       if(resultFont != -1)
-                           set_font((int) resultFont);
-                       break;
-                    case 20:
-                       resultFont = show_menu(&titleFontMenu);     
-                           if(resultFont != -1)
-                             set_title_font((int) resultFont);
-                       break;
                     default:
                         snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n~5**UNDER CONSTRUCTION**",
                                 result,
@@ -326,6 +314,38 @@ int main(int argc, char **argv)
     return 0;
 }
 
+//------------------------------------------------------------------------------
+static void do_gui_menu()
+{
+    int result;
+    int resultFont;
+    do
+    {
+        result = show_menu(&guiMenu);
+        switch(result)
+        {
+            case 0:
+                do_change_video_player();
+                break;
+            case 1:
+                do_change_audio_dev();
+                break;
+            case 2:
+                do_change_jpeg_dec();
+                break;
+            case 3:
+                resultFont = show_menu(&fontMenu);     
+                if(resultFont != -1)
+                     set_font((int) resultFont);
+                break;
+            case 4:
+                resultFont = show_menu(&titleFontMenu);     
+                if(resultFont != -1)
+                     set_title_font((int) resultFont);
+               break;
+        }
+    }while (result != -1);
+}
 //------------------------------------------------------------------------------
 static void do_cur_up()
 {
