@@ -90,9 +90,9 @@ typedef struct _tMenuState
 } tMenuState; 
 //------------------------------------------------------------------------------
     
-typedef enum tVideoPlayer {vpMPlayer   = 1, vpOMXPlayer = 0};
-typedef enum tSoundOutput {soHDMI      = 1, soLOCAL     = 0};
-typedef enum tJpegDecoder {jdLibJpeg   = 1, jdOMX       = 0};
+typedef enum tVideoPlayer {vpMPlayer   = 1, vpOMXPlayer = 0} tVideoPlayer;
+typedef enum tSoundOutput {soHDMI      = 1, soLOCAL     = 0} tSoundOutput;
+typedef enum tJpegDecoder {jdLibJpeg   = 1, jdOMX       = 0} tJpegDecoder;
 
 //------------------------------------------------------------------------------
 

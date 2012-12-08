@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include "EGL/egl.h"
 #include "GLES/gl.h"
 #include "VG/openvg.h"
@@ -8,10 +11,13 @@
 #include "ui.h";
 #include "config.h"
 
-#define VERSION_NUMBER 11
-#define CONFIG_FILE "~.raspytube.cfg.bin"
+#define VERSION_NUMBER 12
+#define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
+      tJpegDecoder jpegDecoder;
+      tVideoPlayer videoPlayer;
+      tSoundOutput soundOutput;
       int numPointFontTiny;
       int numPointFontSmall;
       int numPointFontMed;
@@ -23,14 +29,27 @@ typedef struct tConfigRec
 } tConfigRec;
 
 //----------------------------------------------------------------------------
-void loadConfig()
+char * getFileName()
 {
-      FILE * cfgFile;      
-      cfgFile = fopen(CONFIG_FILE, "rb");
+     char formatStr[] = "%s/%s";
+     struct passwd * pw = getpwuid(getuid());
+     size_t size = strlen(formatStr) + strlen(CONFIG_FILE) + strlen(pw->pw_dir);
+     char * fileName = malloc(size);
+     snprintf(fileName, size, formatStr, pw->pw_dir, CONFIG_FILE);
+     return fileName;
+}
+
+//----------------------------------------------------------------------------
+bool loadConfig()
+{
+      FILE * cfgFile; 
+      char * fileName = getFileName();     
+      cfgFile = fopen(fileName, "rb");
+      free(fileName);
       if (cfgFile == NULL)
       {	
           //show_message("~5LoadConfig():failed", true, ERROR_POINT);
-          return;
+          return false;
       }
       tConfigRec configRec;
       size_t bytesRead = fread(&configRec, 1, sizeof(tConfigRec), cfgFile);
@@ -38,7 +57,7 @@ void loadConfig()
       if(bytesRead != sizeof(tConfigRec) || configRec.numVersion != VERSION_NUMBER)
       {
           show_message("~5LoadConfig():failed->file corrupt", true, ERROR_POINT);
-          return;
+          return false;
       }
        
      numPointFontTiny 		     = configRec.numPointFontTiny;
@@ -47,9 +66,21 @@ void loadConfig()
      numPointFontLarge               = configRec.numPointFontLarge;
      numThumbWidth                   = configRec.numThumbWidth;
      numResults                      = configRec.numResults;   
+     jpegDecoder 		     = configRec.jpegDecoder;
+     videoPlayer 		     = configRec.videoPlayer;
+     soundOutput		     = configRec.soundOutput;
      numFormat                       = configRec.numFormat;  
+     return true;
 }
-
+//----------------------------------------------------------------------------
+char * setMessage(char * message, char * fileName)
+{
+     char formatStr[] = "%s~0\nfilename = %s";
+     size_t size = strlen(fileName) + strlen(formatStr) + strlen(message);
+     char * tempStr = malloc(size);
+     snprintf(tempStr, size, formatStr, message, fileName);
+     return tempStr;
+}
 //----------------------------------------------------------------------------
 void saveConfig()
 {
@@ -60,24 +91,37 @@ void saveConfig()
      configRec.numPointFontLarge     = numPointFontLarge;    
      configRec.numThumbWidth         = numThumbWidth;              
      configRec.numResults            = numResults;                          
-     configRec.numFormat             = numFormat; 
+     configRec.numFormat             = numFormat;
+     configRec.jpegDecoder           = jpegDecoder;
+     configRec.videoPlayer           = videoPlayer;
+     configRec.soundOutput           = soundOutput; 
      configRec.numVersion            = VERSION_NUMBER;
-     
      FILE * cfgFile;      
-     cfgFile = fopen(CONFIG_FILE, "wb");
+     char * fileName = getFileName();
+     char * message = NULL;
+     cfgFile = fopen(fileName, "wb");
      if (cfgFile == NULL)
      {	
-          show_message("~5SaveConfig() -> failed", true, ERROR_POINT);
+          message = setMessage("saveConfig failed", fileName);
+          free(fileName);
+          show_message(message, true, ERROR_POINT);
+          free(message);
           return;
      }
      size_t bytesWritten = fwrite(&configRec, 1, sizeof(tConfigRec), cfgFile);
      fclose(cfgFile);
      if(bytesWritten != sizeof(tConfigRec))
      {	
-          show_message("~5SaveConfig() -> fwrite failed", true, ERROR_POINT);
+          message = setMessage("saveConfig fwrite failed", fileName);          
+          show_message(message, true, ERROR_POINT);
+          free(message);
           return;
      }
-     show_message("Config file saved...\n\n~5press [ESC]", false, ERROR_POINT);
+     
+     message = setMessage("Config file saved...\n\n~5press [ESC]", fileName);
+     free(fileName);
+     show_message(message,  false, ERROR_POINT);
+     free(message);
      dumpKb();
      readKb();
 }

@@ -292,13 +292,39 @@ void init_font_menus()
     fontMenu.drawDetail = &font_menu_detail;
     titleFontMenu.menuItems    = fontMenu.menuItems;
     titleFontMenu.drawDetail   = fontMenu.drawDetail;    
-    loadConfig();
 }
     
 //------------------------------------------------------------------------------
 void init_ui_var()
 {   
     int w, h;
+    
+    
+    //if(!loadConfig())
+    //{
+        if(state->screen_width >= 1920)
+        {
+            numPointFontTiny  = 10;
+            numPointFontSmall = 12;
+            numPointFontMed   = 20;
+            numPointFontLarge = 40;
+        }
+        else if (state->screen_width >= 1280)
+        {
+            numPointFontTiny  = 6;
+            numPointFontSmall = 8;
+            numPointFontMed   = 15;
+            numPointFontLarge = 30;
+        }
+        else
+        {
+            numPointFontTiny  = 4;
+            numPointFontSmall = 6;
+            numPointFontMed   = 13;
+            numPointFontLarge = 25;
+        }
+    //}
+    
     if(tvImage == 0)
     {
         w  = (state->screen_width  * .35f);
@@ -319,36 +345,8 @@ void init_ui_var()
             menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
     }   
     
-    
-    if(state->screen_width >= 1920)
-    {
-        numPointFontTiny  = 10;
-        numPointFontSmall = 12;
-        numPointFontMed   = 20;
-        numPointFontLarge = 40;
-        //  numThumbWidth     = 12;
-        //  numResults        = 10;
-    }
-    else if (state->screen_width >= 1280)
-    {
-        numPointFontTiny  = 6;
-        numPointFontSmall = 8;
-        numPointFontMed   = 15;
-        numPointFontLarge = 30;
-        //   numThumbWidth     = 10;
-        //   numResults        = 8;
-    }
-    else
-    {
-        numPointFontTiny  = 4;
-        numPointFontSmall = 6;
-        numPointFontMed   = 13;
-        numPointFontLarge = 25;
-        //   numThumbWidth     = 10;
-        //   numResults        = 8;
-    }
-    
     noRectPenSize  = state->screen_width  * .005f;
+    loadConfig();
 }
 //------------------------------------------------------------------------------
 //

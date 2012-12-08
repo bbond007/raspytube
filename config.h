@@ -1,2 +1,2 @@
-void loadConfig();
+bool loadConfig();
 void saveConfig();
