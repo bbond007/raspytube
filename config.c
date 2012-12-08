@@ -37,7 +37,7 @@ void loadConfig()
       fclose(cfgFile);
       if(bytesRead != sizeof(tConfigRec) || configRec.numVersion != VERSION_NUMBER)
       {
-          show_message("LoadConfig():failed->file corrupt", true, ERROR_POINT);
+          show_message("~5LoadConfig():failed->file corrupt", true, ERROR_POINT);
           return;
       }
        
@@ -77,7 +77,7 @@ void saveConfig()
           show_message("~5SaveConfig() -> fwrite failed", true, ERROR_POINT);
           return;
      }
-     show_message("~3Config file saved...\n\n~5press [ESC]", false, ERROR_POINT);
+     show_message("Config file saved...\n\n~5press [ESC]", false, ERROR_POINT);
      dumpKb();
      readKb();
 }
