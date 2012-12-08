@@ -95,6 +95,7 @@ int main(int argc, char **argv)
     regionMenu.menuItems = &regionMenuItems;
     guiMenu.menuItems = guiMenuItems;
     guiMenu.drawDetail = &gui_menu_detail;
+    guiMenu.keyPress = gui_menu_keypress;
     set_menu_value(&regionMenu,0);    
     set_font(0);
     set_title_font(4);

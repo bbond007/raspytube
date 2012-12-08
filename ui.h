@@ -146,6 +146,7 @@ void restoreKb();
 void main_menu_detail(tMenuState * menu);
 void font_menu_detail(tMenuState * menu);
 void gui_menu_detail(tMenuState * menu);
+void gui_menu_keypress(tMenuState * menu, int key);
 extern struct result_rec * first_rec;
 extern struct result_rec * last_rec;
 extern struct result_rec * selected_rec;

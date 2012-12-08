@@ -968,6 +968,40 @@ void main_menu_detail(tMenuState * menu)
     }
 }
 //------------------------------------------------------------------------------
+bool set_int(int min, int max, int offset, int * value)
+{
+    if ((*value + offset >= min) && (*value + offset <= max))
+    {
+        *value += offset;
+        return true;
+    }
+    else return false;
+}
+
+//------------------------------------------------------------------------------
+void gui_menu_keypress(tMenuState * menu, int key)
+{
+    if(key == CUR_R || key == CUR_L)
+    {
+        int offset = 1;
+        if(key == CUR_L)
+            offset = -1;
+        switch(menu->menuItems[menu->selectedItem].special)
+        {
+            case 6: set_int(5, 15, offset, &numResults);
+                break;
+            case 7: set_int(5, 15, offset, &numPointFontTiny);
+                break;
+            case 8: set_int(10, 20, offset, &numPointFontSmall);
+                break;
+            case 9: set_int(15, 40, offset, &numPointFontMed);
+                break;
+            case 10: set_int(20, 50, offset, &numPointFontLarge);
+                break;
+        }
+    }
+}
+//------------------------------------------------------------------------------
 void font_menu_detail(tMenuState * menu)
 {
      Text(&fontDefs[menu->selectedItem], state->screen_width * .25,
@@ -1091,6 +1125,9 @@ int show_menu(tMenuState * menu)
 
 
         key = toupper(readKb());
+        if(menu->keyPress != NULL)
+            menu->keyPress(menu, key);
+
         switch (key)
         {
 
@@ -1111,9 +1148,10 @@ int show_menu(tMenuState * menu)
             else if(bMoreItems)
                 menu->scrollIndex++;
 
-            break;;
+            break;
         }
     }
+    
     while (key != 'Q' && key != RTN_KEY && key != ESC_KEY);
     if(key == 'Q' || key == ESC_KEY)
     {
