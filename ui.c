@@ -299,7 +299,8 @@ void init_ui_var()
 {   
     int w, h;
     
-    
+    set_font(0);
+    set_title_font(5);    
     //if(!loadConfig())
     //{
         if(state->screen_width >= 1920)

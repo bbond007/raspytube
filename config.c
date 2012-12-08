@@ -11,13 +11,15 @@
 #include "ui.h";
 #include "config.h"
 
-#define VERSION_NUMBER 12
+#define VERSION_NUMBER 13
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
       tJpegDecoder jpegDecoder;
       tVideoPlayer videoPlayer;
       tSoundOutput soundOutput;
+      int font;
+      int titleFont;
       int numPointFontTiny;
       int numPointFontSmall;
       int numPointFontMed;
@@ -69,7 +71,10 @@ bool loadConfig()
      jpegDecoder 		     = configRec.jpegDecoder;
      videoPlayer 		     = configRec.videoPlayer;
      soundOutput		     = configRec.soundOutput;
-     numFormat                       = configRec.numFormat;  
+     numFormat                       = configRec.numFormat; 
+     set_font(configRec.font);
+     set_title_font(configRec.titleFont);
+          
      return true;
 }
 //----------------------------------------------------------------------------
@@ -95,6 +100,9 @@ void saveConfig()
      configRec.jpegDecoder           = jpegDecoder;
      configRec.videoPlayer           = videoPlayer;
      configRec.soundOutput           = soundOutput; 
+     configRec.font		     = get_font();
+     configRec.titleFont	     = get_title_font();
+     
      configRec.numVersion            = VERSION_NUMBER;
      FILE * cfgFile;      
      char * fileName = getFileName();
