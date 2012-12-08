@@ -37,7 +37,7 @@ void loadConfig()
       fclose(cfgFile);
       if(bytesRead != sizeof(tConfigRec) || configRec.numVersion != VERSION_NUMBER)
       {
-          show_message("~5LoadConfig():failed->file corrupt", true, ERROR_POINT);
+          show_message("LoadConfig():failed->file corrupt", true, ERROR_POINT);
           return;
       }
        
