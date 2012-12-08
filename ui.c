@@ -45,7 +45,7 @@ int numPointFontTiny;
 int numPointFontSmall;
 int numPointFontMed;
 int numPointFontLarge;
-int numThumbWidth     = 15;
+int numThumbWidth     = 13;
 int numResults        = 10;
 int numFormat         = 0;
 int numStart          = 1;
@@ -384,7 +384,10 @@ void draw_menu(tMenuState * menu)
               
     Text(&fontDefs[titleFontMenu.selectedItem],
         menu->titlePos.x, menu->titlePos.y, 
-        menu->title, menu->numPointFontTitle, selectedColor, VG_FILL_PATH);        
+        menu->title, 
+        //menu->numPointFontTitle, 
+        numPointFontLarge,
+        selectedColor, VG_FILL_PATH);        
 }
 //------------------------------------------------------------------------------
 void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points)
@@ -891,22 +894,27 @@ void gui_menu_detail(tMenuState * menu)
             descr = temp;
             break;
              
-        case 7: 
-            snprintf(temp, sizeof(temp), "[%d]", numPointFontTiny);
+        case 7:
+            snprintf(temp, sizeof(temp), "[1/%d]", numThumbWidth);
             descr = temp;
             break;
         
         case 8: 
-            snprintf(temp, sizeof(temp), "[%d]", numPointFontSmall);
+            snprintf(temp, sizeof(temp), "[%d]", numPointFontTiny);
             descr = temp;
             break;
         
         case 9: 
+            snprintf(temp, sizeof(temp), "[%d]", numPointFontSmall);
+            descr = temp;
+            break;
+        
+        case 10: 
             snprintf(temp, sizeof(temp), "[%d]", numPointFontMed);
             descr = temp;
             break;
      
-        case 10: 
+        case 11: 
             snprintf(temp, sizeof(temp), "[%d]", numPointFontLarge);
             descr = temp;
             break;
@@ -979,8 +987,9 @@ bool set_int(int min, int max, int offset, int * value)
 }
 
 //------------------------------------------------------------------------------
+#define REDRAW_GUI_KEYPRESS {redraw_results(false);setBGImage();dumpKb();}
 void gui_menu_keypress(tMenuState * menu, int key)
-{
+{ 
     if(key == CUR_R || key == CUR_L)
     {
         int offset = 1;
@@ -988,15 +997,22 @@ void gui_menu_keypress(tMenuState * menu, int key)
             offset = -1;
         switch(menu->menuItems[menu->selectedItem].special)
         {
-            case 6: set_int(5, 15, offset, &numResults);
+            case 6: if(set_int(5, 15, offset, &numResults))
+                    REDRAW_GUI_KEYPRESS; 
                 break;
-            case 7: set_int(5, 15, offset, &numPointFontTiny);
+            case 7: if(set_int(2, 20, offset * -1, &numThumbWidth))
+                    REDRAW_GUI_KEYPRESS; 
                 break;
-            case 8: set_int(10, 20, offset, &numPointFontSmall);
+            case 8 : if(set_int(5, 15, offset, &numPointFontTiny))
+                    REDRAW_GUI_KEYPRESS; 
                 break;
-            case 9: set_int(15, 40, offset, &numPointFontMed);
+            case 9: if(set_int(10, 20, offset, &numPointFontSmall))
+                    REDRAW_GUI_KEYPRESS; 
                 break;
-            case 10: set_int(20, 50, offset, &numPointFontLarge);
+            case 10: if(set_int(15, 40, offset, &numPointFontMed))
+                    REDRAW_GUI_KEYPRESS; 
+                break;
+            case 11: set_int(20, 50, offset, &numPointFontLarge);
                 break;
         }
     }
@@ -1358,8 +1374,8 @@ void redraw_results(bool swap)
     int rectHeight = (int) ((float) step * .9f);
     int rectOffset = (int) ((float) state->screen_width * .05);
     int rectWidth = state->screen_width - (rectOffset * 2);
-    int rectWidth2 = state->screen_width / (numThumbWidth - 2);
-    int jpegWidth =  state->screen_width / numThumbWidth;
+    int rectWidth2 = state->screen_width / numThumbWidth;
+    int jpegWidth =  state->screen_width / (numThumbWidth+2);
     jpegWidth = (int)((jpegWidth / 16)) * 16;
     int txtXoffset = rectWidth2 + (rectOffset * 1.2);
     int iLine = 0;

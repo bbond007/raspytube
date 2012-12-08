@@ -53,10 +53,11 @@ tMenuItem guiMenuItems[] =
     {"Font",		 "FONT",		      4},
     {"Title Font",	 "TFONT",		      5},
     {"Max Results", 	 "MAX", 		      6},
-    {"Tiny Font Size", 	 "TF",			      7},
-    {"Small Font Size",	 "SF",			      8},
-    {"Medium Font Size ","MF", 			      9},
-    {"Large Font Size",  "LF",			      10},
+    {"Thumb Width",	 "TW",			      7},	 	  
+    {"Tiny Font Size", 	 "TF",			      8},
+    {"Small Font Size",	 "SF",			      9},
+    {"Medium Font Size ","MF", 			      10},
+    {"Large Font Size",  "LF",			      11},
     {NULL,		NULL,			      0}
 };
 
