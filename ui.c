@@ -292,40 +292,35 @@ void init_font_menus()
     fontMenu.drawDetail = &font_menu_detail;
     titleFontMenu.menuItems    = fontMenu.menuItems;
     titleFontMenu.drawDetail   = fontMenu.drawDetail;    
+    set_font(0);
+    set_title_font(4);    
 }
     
 //------------------------------------------------------------------------------
 void init_ui_var()
 {   
     int w, h;
-    
-    set_font(0);
-    set_title_font(5);    
-    //if(!loadConfig())
-    //{
-        if(state->screen_width >= 1920)
-        {
-            numPointFontTiny  = 10;
-            numPointFontSmall = 12;
-            numPointFontMed   = 20;
-            numPointFontLarge = 40;
-        }
-        else if (state->screen_width >= 1280)
-        {
-            numPointFontTiny  = 6;
-            numPointFontSmall = 8;
-            numPointFontMed   = 15;
-            numPointFontLarge = 30;
-        }
-        else
-        {
-            numPointFontTiny  = 4;
-            numPointFontSmall = 6;
-            numPointFontMed   = 13;
-            numPointFontLarge = 25;
-        }
-    //}
-    
+    if(state->screen_width >= 1920)
+    {
+        numPointFontTiny  = 10;
+        numPointFontSmall = 12;
+        numPointFontMed   = 20;
+        numPointFontLarge = 40;
+    }
+    else if (state->screen_width >= 1280)
+    {
+        numPointFontTiny  = 6;
+        numPointFontSmall = 8;
+        numPointFontMed   = 15;
+        numPointFontLarge = 30;
+    }
+    else
+    {
+        numPointFontTiny  = 4;
+        numPointFontSmall = 6;
+        numPointFontMed   = 13;
+        numPointFontLarge = 25;
+    }
     if(tvImage == 0)
     {
         w  = (state->screen_width  * .35f);
@@ -333,7 +328,7 @@ void init_ui_var()
            tvImage = create_image_from_buf((unsigned char *)
            tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }   
-    
+    loadConfig();
     if(upArrowImage == 0)
     {
         w  = (state->screen_width  * .05f);
@@ -345,9 +340,7 @@ void init_ui_var()
         downArrowImage = create_image_from_buf((unsigned char *)
             menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
     }   
-    
     noRectPenSize  = state->screen_width  * .005f;
-    loadConfig();
 }
 //------------------------------------------------------------------------------
 //

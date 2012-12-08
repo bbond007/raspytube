@@ -82,14 +82,12 @@ int main(int argc, char **argv)
     bcm_host_init();
     memset( state, 0, sizeof( *state ) );
     init_ogl(state);
+    init_font_menus();
     init_ui_var();
     //init menus...
     init_small_menu(&mainMenu, "Main Menu:");
     init_big_menu(&regionMenu, "Select region:");
     init_format_menu(&formatMenu);
-    init_font_menus();
-    //init_small_menu(&fontMenu, "Font menu:");
-    //init_small_menu(&titleFontMenu, "Title Font menu:");    
     init_small_menu(&guiMenu, "GUI menu:");
     mainMenu.menuItems = mainMenuItems;
     mainMenu.drawDetail = &main_menu_detail;
@@ -98,9 +96,6 @@ int main(int argc, char **argv)
     guiMenu.drawDetail = &gui_menu_detail;
     guiMenu.keyPress = gui_menu_keypress;
     set_menu_value(&regionMenu,0);    
-    set_font(0);
-    set_title_font(4);
-    
     initKb();
     clear_output();
     redraw_results(true);

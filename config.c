@@ -11,7 +11,7 @@
 #include "ui.h";
 #include "config.h"
 
-#define VERSION_NUMBER 13
+#define VERSION_NUMBER 14
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -102,8 +102,8 @@ void saveConfig()
      configRec.soundOutput           = soundOutput; 
      configRec.font		     = get_font();
      configRec.titleFont	     = get_title_font();
-     
      configRec.numVersion            = VERSION_NUMBER;
+     
      FILE * cfgFile;      
      char * fileName = getFileName();
      char * message = NULL;
