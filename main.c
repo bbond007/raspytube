@@ -20,6 +20,7 @@
 #include "ui.h"
 #include "region.h"
 #include "mainmenu.h"
+#include "config.h"
 
 //------------------------------------------------------------------------------
 
@@ -344,6 +345,9 @@ static void do_gui_menu()
                 if(resultFont != -1)
                      set_title_font((int) resultFont);
                break;
+            case 11:
+                saveConfig();
+                break;
         }
     }while (result != -1);
 }

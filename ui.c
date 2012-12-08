@@ -19,6 +19,7 @@
 #include "ui.h"
 #include "audio.h"
 #include "fonts.inc"
+#include "config.h"
 #include "menu_arrow_up.inc"
 #include "menu_arrow_down.inc"
 
@@ -291,6 +292,7 @@ void init_font_menus()
     fontMenu.drawDetail = &font_menu_detail;
     titleFontMenu.menuItems    = fontMenu.menuItems;
     titleFontMenu.drawDetail   = fontMenu.drawDetail;    
+    loadConfig();
 }
     
 //------------------------------------------------------------------------------

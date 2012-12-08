@@ -58,6 +58,7 @@ tMenuItem guiMenuItems[] =
     {"Small Font Size",	 "SF",			      9},
     {"Medium Font Size ","MF", 			      10},
     {"Large Font Size",  "LF",			      11},
+    {"***Save config***","SC",			      0},
     {NULL,		NULL,			      0}
 };
 

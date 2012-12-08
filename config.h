@@ -1,0 +1,2 @@
+void loadConfig();
+void saveConfig();
