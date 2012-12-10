@@ -148,7 +148,13 @@ int main(int argc, char **argv)
             break;
 
         case 'T' :
-            show_message("TEST-->\n~0|0:~0X~0|1:~1X~0|2:~2X~0|3:~3X~0|4:~4X~0|5:~5X~0|6:~6X~0|7:~7X\n~5press [ESC]", 0xDEADBEEF, ERROR_POINT);
+            
+            //show_message("TEST-->\n~0|0:~0X~0|1:~1X~0|2:~2X~0|3:~3X~0|4:~4X~0|5:~5X~0|6:~6X~0|7:~7X\n~5press [ESC]", 0xDEADBEEF, ERROR_POINT);
+            redraw_results(false);
+            setBGImage();
+            result = input_string_osk("TEST OSK:", searchStr, 50);
+            dumpKb();
+            redraw_results(true);
             break;
 
         case 'M':
