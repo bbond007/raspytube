@@ -7,13 +7,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <time.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include "VG/openvg.h"
-#include "VG/vgu.h"
-#include "EGL/egl.h"
-#include "GLES/gl.h"
 #include "gfxlib.h"
 #include "videoformats.h"
 #include "ui.h"
@@ -22,13 +16,7 @@
 #include "config.h"
 #include "menu_arrow_up.inc"
 #include "menu_arrow_down.inc"
-
-//#include "menus.h"
-//stuff for the keyboard.
-
-static int ttflags;
-static struct termios oldt;
-static struct termios newt;
+#include "kbjs.h"
 /* sounds disabled because it sucked
 static AudioSampleInfo asiKbClick;
 extern const signed char soundraw_data[];
@@ -1344,117 +1332,6 @@ int show_menu(tMenuState * menu)
     }
     dumpKb();
     return menu->selectedItem;
-}
-//------------------------------------------------------------------------------
-int handleESC()
-{
-    int key = getchar();
-    if (key == EOF)
-    {
-        return ESC_KEY;
-    }
-    else
-    {
-        switch(key)
-        {
-        case '[':
-            if(key != EOF)
-            {
-                key = getchar();
-                switch(key) //cursor movement
-                {
-                case TERM_CUR_R:
-                    return CUR_R;
-                    break;
-
-                case TERM_CUR_L:
-                    return CUR_L;
-                    break;
-
-                case TERM_CUR_UP:
-                    return CUR_UP;
-                    break;
-
-                case TERM_CUR_DWN:
-                    return CUR_DWN;
-                    break;
-                }
-            }
-            break;
-        case 'O' :
-            if(key != EOF) //function keys
-            {
-                key = getchar();
-                switch(key)
-                {
-                case TERM_FUN_1:
-                    DoSnapshot();
-                    show_message("Snapshot Saved!", true, ERROR_POINT);
-                    return FUN_1;
-                    break;
-                case TERM_FUN_2:
-                    return FUN_2;
-                default:
-                    while(getchar() != EOF);
-                }
-            }
-            break;
-        }
-    }
-    return 0;
-}
-//------------------------------------------------------------------------------
-bool kbHit(void)
-{
-    int ch;
-    fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-    ch = getchar();
-    fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
-    if(ch != EOF)
-    {
-        ungetc(ch, stdin);
-        return true;
-    }
-    return false;
-}
-//------------------------------------------------------------------------------
-int readKb()
-{
-    int key = getchar();
-    if (key == ESC_KEY)
-    {
-        fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-        key = handleESC();
-        fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
-    }
-    //else play_sample(&asiKbClick, false);
-    return key;
-}
-//------------------------------------------------------------------------------
-void dumpKb()
-{
-    fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-    while (getchar()!= EOF)
-    {
-        // :)
-    }
-    fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
-}
-//------------------------------------------------------------------------------
-void initKb()
-{
-    tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
-    newt = oldt; 				// copy old settings to new settings
-    newt.c_lflag &= ~(ICANON | ECHO); 		// change settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly
-    ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
-//  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
-}
-//------------------------------------------------------------------------------
-void restoreKb()
-{
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
-//  delete_sample(&asiKbClick);
 }
 //------------------------------------------------------------------------------
 void clear_output()

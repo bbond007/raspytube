@@ -21,6 +21,7 @@
 #include "region.h"
 #include "mainmenu.h"
 #include "config.h"
+#include "kbjs.h"
 
 //------------------------------------------------------------------------------
 
