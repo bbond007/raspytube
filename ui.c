@@ -1540,3 +1540,40 @@ void redraw_results(bool swap)
     if(swap)
         eglSwapBuffers(state->display, state->surface);
 }
+
+//------------------------------------------------------------------------------
+bool yes_no_dialog(char * prompt, bool val)
+{
+    char formatNo[]  = "%s\n\n ~7yes ~5[no]";
+    char formatYes[] = "%s\n\n ~5[yes] ~7no";
+    size_t size = strlen(formatYes) + strlen(prompt);
+    char * temp = malloc(size);
+    int key;
+    do
+    {	
+        drawBGImage();
+        if(val)
+            snprintf(temp, size, formatYes, prompt);
+        else
+            snprintf(temp, size, formatNo, prompt);
+    
+        show_message(temp, false, numPointFontLarge);
+        key = readKb();
+        switch(key)
+        {
+            case CUR_L:
+                val = true;
+                break;
+            case CUR_R:
+                val = false;
+                break;
+            case RTN_KEY:
+                free(temp);
+                return val;
+        }
+    } while (key != ESC_KEY);
+    free(temp);
+    return false;
+}
+                
+                

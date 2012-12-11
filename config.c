@@ -10,6 +10,7 @@
 #include "gfxlib.h"
 #include "ui.h";
 #include "config.h"
+#include "kbjs.h"
 
 #define VERSION_NUMBER 14
 #define CONFIG_FILE ".rt.cfg.bin"

@@ -7,8 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-
-
+#include "kbjs.h"
 #include "gfxlib.h"
 #include "ui.h"
 #include "joystick.h"
@@ -48,7 +47,7 @@ bool read_joystick_event(struct js_event *jse)
 }
 
 //------------------------------------------------------------------------------
-void close_joystick()
+void close_joystick(void)
 {
     if(joystick_fd > 0)
         close(joystick_fd);
@@ -126,8 +125,21 @@ bool kbHit(void)
     }
     return false;
 }
+
 //------------------------------------------------------------------------------
-int readKb()
+bool jsESC(void)
+{
+    struct js_event jse;
+    if(read_joystick_event(&jse))
+    {
+        if(jse.type == 1 && jse.value == 1 && jse.number == 1)
+            return true;
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+int readKb(void)
 {
     struct js_event jse;
     int key;
@@ -197,7 +209,7 @@ int readKb()
 }
 
 //------------------------------------------------------------------------------
-void dumpJs()
+void dumpJs(void)
 {
     if(joystick_fd > 0)
     {
@@ -209,7 +221,7 @@ void dumpJs()
     }
 }
 //------------------------------------------------------------------------------
-void dumpKb()
+void dumpKb(void)
 {
     //fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
     while (getchar()!= EOF)
@@ -220,7 +232,7 @@ void dumpKb()
 
 }
 //------------------------------------------------------------------------------
-void initKb()
+void initKb(void)
 {
     tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
     newt = oldt; 				// copy old settings to new settings
@@ -233,7 +245,7 @@ void initKb()
 
 }
 //------------------------------------------------------------------------------
-void restoreKb()
+void restoreKb(void)
 {
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
 //  delete_sample(&asiKbClick);

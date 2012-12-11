@@ -103,6 +103,7 @@ int main(int argc, char **argv)
     char searchStr [100] = "";
     char userStr[100] = "";
     char txt[200];
+    bool quit = false;
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -297,11 +298,19 @@ int main(int argc, char **argv)
             }
             break;
 
+        case ESC_KEY:
+            redraw_results(false);
+            setBGImage();
+            quit = yes_no_dialog("Quit?", false);
+            if(!quit)
+                redraw_results(true);
+            break;
+            
         default :
             break;
         }
     }
-    while (key != 'Q' && (key != ESC_KEY || kbHit()));
+    while (!quit);
     clear_output();
     free_ui_var();
     restoreKb();
@@ -575,7 +584,34 @@ static void play_video (char * url)
             execvp(player_argv[0],player_argv);
             exit(200);
         }
-        waitpid(pid, &status, 0);
+        int wpid;
+        do
+        {
+            wpid = waitpid(pid, &status, WNOHANG);
+            if (wpid == 0)
+            {
+                if(jsESC())
+                {
+                  //printf("\n***quitting!***");
+                  //kill(pid, SIGTERM);
+                  //ungetc('q', stdin);
+                    system("killall omxplayer.bin");
+                    switch(videoPlayer)
+                    {
+                        case vpOMXPlayer:
+                            system("killall omxplayer.bin");
+                        break;
+                        case vpMPlayer:
+                            system("killall mplayer");
+                        break;
+                    }
+                                                                     
+                }
+                else
+                    usleep(2000);
+            }
+        } while (wpid == 0);
+     // printf("\n***done***\n");            
         redraw_results(true);
     }
     else
@@ -585,7 +621,6 @@ static void play_video (char * url)
         show_message("URL Parser SUX.", true, ERROR_POINT);
     }
 }
-
 //------------------------------------------------------------------------------
 unsigned char * find_jpg_start(unsigned char * buf, unsigned int* bufSize)
 {
