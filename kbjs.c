@@ -139,12 +139,18 @@ bool jsESC(void)
 }
 
 //------------------------------------------------------------------------------
+bool jsRTN;
+bool kbRTN;
+
 int readKb(void)
 {
     struct js_event jse;
     int key;
     dumpKb();
     dumpJs();
+    jsRTN = false;
+    kbRTN = false;
+    
     #define JS_THRESHOLD 30000
     do
     {
@@ -181,6 +187,7 @@ int readKb(void)
                     case 1:
                         return ESC_KEY;
                     case 2:
+                        jsRTN = true;
                         return RTN_KEY;
                     case 3:
                     case 8:
@@ -204,6 +211,8 @@ int readKb(void)
         key = handleESC();
         // fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     }
+    else if(key == RTN_KEY)
+        kbRTN = true;
     //else play_sample(&asiKbClick, false);
     return key;
 }

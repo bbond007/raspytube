@@ -659,28 +659,35 @@ bool input_string(char * prompt, char * buf, int max)
                 break;
             
             case RTN_KEY:
-                if(sel == OSK_KEY)
+                if(jsRTN)
                 {
-                    keyMapIndex += 1;
-                    if(keyMapIndex > 1)
-                        keyMapIndex = 0;
+                    if(sel != OSK_RTN)
+                        key = 0x00;
+                        
+                    if(sel == OSK_KEY)
+                    {
+                        keyMapIndex += 1;
+                        if(keyMapIndex > 1)
+                            keyMapIndex = 0;
+                    }
+                    else if(sel == OSK_DEL)
+                    {	
+                         if(endPos > 0)
+                             buf[endPos-1] = 0x00;
+                    }
+                    else if(sel == OSK_CLR)
+                    {
+                        buf[0] = 0x00;
+                    }
+                    else if ((strlen(buf) + 3) < max)
+                    {
+                        if(sel >= 0 && sel < OSK_KEY)
+                             strcat(buf, oskKeyMap[keyMapIndex][sel]);    
+                        else if(sel == OSK_SPC)
+                             strcat(buf, " "); 
+                    }
                 }
-                else if(sel == OSK_DEL)
-                {	
-                     if(endPos > 0)
-                        buf[endPos-1] = 0x00;
-                }
-                else if(sel == OSK_CLR)
-                {
-                    buf[0] = 0x00;
-                }
-                else if ((strlen(buf) + 3) < max)
-                {
-                    if(sel >= 0 && sel < OSK_KEY)
-                         strcat(buf, oskKeyMap[keyMapIndex][sel]);    
-                    else if(sel == OSK_SPC)
-                         strcat(buf, " "); 
-                }
+            
                 break;
                 
             case ESC_KEY:
@@ -714,7 +721,7 @@ bool input_string(char * prompt, char * buf, int max)
                 }            
         }
     
-    } while (key != ESC_KEY && (key != RTN_KEY || sel != OSK_RTN));
+    } while (key != ESC_KEY && key != RTN_KEY);
     
     free(save);
     if(key == ESC_KEY)
