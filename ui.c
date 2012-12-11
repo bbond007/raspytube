@@ -1544,8 +1544,8 @@ void redraw_results(bool swap)
 //------------------------------------------------------------------------------
 bool yes_no_dialog(char * prompt, bool val)
 {
-    char formatNo[]  = "%s\n\n ~7yes ~5[no]";
-    char formatYes[] = "%s\n\n ~5[yes] ~7no";
+    char formatNo[]  = "\n%s\n\n ~7yes ~5[no]";
+    char formatYes[] = "\n%s\n\n ~5[yes] ~7no";
     size_t size = strlen(formatYes) + strlen(prompt);
     char * temp = malloc(size);
     int key;
