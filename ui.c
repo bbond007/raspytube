@@ -717,7 +717,6 @@ bool input_string(char * prompt, char * buf, int max)
     } while (key != ESC_KEY && (key != RTN_KEY || sel != OSK_RTN));
     
     free(save);
-    dumpKb();
     if(key == ESC_KEY)
         return false;
     else
@@ -792,7 +791,6 @@ bool input_string_old(char * prompt, char * buf, int max)
     }
     while (key != RTN_KEY && key != ESC_KEY);
     free(save);
-    dumpKb();
     if(key == ESC_KEY)
         return false;
     else
@@ -881,9 +879,7 @@ void show_message(char * message, int error, int points)
                        state->surface);
         if(error)
         {
-            dumpKb();
             key = readKb();
-            dumpKb();
             redraw_results(true);
         }
         else
@@ -1371,7 +1367,6 @@ int show_menu(tMenuState * menu)
         menu->selectedIndex = selectedIndexSave;
         return -1;
     }
-    dumpKb();
     return menu->selectedItem;
 }
 //------------------------------------------------------------------------------

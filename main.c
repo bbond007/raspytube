@@ -124,28 +124,23 @@ int main(int argc, char **argv)
 
         case CUR_UP :
             do_cur_up();
-            dumpKb();
             break;
 
         case CUR_DWN:
             do_cur_down();
-            dumpKb();
             break;
 
         case CUR_R:
             do_cur_right(PICK_SEARCH_STR);
-            dumpKb();
             break;
 
         case CUR_L:
             do_cur_left(PICK_SEARCH_STR);
-            dumpKb();
             break;
 
         case 'H' :
             do_change_audio_dev();
             redraw_results(true);
-            dumpKb();
             break;
 
         case 'T' :
@@ -155,7 +150,6 @@ int main(int argc, char **argv)
             redraw_results(false);
             setBGImage();
             result = input_string_osk("TEST OSK:", searchStr, 50);
-            dumpKb();
             redraw_results(true);
             */
             break;
@@ -217,7 +211,6 @@ int main(int argc, char **argv)
             while (result !=  -1 && 
                    !(result >= 2 && result <= 4) && 
                    !(result >= 6 && result <= 13));
-            dumpKb();
             redraw_results(true);
             break;
 
@@ -233,7 +226,6 @@ int main(int argc, char **argv)
                         regionMenuItems[result].description);
                 show_message(txt, 3, ERROR_POINT);
             }
-            dumpKb();
             redraw_results(true);
             break;
 
@@ -246,14 +238,12 @@ int main(int argc, char **argv)
             redraw_results(false);
             setBGImage();
             result = show_format_menu(&formatMenu);
-            dumpKb();
             redraw_results(true);
             break;
 
         case 'P':
             do_change_video_player();
             redraw_results(true);
-            dumpKb();
             break;
 
         case 'I':
@@ -281,7 +271,6 @@ int main(int argc, char **argv)
                             play_video(selected_rec->url);
                         break;
                     }
-                    dumpKb();
                 }
                 while (result != ESC_KEY);
             }
@@ -588,7 +577,6 @@ static void play_video (char * url)
         }
         waitpid(pid, &status, 0);
         redraw_results(true);
-        dumpKb();
     }
     else
     {

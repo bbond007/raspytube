@@ -131,7 +131,9 @@ int readKb()
 {
     struct js_event jse;
     int key;
-
+    dumpKb();
+    dumpJs();
+    #define JS_THRESHOLD 30000
     do
     {
         if(read_joystick_event(&jse))
@@ -145,25 +147,16 @@ int readKb()
                 switch(jse.number)
                 {
                 case 0:
-                    if (jse.value > 20000)
+                case 5:
+                    if (jse.value > JS_THRESHOLD)
                         return CUR_R;
-                    else if(jse.value < -20000)
+                    else if(jse.value < -JS_THRESHOLD)
                         return CUR_L;
                 case 1:
-                    if (jse.value > 20000)
-                        return CUR_DWN;
-                    else if(jse.value < -20000)
-                        return CUR_UP;
-                        
-                case 5:
-                    if (jse.value > 20000)
-                        return CUR_R;
-                    else if(jse.value < -20000)
-                        return CUR_L;
                 case 6:
-                    if (jse.value > 20000)
+                    if (jse.value > JS_THRESHOLD)
                         return CUR_DWN;
-                    else if(jse.value < -20000)
+                    else if(jse.value < -JS_THRESHOLD)
                         return CUR_UP;
                 }
                 break;
@@ -177,8 +170,10 @@ int readKb()
                         return ESC_KEY;
                     case 2:
                         return RTN_KEY;
+                    case 3:
                     case 8:
                         return 'i';
+                    case 4:
                     case 9:
                         return 'm';
                     }
@@ -200,6 +195,19 @@ int readKb()
     //else play_sample(&asiKbClick, false);
     return key;
 }
+
+//------------------------------------------------------------------------------
+void dumpJs()
+{
+    if(joystick_fd > 0)
+    {
+        struct js_event jse;
+        while(read_joystick_event(&jse))
+        {    
+        //dumping joystick...
+        }
+    }
+}
 //------------------------------------------------------------------------------
 void dumpKb()
 {
@@ -209,14 +217,7 @@ void dumpKb()
         // dumping kb :)
     }
     //fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);   
-    if(joystick_fd > 0)
-    {
-        struct js_event jse;
-        while(read_joystick_event(&jse))
-        {    
-        //dumping joystick...
-        }
-    }
+
 }
 //------------------------------------------------------------------------------
 void initKb()
