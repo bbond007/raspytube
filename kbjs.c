@@ -145,14 +145,25 @@ int readKb()
                 switch(jse.number)
                 {
                 case 0:
-                    if (jse.value > 2000)
+                    if (jse.value > 20000)
                         return CUR_R;
-                    else if(jse.value < -2000)
+                    else if(jse.value < -20000)
                         return CUR_L;
                 case 1:
-                    if (jse.value > 2000)
+                    if (jse.value > 20000)
                         return CUR_DWN;
-                    else if(jse.value < -2000)
+                    else if(jse.value < -20000)
+                        return CUR_UP;
+                        
+                case 5:
+                    if (jse.value > 20000)
+                        return CUR_R;
+                    else if(jse.value < -20000)
+                        return CUR_L;
+                case 6:
+                    if (jse.value > 20000)
+                        return CUR_DWN;
+                    else if(jse.value < -20000)
                         return CUR_UP;
                 }
                 break;
