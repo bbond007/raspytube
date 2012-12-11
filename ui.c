@@ -1558,9 +1558,15 @@ bool yes_no_dialog(char * prompt, bool val)
             snprintf(temp, size, formatNo, prompt);
     
         show_message(temp, false, numPointFontLarge);
-        key = readKb();
+        key = toupper(readKb());
         switch(key)
         {
+            case 'Y':
+                free(temp);
+                return true;
+            case 'N':
+                free(temp);
+                return false;
             case CUR_L:
                 val = true;
                 break;
