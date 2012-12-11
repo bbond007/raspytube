@@ -520,10 +520,36 @@ int show_selection_info(struct result_rec * rec)
 #define OSK_KEY 30
 #define OSK_DEL 31
 #define OSK_SPC 32
-#define OSK_PER 33
+#define OSK_CLR 33
 #define OSK_RTN 34
        
-bool input_string_osk(char * prompt, char * buf, int max)
+
+static char * oskKeyMap[2][30] = 
+    {	
+        {
+            "Q",  "W", "E", "R", "T", "Y", "U", "I", "O",  "P",
+            "A",  "S", "D", "F", "G", "H", "J", "K", "L",  "\"",
+            "",   "Z", "X", "C", "V", "B", "N", "M", ",",  "."
+        },
+        {   "!", "@", "#", "$", "%",  "^", "&", "*", "(",  ")",  
+            "1", "2", "3", "4", "5",  "6", "7", "8", "9",  "0",
+            "~", "<", ">", "?", "[",  "]", "{", "}", "\\", "/"
+        }
+    };
+    
+
+static int osk_key_index(int * page, int c)
+{
+    int index;
+    for ((*page) = 0; (*page) < 2; (*page)++)
+        for(index = 0; index < 30; index++)
+            if (oskKeyMap[(*page)][index][0] == c ||
+                oskKeyMap[(*page)][index][0] == toupper(c))
+                return index;
+    return -1;   
+}
+
+bool input_string(char * prompt, char * buf, int max)
 {
     int std_key_width  = state->screen_width / 14;
     int key_height = state->screen_height / 10;
@@ -534,26 +560,14 @@ bool input_string_osk(char * prompt, char * buf, int max)
     tPointXY keyXY;
     tPointXY offsetXY;
     int key, x, y;
-    int sel = 0;
+    int sel = 0; 
+    int result, page;
     int keyMapIndex = 0;        
     offsetXY.x = std_key_width / 3;
-    offsetXY.y = key_height / 3; 
+    offsetXY.y = key_height / 3;
+    int offsetX2 = std_key_width / 6; 
     char * save = malloc(max+1);
     strcpy(save, buf);
-    
-    char * keyMap[2][30] = 
-    {	
-        {
-            "Q",  "W", "E", "R", "T", "Y", "U", "I", "O",  "P",
-            "A",  "S", "D", "F", "G", "H", "J", "K", "L",  "\"",
-            "",   "Z", "X", "C", "V", "B", "N", "M", ",",  ""
-        },
-        {   "!", "@", "#", "$", "%",  "^", "&", "*", "(",  ")",  
-            "1", "2", "3", "4", "5",  "6", "7", "8", "9",  "0",
-            "~", "<", ">", "?", "[",  "]", "{", "}", "\\", "/"
-        }
-    };
-    
     do
     {
         clear_screen(false); 
@@ -567,7 +581,7 @@ bool input_string_osk(char * prompt, char * buf, int max)
                 keyXY.x = (x + 2) * key_width;
                 keyXY.y = state->screen_height - ((y + 1) * key_height);
                 Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor, (sel==i)?COLOR_SELECTED:COLOR_NORMAL);
-                textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y, keyMap[keyMapIndex][i], numPointFontLarge,  (sel==i)?TEXT_SELECTED:TEXT_NORMAL);
+                textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y, oskKeyMap[keyMapIndex][i], numPointFontLarge,  (sel==i)?TEXT_SELECTED:TEXT_NORMAL);
                 i++;
             }
         }
@@ -577,18 +591,18 @@ bool input_string_osk(char * prompt, char * buf, int max)
         key_width = key_width * 1.5f;
         key_w = key_width * .90f;
         Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetXY.x/2, keyXY.y + offsetXY.y,  "!@#", numPointFontLarge,  (sel==OSK_KEY)?TEXT_SELECTED:TEXT_NORMAL);
+        textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "!@#", numPointFontLarge,  (sel==OSK_KEY)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
         Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_DEL)?COLOR_SELECTED:COLOR_NORMAL);
         textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y,  "DEL", numPointFontLarge,  (sel==OSK_DEL)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
         Roundrect(keyXY.x, keyXY.y,  space_w, key_h, 20, 20, noRectPenSize, rectColor, (sel==OSK_SPC)?COLOR_SELECTED:COLOR_NORMAL);
         keyXY.x += space_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_PER)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y,  ".", numPointFontLarge,    (sel==OSK_PER)?TEXT_SELECTED:TEXT_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_CLR)?COLOR_SELECTED:COLOR_NORMAL);
+        textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "CLR", numPointFontLarge,    (sel==OSK_CLR)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
         Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_RTN)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetXY.x/2, keyXY.y + offsetXY.y,  "RTN", numPointFontLarge,  (sel==OSK_RTN)?TEXT_SELECTED:TEXT_NORMAL);        
+        textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "RTN", numPointFontLarge,  (sel==OSK_RTN)?TEXT_SELECTED:TEXT_NORMAL);        
         draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
       
         int endPos = strlen(buf);
@@ -614,7 +628,6 @@ bool input_string_osk(char * prompt, char * buf, int max)
                     sel++;
                 else
                     sel = 0;
-                    
                 break;
           
             case CUR_DWN:
@@ -627,7 +640,7 @@ bool input_string_osk(char * prompt, char * buf, int max)
                 else if(sel >= 23 && sel <= 26)
                     sel = OSK_SPC;
                 else if(sel == 27)
-                    sel = OSK_PER;
+                    sel = OSK_CLR;
                 else if(sel == 28 || sel == 29)
                     sel = OSK_RTN;
                 break;
@@ -639,7 +652,7 @@ bool input_string_osk(char * prompt, char * buf, int max)
                     sel = 22;
                 else if(sel == OSK_SPC)
                     sel = 23;
-                else if(sel == OSK_PER)
+                else if(sel == OSK_CLR)
                     sel = 27;
                 else if(sel == OSK_RTN)
                     sel = 29;
@@ -657,23 +670,51 @@ bool input_string_osk(char * prompt, char * buf, int max)
                      if(endPos > 0)
                         buf[endPos-1] = 0x00;
                 }
+                else if(sel == OSK_CLR)
+                {
+                    buf[0] = 0x00;
+                }
                 else if ((strlen(buf) + 3) < max)
                 {
                     if(sel >= 0 && sel < OSK_KEY)
-                         strcat(buf, keyMap[keyMapIndex][sel] );    
+                         strcat(buf, oskKeyMap[keyMapIndex][sel]);    
                     else if(sel == OSK_SPC)
-                         strcat(buf, " ");
-                    else if(sel == OSK_PER)
-                         strcat(buf, ".");
+                         strcat(buf, " "); 
                 }
                 break;
                 
             case ESC_KEY:
                 strcpy(buf, save);
                 break;
-
+            
+            case DEL_KEY:
+                if(endPos > 0)
+                  buf[endPos-1] = 0x00;
+                  sel = OSK_DEL;
+                break;
+                
+            default:
+                result = osk_key_index(&page,key);
+                if(result != -1)
+                {
+                    keyMapIndex = page;
+                    if(keyMapIndex == page)
+                        sel = result;
+                }
+                if(result != -1 || key == ' ')
+                {
+                    if ((strlen(buf) + 3) < max)
+                    {
+                        result = strlen(buf);
+                        buf[result] = key;
+                        buf[result+1] = 0x00;
+                    }
+                    if (key == ' ')
+                        sel = OSK_SPC;
+                }            
         }
-    } while (key != ESC_KEY);
+    
+    } while (key != ESC_KEY && (key != RTN_KEY || sel != OSK_RTN));
     
     free(save);
     dumpKb();
@@ -684,7 +725,7 @@ bool input_string_osk(char * prompt, char * buf, int max)
 }
 
 //------------------------------------------------------------------------------
-bool input_string(char * prompt, char * buf, int max)
+bool input_string_old(char * prompt, char * buf, int max)
 {
     int key = 0x00;
     int endPos;
