@@ -58,10 +58,22 @@ tMenuItem guiMenuItems[] =
     {"Small Font Size",	 "SF",			      9},
     {"Medium Font Size ","MF", 			      10},
     {"Large Font Size",  "LF",			      11},
+    {"JS/GP/KB Menu",    "KB", 			      0},
     {"***Save config***","SC",			      0},
     {NULL,		NULL,			      0}
 };
 
     			        	
 
+tMenuItem jskbMenuItems[] =
+{
+    {"JS/GP X Axis",     "XA",	        	      1},
+    {"JS/GP Y Axis",     "YA",			      2},	
+    {"X/Y Threshold",    "TH",			      3},
+    {"Info Button",      "IB",	 		      4},
+    {"Menu Button",      "MB",		     	      5},
+    {"Select Button",    "SB", 		      	      6},
+    {"Back Button",      "BB",			      7},	 	  
+    {NULL,		 NULL,			      0}
+};
      	

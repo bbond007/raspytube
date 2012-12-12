@@ -19,6 +19,15 @@ static struct termios oldt;
 static struct termios newt;
 static int joystick_fd = -1;
 
+
+int jsXAxis     = 0;
+int jsYAxis     = 1;
+int jsThreshold = 30000;
+int jsSelect    = 2;
+int jsBack      = 1;
+int jsInfo      = 8;
+int jsMenu      = 9;
+
 //------------------------------------------------------------------------------
 int open_joystick(char *joystick_device)
 {
@@ -132,7 +141,7 @@ bool jsESC(void)
     struct js_event jse;
     if(read_joystick_event(&jse))
     {
-        if(jse.type == 1 && jse.value == 1 && jse.number == 1)
+        if(jse.type == 1 && jse.value == 1 && jse.number == jsBack)
             return true;
     }
     return false;
@@ -162,40 +171,36 @@ int readKb(void)
             switch(jse.type)
             {
             case 2:
-                switch(jse.number)
+                if (jse.number == jsXAxis)
                 {
-                case 0:
-                case 5:
-                    if (jse.value > JS_THRESHOLD)
+                    if (jse.value > jsThreshold)
                         return CUR_R;
-                    else if(jse.value < -JS_THRESHOLD)
+                    else if(jse.value < -jsThreshold)
                         return CUR_L;
-                case 1:
-                case 6:
-                    if (jse.value > JS_THRESHOLD)
-                        return CUR_DWN;
-                    else if(jse.value < -JS_THRESHOLD)
-                        return CUR_UP;
                 }
+                else if(jse.number ==  jsYAxis)
+                {
+                    if (jse.value > jsThreshold)
+                        return CUR_DWN;
+                    else if(jse.value < -jsThreshold)
+                        return CUR_UP;
+                }       
                 break;
 
             case 1:
                 if(jse.value == 1)
                 {
-                    switch(jse.number)
-                    {
-                    case 1:
+                    if (jse.number == jsBack)
                         return ESC_KEY;
-                    case 2:
+                    else if (jse.number == jsSelect) 
+                    {
                         jsRTN = true;
                         return RTN_KEY;
-                    case 3:
-                    case 8:
-                        return 'i';
-                    case 4:
-                    case 9:
-                        return 'm';
                     }
+                    else if (jse.number == jsInfo) 
+                        return 'i';
+                    else if (jse.number == jsMenu) 
+                        return 'm';
                 }
                 break;
             }

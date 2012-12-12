@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 14
+#define VERSION_NUMBER 15
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -28,6 +28,13 @@ typedef struct tConfigRec
       int numThumbWidth;
       int numResults;
       int numFormat;
+      int jsXAxis;
+      int jsYAxis;
+      int jsThreshold;
+      int jsSelect;
+      int jsBack;
+      int jsInfo;
+      int jsMenu;
       int numVersion;
 } tConfigRec;
 
@@ -43,26 +50,39 @@ char * getFileName()
 }
 
 //----------------------------------------------------------------------------
+char * setMessage(char * message, char * fileName)
+{
+     char formatStr[] = "%s~0\nfilename = %s";
+     size_t size = strlen(fileName) + strlen(formatStr) + strlen(message);
+     char * tempStr = malloc(size);
+     snprintf(tempStr, size, formatStr, message, fileName);
+     return tempStr;
+}
+
+//----------------------------------------------------------------------------
 bool loadConfig()
 {
-      FILE * cfgFile; 
-      char * fileName = getFileName();     
-      cfgFile = fopen(fileName, "rb");
-      free(fileName);
-      if (cfgFile == NULL)
-      {	
+     FILE * cfgFile; 
+     char * fileName = getFileName();     
+     cfgFile = fopen(fileName, "rb");
+     if (cfgFile == NULL)
+     {	
           //show_message("~5LoadConfig():failed", true, ERROR_POINT);
+          free(fileName);
           return false;
-      }
-      tConfigRec configRec;
-      size_t bytesRead = fread(&configRec, 1, sizeof(tConfigRec), cfgFile);
-      fclose(cfgFile);
-      if(bytesRead != sizeof(tConfigRec) || configRec.numVersion != VERSION_NUMBER)
-      {
-          show_message("~5LoadConfig():failed->file corrupt", true, ERROR_POINT);
+     }
+     tConfigRec configRec;
+     size_t bytesRead = fread(&configRec, 1, sizeof(tConfigRec), cfgFile);
+     fclose(cfgFile);
+     if(bytesRead != sizeof(tConfigRec) || configRec.numVersion != VERSION_NUMBER)
+     {
+          char * message = setMessage("FILE CORRUPT", fileName);          
+          show_message(message, true, ERROR_POINT);
+          free(message);
+          free(fileName);
           return false;
-      }
-       
+     }
+     free(fileName);   
      numPointFontTiny 		     = configRec.numPointFontTiny;
      numPointFontSmall               = configRec.numPointFontSmall;
      numPointFontMed                 = configRec.numPointFontMed;
@@ -73,19 +93,17 @@ bool loadConfig()
      videoPlayer 		     = configRec.videoPlayer;
      soundOutput		     = configRec.soundOutput;
      numFormat                       = configRec.numFormat; 
+     jsXAxis			     = configRec.jsXAxis;
+     jsYAxis			     = configRec.jsYAxis;
+     jsThreshold		     = configRec.jsThreshold;
+     jsSelect		     	     = configRec.jsSelect;
+     jsBack		     	     = configRec.jsBack;
+     jsInfo		     	     = configRec.jsInfo;
+     jsMenu		     	     = configRec.jsMenu;
      set_font(configRec.font);
      set_title_font(configRec.titleFont);
           
      return true;
-}
-//----------------------------------------------------------------------------
-char * setMessage(char * message, char * fileName)
-{
-     char formatStr[] = "%s~0\nfilename = %s";
-     size_t size = strlen(fileName) + strlen(formatStr) + strlen(message);
-     char * tempStr = malloc(size);
-     snprintf(tempStr, size, formatStr, message, fileName);
-     return tempStr;
 }
 //----------------------------------------------------------------------------
 void saveConfig()
@@ -103,6 +121,13 @@ void saveConfig()
      configRec.soundOutput           = soundOutput; 
      configRec.font		     = get_font();
      configRec.titleFont	     = get_title_font();
+     configRec.jsXAxis		     = jsXAxis;
+     configRec.jsYAxis		     = jsYAxis;
+     configRec.jsThreshold	     = jsThreshold;
+     configRec.jsSelect		     = jsSelect;
+     configRec.jsBack	     	     = jsBack;
+     configRec.jsInfo	     	     = jsInfo;
+     configRec.jsMenu	 	     = jsMenu;
      configRec.numVersion            = VERSION_NUMBER;
      
      FILE * cfgFile;      

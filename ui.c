@@ -315,7 +315,8 @@ void init_ui_var()
         h  = (state->screen_height * .45f);
            tvImage = create_image_from_buf((unsigned char *)
            tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
-    }   
+    }
+    noRectPenSize  = state->screen_width  * .005f;
     loadConfig();
     if(upArrowImage == 0)
     {
@@ -328,7 +329,6 @@ void init_ui_var()
         downArrowImage = create_image_from_buf((unsigned char *)
             menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
     }   
-    noRectPenSize  = state->screen_width  * .005f;
 }
 //------------------------------------------------------------------------------
 //
@@ -529,7 +529,7 @@ static char * oskKeyMap[2][30] =
         {
             "Q",  "W", "E", "R", "T", "Y", "U", "I", "O",  "P",
             "A",  "S", "D", "F", "G", "H", "J", "K", "L",  "\"",
-            "",   "Z", "X", "C", "V", "B", "N", "M", ",",  "."
+            "`",   "Z", "X", "C", "V", "B", "N", "M", ",",  "."
         },
         {   "!", "@", "#", "$", "%",  "^", "&", "*", "(",  ")",  
             "1", "2", "3", "4", "5",  "6", "7", "8", "9",  "0",
@@ -834,7 +834,7 @@ void show_message(char * message, int error, int points)
     int guru_height  = image_height * .25f;
     int guruX        = (state->screen_width - guru_width)   / 2;
     int guruY        = imageY  + image_height - guru_height -  (state->screen_width  * .007f);
-
+ 
     char * errorStr = NULL; 
     int key = ESC_KEY;
     if(error)
@@ -1058,6 +1058,55 @@ void format_menu_detail(tMenuState * menu)
                menu->txtRaster.y,
                supported_formats[menu->selectedItem + 1][x],(x==3)?numPointFontSmall:numPointFontMed, textColor);
 }
+
+//------------------------------------------------------------------------------
+void jskb_menu_detail(tMenuState * menu)
+{
+    if(menu->menuItems[menu->selectedItem].special > 0)
+    {
+        char * descr = NULL;
+        char temp[10];
+        switch(menu->menuItems[menu->selectedItem].special)
+        {
+        case 1:
+            snprintf(temp, sizeof(temp), "[%d]", jsXAxis);
+            descr = temp;
+            break;   
+        case 2:
+            snprintf(temp, sizeof(temp), "[%d]", jsYAxis);
+            descr = temp;
+            break;
+        case 3:
+            snprintf(temp, sizeof(temp), "[%d]", jsThreshold);
+            descr = temp;
+            break;   
+        case 4:
+            snprintf(temp, sizeof(temp), "[%d]", jsInfo);
+            descr = temp;
+            break;
+        case 5:
+            snprintf(temp, sizeof(temp), "[%d]", jsMenu);
+            descr = temp;
+            break;   
+        case 6:
+            snprintf(temp, sizeof(temp), "[%d]", jsSelect);
+            descr = temp;
+            break;
+        case 7:
+            snprintf(temp, sizeof(temp), "[%d]", jsBack);
+            descr = temp;
+            break;
+        }
+        
+        if(descr != NULL)
+            textXY(state->screen_width * .25,
+                 menu->txtRaster.y,
+                 descr,
+                 numPointFontMed, errorColor);
+    }
+}
+
+
 //------------------------------------------------------------------------------
 void gui_menu_detail(tMenuState * menu)
 {
@@ -1176,14 +1225,27 @@ void main_menu_detail(tMenuState * menu)
 //------------------------------------------------------------------------------
 bool set_int(int min, int max, int offset, int * value)
 {
-    if ((*value + offset >= min) && (*value + offset <= max))
+    int oldValue = *value;
+    
+    if(offset > 0)
     {
-        *value += offset;
-        return true;
+        if (*value + offset <= max)
+            *value += offset;
+        else
+            *value = max;
     }
-    else return false;
+    else
+    {
+        if (*value + offset >= min)
+            *value += offset;
+        else
+            *value = min;
+    }
+    if(oldValue != *value)
+        return true;
+    else
+        return false;
 }
-
 //------------------------------------------------------------------------------
 #define REDRAW_GUI_KEYPRESS {redraw_results(false);setBGImage();dumpKb();}
 void gui_menu_keypress(tMenuState * menu, int key)
@@ -1213,6 +1275,31 @@ void gui_menu_keypress(tMenuState * menu, int key)
             case 11: set_int(20, 50, offset, &numPointFontLarge);
                 break;
         }
+    }
+}
+//------------------------------------------------------------------------------
+void jskb_menu_keypress(tMenuState * menu, int key)
+{ 
+    if(key == CUR_R || key == CUR_L)
+    {
+        int offset = 1;
+        
+        if (strcmp(menu->menuItems[menu->selectedItem].key, "TH") == 0)
+            offset = 1000;
+            
+        if(key == CUR_L)
+            offset *= -1;
+        
+        switch(menu->menuItems[menu->selectedItem].special)
+        {
+            case 1: set_int(0,    15,    offset, &jsXAxis    );break;
+            case 2: set_int(0,    15,    offset, &jsYAxis    );break;
+            case 3: set_int(1, 32768,    offset, &jsThreshold);break;
+            case 4: set_int(0,    15,    offset, &jsInfo     );break;
+            case 5: set_int(0,    15,    offset, &jsMenu     );break;
+            case 6: set_int(0,    15,    offset, &jsSelect   );break;
+            case 7: set_int(0,    15,    offset, &jsBack     );break;
+        };
     }
 }
 //------------------------------------------------------------------------------

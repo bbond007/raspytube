@@ -69,8 +69,10 @@ tMenuState fontMenu;
 tMenuState guiMenu;
 tMenuState titleFontMenu;
 tMenuState formatMenu;
+tMenuState jskbMenu;
 
 static void do_gui_menu();
+static void do_jskb_menu();
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
 static void do_change_video_player();
@@ -83,6 +85,7 @@ int main(int argc, char **argv)
     bcm_host_init();
     memset( state, 0, sizeof( *state ) );
     init_ogl(state);
+    initKb();
     init_font_menus();
     init_ui_var();
     //init menus...
@@ -90,14 +93,17 @@ int main(int argc, char **argv)
     init_big_menu(&regionMenu, "Select region:");
     init_format_menu(&formatMenu);
     init_small_menu(&guiMenu, "GUI menu:");
+    init_small_menu(&jskbMenu, "JS/GP/KB Menu");
+    jskbMenu.menuItems = jskbMenuItems;
+    jskbMenu.drawDetail = jskb_menu_detail;
+    jskbMenu.keyPress = jskb_menu_keypress;
     mainMenu.menuItems = mainMenuItems;
-    mainMenu.drawDetail = &main_menu_detail;
-    regionMenu.menuItems = &regionMenuItems;
+    mainMenu.drawDetail = main_menu_detail;
+    regionMenu.menuItems = regionMenuItems;
     guiMenu.menuItems = guiMenuItems;
-    guiMenu.drawDetail = &gui_menu_detail;
+    guiMenu.drawDetail = gui_menu_detail;
     guiMenu.keyPress = gui_menu_keypress;
     set_menu_value(&regionMenu,0);    
-    initKb();
     clear_output();
     redraw_results(true);
     char searchStr [100] = "";
@@ -319,6 +325,22 @@ int main(int argc, char **argv)
 }
 
 //------------------------------------------------------------------------------
+static void do_jskb_menu()
+{
+    int result;
+    do
+    {
+        result = show_menu(&jskbMenu);
+        switch(result)
+        {
+            case 0:
+                break;
+        }
+        
+    }while (result != -1);   
+}
+
+//------------------------------------------------------------------------------
 static void do_gui_menu()
 {
     int result;
@@ -348,6 +370,10 @@ static void do_gui_menu()
                      set_title_font((int) resultFont);
                break;
             case 11:
+               do_jskb_menu();
+               break;
+                
+            case 12:
                 saveConfig();
                 break;
         }
