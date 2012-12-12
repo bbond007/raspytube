@@ -53,7 +53,8 @@ tColorDef colorScheme[] =
     {2.0f,  5.0f,  2.0f,  1.0f},
     {2.0f,  1.5f,  0.0f,  1.0f},
     {0.0f,  0.0f,  0.0f,  1.0f},
-    {4.0f,  0.0f,  0.0f,  1.0f}
+    {4.0f,  0.0f,  0.0f,  1.0f},
+    {0.0f,  0.5f,  0.0f,  1.0f},
 };
 
 tColorDef * textColor        = &colorScheme[0];
@@ -64,6 +65,7 @@ tColorDef * outlineColor2    = &colorScheme[4];
 tColorDef * selectedColor    = &colorScheme[5];
 tColorDef * bgColor          = &colorScheme[6];
 tColorDef * errorColor       = &colorScheme[7];
+tColorDef * rectColor3       = &colorScheme[8];
 
 extern unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
@@ -590,7 +592,7 @@ bool input_string(char * prompt, char * buf, int max)
         keyXY.y = state->screen_height - ((y + 1) * key_height);
         key_width = key_width * 1.5f;
         key_w = key_width * .90f;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, (keyMapIndex==0)?rectColor:rectColor3, (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
         textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "!@#", numPointFontLarge,  (sel==OSK_KEY)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
         Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_DEL)?COLOR_SELECTED:COLOR_NORMAL);

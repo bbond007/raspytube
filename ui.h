@@ -165,6 +165,7 @@ extern enum tJpegDecoder jpegDecoder;
 extern tColorDef * textColor;
 extern tColorDef * rectColor;
 extern tColorDef * rectColor2;
+extern tColorDef * rectColor3;
 extern tColorDef * outlineColor;
 extern tColorDef * outlineColor2;
 extern tColorDef * selectedColor;
