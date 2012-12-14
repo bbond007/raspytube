@@ -1296,7 +1296,7 @@ void jskb_menu_keypress(tMenuState * menu, int key)
         {
             case 1: set_int(0,    15,    offset, &jsXAxis    );break;
             case 2: set_int(0,    15,    offset, &jsYAxis    );break;
-            case 3: set_int(1, 32768,    offset, &jsThreshold);break;
+            case 3: set_int(1, 32767,    offset, &jsThreshold);break;
             case 4: set_int(0,    15,    offset, &jsInfo     );break;
             case 5: set_int(0,    15,    offset, &jsMenu     );break;
             case 6: set_int(0,    15,    offset, &jsSelect   );break;

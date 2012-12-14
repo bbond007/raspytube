@@ -8,7 +8,7 @@
 #include "VG/openvg.h"
 #include "VG/vgu.h"
 #include "gfxlib.h"
-#include "ui.h";
+#include "ui.h"
 #include "config.h"
 #include "kbjs.h"
 

@@ -173,16 +173,16 @@ int readKb(void)
             case 2:
                 if (jse.number == jsXAxis)
                 {
-                    if (jse.value > jsThreshold)
+                    if (jse.value >= jsThreshold)
                         return CUR_R;
-                    else if(jse.value < -jsThreshold)
+                    else if(jse.value <= -jsThreshold)
                         return CUR_L;
                 }
                 else if(jse.number ==  jsYAxis)
                 {
-                    if (jse.value > jsThreshold)
+                    if (jse.value >= jsThreshold)
                         return CUR_DWN;
-                    else if(jse.value < -jsThreshold)
+                    else if(jse.value <= -jsThreshold)
                         return CUR_UP;
                 }       
                 break;
