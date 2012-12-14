@@ -42,7 +42,7 @@ Comile instructions:
 sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
 sudo chmod a+x /usr/local/bin/youtube-dl
 sudo apt-get update
-sudo apt-get install build-essential git-core libjpeg62-dev
+sudo apt-get install build-essential git-core libjpeg8-dev
 git clone https://github.com/bbond007/raspytube
 cd raspytube
 make

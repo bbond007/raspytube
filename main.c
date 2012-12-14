@@ -556,10 +556,10 @@ static void play_video (char * url)
         switch(videoPlayer)
         {
         case vpMPlayer:
-            show_message("Calling youtube_dl...~5DONE~0\nStarting Mplayer...", false, numPointFontMed);
+            show_message("Calling youtube_dl... ~5DONE~0\nStarting Mplayer...", false, numPointFontMed);
             break;
         case vpOMXPlayer:
-            show_message("Calling youtube_dl...~5DONE~0\nStarting OMXPlayer...", false, numPointFontMed);
+            show_message("Calling youtube_dl... ~5DONE~0\nStarting OMXPlayer...", false, numPointFontMed);
             break;
         }
 
