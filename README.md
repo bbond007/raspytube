@@ -43,6 +43,9 @@ sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/b
 sudo chmod a+x /usr/local/bin/youtube-dl
 sudo apt-get update
 sudo apt-get install build-essential git-core libjpeg8-dev
+cd /opt/vc/src/hello_pi/libs/ilclient
+make
+cd ~
 git clone https://github.com/bbond007/raspytube
 cd raspytube
 make
