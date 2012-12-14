@@ -4,35 +4,48 @@ an OpenVG YouTube client for Raspberry Pi.
 
 keys:
 
-	s - 		search (edit existing txt)
-	n - 		nex search
-	cursor down - 	next record
-	cursor up - 	prev record
-	cursor right-  	get next 10 results
-	cursor left- 	get prev 10 results
-	Q or ESC - 	exit screen/proram
-	F - 		set youtube-dl format
-	P-		toggle between OMXPlayer and MPlayer 
-	H-		toggle between HDMI/Local audio output
-	I- 		more information on selected record
-	X- 		toggle between software (libjpeg) and hardware (OMX) jpeg decoding.
+ M - main menu
+ S - search (edit existing txt)
+ N - new search
+ cursor down - next record
+ cursor up - prev record
+ cursor right- get next 10 results
+ cursor left- get prev 10 results
+ ESC - exit screen/proram
+ 
+the following are also available from the menu:
+ F - set youtube-dl format
+ P- toggle between OMXPlayer and MPlayer 
+ H- toggle between HDMI/Local audio output
+ I- more information on selected record
+ X- toggle between software (libjpeg) and hardware (OMX) jpeg decoding.
  
 binarybond007@gmail.com
 
 NOTES:
 
-	MPlayer not working yet... 
-	OMX jpeg decoding is working but images are upside-down!
-	
+ MPlayer not working yet... 
+ 
 Thanks the the RPi community!
 
 // parts of this come from "shapes.c":
 // shapes: minimal program to explore OpenVG
 // Anthony Starks (ajstarks@gmail.com)
 // and "test_image.c"
-// ShivaVG / Ivan Leben <ivan.leben@gmail.com>
-// ShivaVG - an open-source LGPL ANSI C implementation of the OpenVG specification
-// Also thanks to MattOwnby and jumble) for jpeg decode	
+// ShivaVG / IvanLeben<ivan.leben@gmail.com>
+// ShivaVG-anopen-sourceLGPLANSICimplementationoftheOpenVGspecification
+// Also thanks to MattOwnby and jumble) for jpeg decode 
 
 
-	
+Comile instructions:
+
+sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
+sudo chmod a+x /usr/local/bin/youtube-dl
+sudo apt-get update
+sudo apt-get install build-essential git-core libjpeg62-dev
+git clone https://github.com/bbond007/raspytube
+cd raspytube
+make
+./raspytube.bin
+
+ 
