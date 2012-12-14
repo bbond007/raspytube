@@ -37,7 +37,7 @@ Thanks the the RPi community!
 // Also thanks to MattOwnby and jumble) for jpeg decode 
 
 
-Comile instructions:
+Compile instructions:
 
 sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
 sudo chmod a+x /usr/local/bin/youtube-dl
