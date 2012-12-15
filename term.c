@@ -217,7 +217,6 @@ void term_command(tTermState * ts, char * command)
     {
         if(fgets(buf,sizeof(buf),pipe)!=NULL)
         {
-            //printf("%s\n",buf);
             term_put_str(ts, buf);
             term_show(ts);
         }
