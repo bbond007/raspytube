@@ -78,7 +78,7 @@ static void do_jskb_menu();
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
 static void do_change_video_player();
-static void do_download(char * url);
+static void do_download(char * url, char * title);
 
 #define PICK_SEARCH_STR ((mainMenu.selectedItem == 3 || mainMenu.selectedItem == 4) ? userStr : searchStr)
 //------------------------------------------------------------------------------
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
                         setBGImage();
                         if(selected_rec != NULL && selected_rec->url != NULL)
                             if(yes_no_dialog("Download?", true))
-                                do_download(selected_rec->url);
+                                do_download(selected_rec->url, selected_rec->title);
                         break;
                     case CUR_L :
                         do_cur_left(PICK_SEARCH_STR);
@@ -342,7 +342,7 @@ int main(int argc, char **argv)
 }
 
 //------------------------------------------------------------------------------
-static void do_download(char * url)
+static void do_download(char * url, char * title)
 {
     char * server = NULL;
     char * page = NULL;
@@ -355,7 +355,10 @@ static void do_download(char * url)
     term_set_color(&ts, 7);
     term_put_str(&ts, "Calling youtube_dl...\n");
     term_set_color(&ts, 5);
-    term_put_str(&ts, url);
+    if(title != NULL)
+        term_put_str(&ts, title);
+    term_put_str(&ts, "\n");
+    term_put_str(&ts, url);    
     term_set_color(&ts, 0);
     term_put_str(&ts, "\n");
     term_show(&ts); 
