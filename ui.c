@@ -502,7 +502,9 @@ int show_selection_info(struct result_rec * rec)
                 key != CUR_L &&
                 key != CUR_R &&
                 key != CUR_UP &&
-                key != CUR_DWN);
+                key != CUR_DWN &&
+                key != 'I' && 
+                key != 'F');
         if(infoStr != NULL) free(infoStr);
         //vgDestroyImage(image);
         if(downloadData != NULL)
@@ -732,79 +734,6 @@ bool input_string(char * prompt, char * buf, int max)
         return true;
 }
 
-//------------------------------------------------------------------------------
-bool input_string_old(char * prompt, char * buf, int max)
-{
-    int key = 0x00;
-    int endPos;
-    int lastkeys[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    char formatStr[] = "%02X->%02X:%02X:%02X:%02X:%02X:%02X:%02X";
-    char validChars[] =
-        "!@#$%^&*(()_<>?+=1234567890,.ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-    char temp[strlen(formatStr) + 1];
-    char cstr[2];
-    cstr[1]=0x00;
-    char * save = malloc(max+1);
-    strcpy(save, buf);
-    do
-    {
-        drawBGImage();
-        draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
-        snprintf(temp, sizeof(formatStr),formatStr, key,
-                 lastkeys[0], lastkeys[1], lastkeys[2], lastkeys[3], lastkeys[4], lastkeys[5], lastkeys[6]);
-        textXY(state->screen_width * .10f, state->screen_height * .10f, temp, numPointFontMed, textColor);
-        endPos = strlen(buf);
-        buf[endPos] = '_';
-        buf[endPos+1]= 0x00;
-        textXY(state->screen_width * .10f, state->screen_height * .30f, buf, numPointFontLarge, textColor);
-        buf[endPos] = 0x00;
-        eglSwapBuffers(state->display, state->surface);
-        int i = 0;
-
-        for (i = (sizeof(lastkeys) / sizeof(int))-1; i > 0; i--)
-            lastkeys[i] = lastkeys[i-1];
-
-        lastkeys[0] = key;
-        key = readKb();
-        switch (key)
-        {
-        case DEL_KEY:
-
-            if(endPos > 0)
-                buf[endPos-1] = 0x00;
-            break;
-
-        case ESC_KEY:
-            strcpy(buf, save);
-            break;
-
-        case CUR_L:
-            buf[0] = 0x00;
-            break;
-
-        case CUR_R:
-            strcpy(buf, save);
-            break;
-
-        case RTN_KEY:
-            break;
-
-        default:
-            if(strchr(validChars, toupper(key)) != NULL &&  strlen(buf) < max - 3)
-            {
-                cstr[0] = (char) key;
-                strncat(buf, cstr,  max);
-            }
-            break;
-        }
-    }
-    while (key != RTN_KEY && key != ESC_KEY);
-    free(save);
-    if(key == ESC_KEY)
-        return false;
-    else
-        return true;
-}
 //------------------------------------------------------------------------------
 void show_big_message(char * title, char * message)
 {

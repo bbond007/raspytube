@@ -22,6 +22,8 @@
 #include "mainmenu.h"
 #include "config.h"
 #include "kbjs.h"
+#include "term.h"
+
 
 //------------------------------------------------------------------------------
 
@@ -76,6 +78,7 @@ static void do_jskb_menu();
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
 static void do_change_video_player();
+static void do_download(char * url);
 
 #define PICK_SEARCH_STR ((mainMenu.selectedItem == 3 || mainMenu.selectedItem == 4) ? userStr : searchStr)
 //------------------------------------------------------------------------------
@@ -110,6 +113,7 @@ int main(int argc, char **argv)
     char userStr[100] = "";
     char txt[200];
     bool quit = false;
+
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -261,6 +265,19 @@ int main(int argc, char **argv)
                     result = show_selection_info(selected_rec);
                     switch(result)
                     {
+                    
+                    case 'F':
+                        redraw_results(false);
+                        setBGImage();
+                        show_format_menu(&formatMenu);
+                        break;
+                    case 'I': 
+                        redraw_results(false);
+                        setBGImage();
+                        if(selected_rec != NULL && selected_rec->url != NULL)
+                            if(yes_no_dialog("Download?", true))
+                                do_download(selected_rec->url);
+                        break;
                     case CUR_L :
                         do_cur_left(PICK_SEARCH_STR);
                         break;
@@ -322,6 +339,43 @@ int main(int argc, char **argv)
     restoreKb();
     exit_func();
     return 0;
+}
+
+//------------------------------------------------------------------------------
+static void do_download(char * url)
+{
+    char * server = NULL;
+    char * page = NULL;
+    char * freeMe = parse_url(url, &server, &page);
+    char request_format[6] = "";
+    int status;
+    redraw_results(false);
+    tTermState ts;
+    term_init(&ts, .70f, .95f, -1, -1);
+    term_set_color(&ts, 7);
+    term_put_str(&ts, "Calling youtube_dl...\n");
+    term_set_color(&ts, 5);
+    term_put_str(&ts, url);
+    term_set_color(&ts, 0);
+    term_put_str(&ts, "\n");
+    term_show(&ts); 
+    if(server != NULL && page != NULL)
+    {
+        if (numFormat > 0)
+            snprintf(request_format, sizeof(request_format), "-f%s", supported_formats[numFormat+1][0]);
+        char youtube_dl_format[] = "youtube-dl -t %s http://%s/%s";
+        
+        size_t stCommand = strlen(server) +
+                           strlen(page) +
+                           strlen(request_format) +
+                           strlen(youtube_dl_format);
+        char * youtube_dl_command   = malloc(stCommand);
+        snprintf(youtube_dl_command, stCommand, youtube_dl_format, request_format, server, page);
+        term_command(&ts, youtube_dl_command);     
+        free(youtube_dl_command);
+    }
+    term_free(&ts);
+    free(freeMe);
 }
 
 //------------------------------------------------------------------------------

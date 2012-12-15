@@ -155,7 +155,7 @@ extern int numThumbWidth;
 extern int numResults;
 extern int numFormat;
 extern int numStart;
-
+extern int noRectPenSize;
 extern enum tSoundOutput soundOutput;
 extern enum tVideoPlayer videoPlayer;
 extern enum tJpegDecoder jpegDecoder;
