@@ -226,7 +226,7 @@ void term_command(tTermState * ts, char * command)
     boingSizePer.xPer = 0.18f;   
     boingSizePer.yPer = 0.30f;
     calc_point_xy(&boingSizePer, &boingSize);
-    boingSize.x = (int)((boingSize.x / 16)) * 16;
+    //boingSize.x = (int)((boingSize.x / 16)) * 16;
     boingXY.x = (state->screen_width - boingSize.x) / 2;
     char buf[1024];
     FILE * pipe = popen(command,"r");

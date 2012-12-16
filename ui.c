@@ -1479,8 +1479,8 @@ void redraw_results(bool swap)
     int rectOffset = (int) ((float) state->screen_width * .05);
     int rectWidth = state->screen_width - (rectOffset * 2);
     int rectWidth2 = state->screen_width / numThumbWidth;
-    int jpegWidth =  state->screen_width / (numThumbWidth+2);
-    jpegWidth = (int)((jpegWidth / 16)) * 16;
+    int jpegWidth =  rectWidth2 - noRectPenSize;
+   // jpegWidth = (int)((jpegWidth / 16)) * 16;
     int txtXoffset = rectWidth2 + (rectOffset * 1.2);
     int iLine = 0;
     int rectDiff = (step - rectHeight) / 2;
