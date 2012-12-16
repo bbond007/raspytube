@@ -286,6 +286,7 @@ void do_joystick_test(void)
     int key = 0;
     if(joystick_fd > 0)
     {
+        dumpJs();
         term_set_color(&ts, 0);
         struct js_event jse;
         do
