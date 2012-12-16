@@ -24,7 +24,6 @@
 #include "kbjs.h"
 #include "term.h"
 
-
 //------------------------------------------------------------------------------
 
 typedef struct bufLink
@@ -336,10 +335,12 @@ int main(int argc, char **argv)
     while (!quit);
     clear_output();
     free_ui_var();
+    free_boing();
     restoreKb();
     exit_func();
     return 0;
 }
+
 
 //------------------------------------------------------------------------------
 static void do_download(char * url, char * title)
@@ -348,7 +349,6 @@ static void do_download(char * url, char * title)
     char * page = NULL;
     char * freeMe = parse_url(url, &server, &page);
     char request_format[6] = "";
-    int status;
     redraw_results(false);
     tTermState ts;
     term_init(&ts, .70f, .95f, -1, -1);
@@ -361,7 +361,7 @@ static void do_download(char * url, char * title)
     term_put_str(&ts, url);    
     term_set_color(&ts, 0);
     term_put_str(&ts, "\n");
-    term_show(&ts); 
+    term_show(&ts, true); 
     if(server != NULL && page != NULL)
     {
         if (numFormat > 0)

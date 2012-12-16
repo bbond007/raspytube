@@ -42,7 +42,7 @@ void term_clear    (tTermState * ts, char c);
 void term_goto_xy  (tTermState * ts, int x, int y);
 void term_del      (tTermState * ts);
 void term_set_color(tTermState * ts, unsigned char color);
-void term_show     (tTermState * ts);
+void term_show     (tTermState * ts, bool swap);
 void term_free     (tTermState * ts);
 void term_command  (tTermState * ts, char * command);
 

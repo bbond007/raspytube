@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/types.h>
@@ -9,6 +10,8 @@
 #include "gfxlib.h"
 #include "ui.h"
 #include "term.h"
+#include "boing.h"
+
 extern const char tv_jpeg_raw_data[];
 extern const unsigned int tv_jpeg_raw_size;
 extern tFontDef fontDefs[];
@@ -89,7 +92,6 @@ void term_put_str(tTermState * ts, char * str)
 {
     while(*str != 0x00)
     {
-        printf("%c", *str);
         if(*str == DEL_KEY)
             term_del(ts);
         else if(*str == '\r')
@@ -98,6 +100,17 @@ void term_put_str(tTermState * ts, char * str)
             term_putc(ts, *str);
         str++;
     }
+}
+
+//------------------------------------------------------------------------------
+void term_put_c(tTermState * ts, char c)
+{
+    if(c == DEL_KEY)
+        term_del(ts);
+    else if(c == '\r')
+       ts->term_cur_x = 0;
+    else
+       term_putc(ts, c);
 }
 //------------------------------------------------------------------------------
 void term_init(tTermState * ts, float widthPer, float heightPer, int width, int height)
@@ -156,7 +169,7 @@ void term_free(tTermState * ts)
 }
 
 //------------------------------------------------------------------------------
-void term_show(tTermState * ts)
+void term_show(tTermState * ts, bool swap)
 {
     if (ts->image == 0) return;
     clear_screen(false);
@@ -197,29 +210,46 @@ void term_show(tTermState * ts)
         pos.y -= ts->term_y_inc;
         pos.x = ts->txtXY.x;
     }
-    eglSwapBuffers(state->display, state->surface);
+    if(swap)
+     eglSwapBuffers(state->display, state->surface);
 }
-
 //------------------------------------------------------------------------------
 void term_command(tTermState * ts, char * command)
 {
+    tPointPer boingPer;
+    tPointPer boingSizePer;
+    tPointXY  boingXY;
+    tPointXY  boingSize;
+    boingPer.xPer = .50f;
+    boingPer.yPer = .20f;
+    calc_point_xy(&boingPer, &boingXY);
+    boingSizePer.xPer = 0.18f;   
+    boingSizePer.yPer = 0.30f;
+    calc_point_xy(&boingSizePer, &boingSize);
+    boingSize.x = (int)((boingSize.x / 16)) * 16;
+    boingXY.x = (state->screen_width - boingSize.x) / 2;
     char buf[1024];
     FILE * pipe = popen(command,"r");
     if(pipe == NULL)
     {
         snprintf(buf, sizeof(buf), "invoking:%s failed:%s\n",command,strerror(errno));
         term_put_str(ts, buf);
-        term_show(ts);
+        term_show(ts, true);
         readKb();
     }
-
+    int pipefd = fileno(pipe);
+    int flags = fcntl(pipefd, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    fcntl(pipefd, F_SETFL, flags);
     while(!feof(pipe))
     {
-        if(fgets(buf,sizeof(buf),pipe)!=NULL)
-        {
+        if(fgets(buf,sizeof(buf),pipe)!=0)
             term_put_str(ts, buf);
-            term_show(ts);
-        }
+        else
+            usleep(500);
+        term_show(ts, false);
+        draw_boing(boingXY.x, boingXY.y, boingSize.x, boingSize.y, true);
+        eglSwapBuffers(state->display, state->surface);
     }
-    int rc = pclose(pipe);
+    pclose(pipe);
 }
