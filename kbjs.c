@@ -306,10 +306,10 @@ void do_joystick_test(void)
     }
     else
     {
-        snprintf(txt, size, "%s was not opened", jsDev);
+        snprintf(txt, size, "%s was not opened.", jsDev);
         term_put_str(&ts, txt); 
         term_set_color(&ts, 5);    
-        term_put_str(&ts, "\nPress any key to continue...\n");
+        term_put_str(&ts, "\n\n\nPress any key to continue...");
         term_show(&ts, true);
         readKb();
     }
