@@ -11,6 +11,7 @@
 #include "gfxlib.h"
 #include "ui.h"
 #include "joystick.h"
+#include "term.h"
 
 //stuff for the keyboard.
 
@@ -18,6 +19,7 @@ static int ttflags;
 static struct termios oldt;
 static struct termios newt;
 static int joystick_fd = -1;
+char jsDev[] = "/dev/input/js0";
 
 
 int jsXAxis     = 0;
@@ -124,9 +126,9 @@ int handleESC()
 bool kbHit(void)
 {
     int ch;
-    fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
+  //  fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
     ch = getchar();
-    fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
+  //  fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     if(ch != EOF)
     {
         ungetc(ch, stdin);
@@ -227,10 +229,11 @@ void dumpJs(void)
 {
     if(joystick_fd > 0)
     {
+    
         struct js_event jse;
-        while(read_joystick_event(&jse))
+        while (read_joystick_event(&jse))
         {    
-        //dumping joystick...
+            //dumping joystick
         }
     }
 }
@@ -255,7 +258,7 @@ void initKb(void)
     ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
 //  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-    open_joystick("/dev/input/js0");
+    open_joystick(jsDev);
 
 }
 //------------------------------------------------------------------------------
@@ -266,5 +269,52 @@ void restoreKb(void)
     close_joystick();
 }
 
+//------------------------------------------------------------------------------
+void do_joystick_test(void)
+{
+    tTermState ts;
+    term_init(&ts, .70f, .95f, -1, -1);
+    term_set_color(&ts, 7);
+    term_put_str(&ts, "test:");
+    term_put_str(&ts, jsDev);
+    term_put_str(&ts, "\n");
+    term_show(&ts, true);
+    term_set_color(&ts, 5);
+    char format[] =  "event: time %8u, value %8hd, type: %3u, axis/button: %u\n";
+    size_t size = strlen(format) + 50;
+    char * txt = malloc(size);
+    int key = 0;
+    if(joystick_fd > 0)
+    {
+        term_set_color(&ts, 0);
+        struct js_event jse;
+        do
+        {
+            if(read_joystick_event(&jse))
+            {    
+                snprintf(txt, size, format, jse.time, jse.value, jse.type, jse.number);
+                term_put_str(&ts, txt);
+                term_show(&ts, true);
+            }
+            else
+                usleep(1000);
+                
+            key = getchar();
+            if (key == ESC_KEY)
+              key = handleESC();
+        } while (key != ESC_KEY);        
+    }
+    else
+    {
+        snprintf(txt, size, "%s was not opened", jsDev);
+        term_put_str(&ts, txt); 
+        term_set_color(&ts, 5);    
+        term_put_str(&ts, "\nPress any key to continue...\n");
+        term_show(&ts, true);
+        readKb();
+    }
+    free(txt);
+    term_free(&ts);
+}
 
 

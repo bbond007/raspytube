@@ -6,6 +6,7 @@ void dumpJs(void);
 void initKb(void);
 void restoreKb(void);
 int handleESC(void);
+void do_joystick_test(void);
 extern bool jsRTN;
 extern bool kbRTN;
 extern int jsXAxis;

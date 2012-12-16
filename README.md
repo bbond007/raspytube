@@ -7,10 +7,11 @@ keys:
  M - main menu
  S - search (edit existing txt)
  N - new search
+ J - test joystick (useful for configuring js)
  cursor down - next record
  cursor up - prev record
- cursor right- get next 10 results
- cursor left- get prev 10 results
+ cursor right- get next # results
+ cursor left- get prev # results
  ESC - exit screen/proram
  
 the following are also available from the menu:
