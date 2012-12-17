@@ -7,6 +7,7 @@ make clean
 make 
 strip raspytube.bin
 rm -rf raspytube.bin.zip
+unix2dos README.md
 zip raspytube.bin.zip raspytube.bin
 git add cleanup.sh README.md Makefile *.c *.h *.cpp *.inc raspytube.bin raspytube.bin.zip
 git add screenshots/*.jpg 
