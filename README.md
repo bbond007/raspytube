@@ -7,7 +7,7 @@ keys:
  M - main menu
  S - search (edit existing txt)
  N - new search
- J - test joystick (useful for configuring js)
+ J - test joystick (useful for configuring JS)
  cursor down - next record
  cursor up - prev record
  cursor right- get next # results
