@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 15
+#define VERSION_NUMBER 16
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -26,7 +26,8 @@ typedef struct tConfigRec
       int numPointFontMed;
       int numPointFontLarge;
       int numThumbWidth;
-      int numResults;
+      int numRow;
+      int numCol;
       int numFormat;
       int jsXAxis;
       int jsYAxis;
@@ -88,7 +89,9 @@ bool loadConfig()
      numPointFontMed                 = configRec.numPointFontMed;
      numPointFontLarge               = configRec.numPointFontLarge;
      numThumbWidth                   = configRec.numThumbWidth;
-     numResults                      = configRec.numResults;   
+     numRow                          = configRec.numRow;
+     numCol                          = configRec.numCol;  
+     numResults			     = configRec.numRow * configRec.numCol;
      jpegDecoder 		     = configRec.jpegDecoder;
      videoPlayer 		     = configRec.videoPlayer;
      soundOutput		     = configRec.soundOutput;
@@ -114,7 +117,8 @@ void saveConfig()
      configRec.numPointFontMed       = numPointFontMed;  
      configRec.numPointFontLarge     = numPointFontLarge;    
      configRec.numThumbWidth         = numThumbWidth;              
-     configRec.numResults            = numResults;                          
+     configRec.numRow	             = numRow;     
+     configRec.numCol	             = numCol;                          
      configRec.numFormat             = numFormat;
      configRec.jpegDecoder           = jpegDecoder;
      configRec.videoPlayer           = videoPlayer;

@@ -1,4 +1,4 @@
-OBJS=term.o kbjs.o config.o ui.o main.o tvraw.o gfxlib.o OMXJPEG.o omx_jpeg_wrapper.o OMXComponent.o Event.o OMXCore.o Logger.o Locker.o boing.o
+OBJS=ui.o term.o kbjs.o config.o main.o tvraw.o gfxlib.o OMXJPEG.o omx_jpeg_wrapper.o OMXComponent.o Event.o OMXCore.o Logger.o Locker.o boing.o
 BIN=raspytube.bin
 
 CC=gcc

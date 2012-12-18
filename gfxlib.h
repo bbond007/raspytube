@@ -58,7 +58,7 @@ void loadfont(const int *Points, const int *PointIndices, const unsigned char *I
 void init_ogl(STATE_T *state);
 void exit_func(void);
 void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags);
-void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, 
+void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, VGfloat maxLength, int maxLines, 
   VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags, bool bRichTXT);
 void Poly(VGfloat *xy, VGint n, VGfloat sw, tColorDef * fill, tColorDef * stroke, VGboolean dofill);
 void setfill(tColorDef * color);

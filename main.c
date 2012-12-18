@@ -55,6 +55,7 @@ unsigned char *download_file(char * host, char * fileName, unsigned int * fileSi
 unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 static void do_search(char * searchStr);
 static void do_user_search(char * userStr);
+static bool try_move(int step, bool foward);
 static void do_cur_up();
 static void do_cur_down();
 static void do_cur_right(char * searchStr);
@@ -430,16 +431,37 @@ static void do_gui_menu()
                 if(resultFont != -1)
                      set_title_font((int) resultFont);
                break;
-            case 11:
+            case 12:
                do_jskb_menu();
                break;
                 
-            case 12:
+            case 13:
                 saveConfig();
                 break;
         }
     }while (result != -1);
 }
+
+//------------------------------------------------------------------------------
+static bool try_move(int step, bool foward)
+{
+    int i;
+    if(selected_rec == NULL) 
+        return false;
+    struct result_rec * temp_rec = selected_rec;
+    for (i=0; i < step; i++)
+    {
+        if(foward)
+            temp_rec = temp_rec->next;
+        else
+            temp_rec = temp_rec->prev;
+        if(temp_rec == NULL)
+            return false;
+    }
+    selected_rec = temp_rec;
+    return true; 
+}
+
 //------------------------------------------------------------------------------
 static void do_cur_up()
 {
@@ -470,26 +492,36 @@ static void do_cur_down()
 //------------------------------------------------------------------------------
 static void do_cur_right(char * searchStr)
 {
-    if(numStart < 500)
-    {
-         numStart += numResults;
-         clear_output();
-         clear_screen(true);
-         youtube_search(searchStr);
+    if(try_move(numRow, true))
+         redraw_results(true);
+    else
+    {  
+        if(numStart < 500)
+        {
+             numStart += numResults;
+             clear_output();
+             clear_screen(true);
+             youtube_search(searchStr);
+        }
     }
 }
 
 //------------------------------------------------------------------------------
 static void do_cur_left(char * searchStr)
 {
-    if (numStart > 1)
+    if(try_move(numRow, false))
+        redraw_results(true);
+    else
     {
-         numStart -= numResults;
-         if(numStart < 1)
-             numStart = 1;
-         clear_output();
-         clear_screen(true);
-         youtube_search(searchStr);
+        if (numStart > 1)
+        {
+             numStart -= numResults;
+             if(numStart < 1)
+                 numStart = 1;
+             clear_output();
+             clear_screen(true);
+             youtube_search(searchStr);
+        }
     }
 }
 

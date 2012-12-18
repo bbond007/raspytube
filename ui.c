@@ -34,11 +34,15 @@ int numPointFontTiny;
 int numPointFontSmall;
 int numPointFontMed;
 int numPointFontLarge;
-int numThumbWidth     = 13;
-int numResults        = 10;
+int numThumbWidth     = 8;
+int numRow	      = 6;
+int numCol	      = 2;
+int numResults        = 12;
 int numFormat         = 0;
 int numStart          = 1;
-int noRectPenSize;
+int numRectPenSize;
+//int numResultsReturned;
+
 enum tSoundOutput soundOutput = soHDMI;
 enum tVideoPlayer videoPlayer = vpOMXPlayer;
 enum tJpegDecoder jpegDecoder = jdOMX;
@@ -202,9 +206,9 @@ void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fill
     Text(&fontDefs[fontMenu.selectedItem], x, y, s, pointsize, fillcolor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
-void textXY_Rollover (VGfloat x, VGfloat y,VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor)
+void textXY_Rollover (VGfloat x, VGfloat y,VGfloat brkLength, VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor)
 {
-    Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH, false);
+    Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, brkLength, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
 void free_ui_var()
@@ -318,7 +322,7 @@ void init_ui_var()
            tvImage = create_image_from_buf((unsigned char *)
            tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }
-    noRectPenSize  = state->screen_width  * .005f;
+    numRectPenSize  = state->screen_width  * .005f;
     loadConfig();
     if(upArrowImage == 0)
     {
@@ -358,13 +362,13 @@ void draw_menu(tMenuState * menu)
               menu->winRect.y,
               menu->winRect.w,
               menu->winRect.h, 
-              30, 20, noRectPenSize, rectColor, selectedColor);
+              30, 20, numRectPenSize, rectColor, selectedColor);
 
     Roundrect(menu->selRect.x,
               menu->selRect.y,
               menu->selRect.w,
               menu->selRect.h,
-              20, 20, noRectPenSize / 2, rectColor, selectedColor);
+              20, 20, numRectPenSize / 2, rectColor, selectedColor);
               
     Text(&fontDefs[titleFontMenu.selectedItem],
         menu->titlePos.x, menu->titlePos.y, 
@@ -382,8 +386,9 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int y = state->screen_height * boxYp;
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
-    Roundrect(x,y, width, height, 20, 20, noRectPenSize, rectColor, selectedColor);
-    Text(&fontDefs[titleFontMenu.selectedItem],tx, ty, message, points, selectedColor, VG_FILL_PATH);
+    int txtBrk = width + x - numRectPenSize;
+    Roundrect(x,y, width, height, 20, 20, numRectPenSize, rectColor, selectedColor);
+    Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx, ty, txtBrk, txtBrk, 1, 0, message, points, selectedColor, VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
 void clear_screen(bool swap)
@@ -584,7 +589,7 @@ bool input_string(char * prompt, char * buf, int max)
             {
                 keyXY.x = (x + 2) * key_width;
                 keyXY.y = state->screen_height - ((y + 1) * key_height);
-                Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor, (sel==i)?COLOR_SELECTED:COLOR_NORMAL);
+                Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor, (sel==i)?COLOR_SELECTED:COLOR_NORMAL);
                 textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y, oskKeyMap[keyMapIndex][i], numPointFontLarge,  (sel==i)?TEXT_SELECTED:TEXT_NORMAL);
                 i++;
             }
@@ -594,18 +599,18 @@ bool input_string(char * prompt, char * buf, int max)
         keyXY.y = state->screen_height - ((y + 1) * key_height);
         key_width = key_width * 1.5f;
         key_w = key_width * .90f;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, (keyMapIndex==0)?rectColor:rectColor3, (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, (keyMapIndex==0)?rectColor:rectColor3, (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
         textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "!@#", numPointFontLarge,  (sel==OSK_KEY)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_DEL)?COLOR_SELECTED:COLOR_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_DEL)?COLOR_SELECTED:COLOR_NORMAL);
         textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y,  "DEL", numPointFontLarge,  (sel==OSK_DEL)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
-        Roundrect(keyXY.x, keyXY.y,  space_w, key_h, 20, 20, noRectPenSize, rectColor, (sel==OSK_SPC)?COLOR_SELECTED:COLOR_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  space_w, key_h, 20, 20, numRectPenSize, rectColor, (sel==OSK_SPC)?COLOR_SELECTED:COLOR_NORMAL);
         keyXY.x += space_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_CLR)?COLOR_SELECTED:COLOR_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_CLR)?COLOR_SELECTED:COLOR_NORMAL);
         textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "CLR", numPointFontLarge,    (sel==OSK_CLR)?TEXT_SELECTED:TEXT_NORMAL);
         keyXY.x += key_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, noRectPenSize, rectColor,   (sel==OSK_RTN)?COLOR_SELECTED:COLOR_NORMAL);
+        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_RTN)?COLOR_SELECTED:COLOR_NORMAL);
         textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "RTN", numPointFontLarge,  (sel==OSK_RTN)?TEXT_SELECTED:TEXT_NORMAL);        
         draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
       
@@ -742,6 +747,7 @@ void show_big_message(char * title, char * message)
     textXY_Rollover(state->screen_width  * .10f,
                     state->screen_height * .40f,
                     state->screen_width  * .85f,
+                    state->screen_width  * .90f,
                     7, //max no of lines
                     state->screen_height * .05f,
                     message, numPointFontMed, textColor);
@@ -791,23 +797,25 @@ void show_message(char * message, int error, int points)
        
         if(error)
         {
-            Roundrect(imageX, imageY,  image_width, image_height, 20, 20, noRectPenSize, bgColor, bgColor);
-            Rect(guruX, guruY, guru_width, guru_height, noRectPenSize, bgColor, errorColor);
+            Roundrect(imageX, imageY,  image_width, image_height, 20, 20, numRectPenSize, bgColor, bgColor);
+            Rect(guruX, guruY, guru_width, guru_height, numRectPenSize, bgColor, errorColor);
             Text_Rollover ( &fontDefs[1], //Topaz font
                         tx, // X
                         ty, // Y
-                        state->screen_width * .80f,
+                        state->screen_width  * .80f,
+                        state->screen_width  * .90f,
                         6,
                         state->screen_height * .05f,
                         errorStr, points, &colorScheme[0], VG_FILL_PATH, true);
         }
         else
         {
-            Roundrect(imageX,  imageY, image_width, image_height, 20, 20, noRectPenSize, rectColor, bgColor);
+            Roundrect(imageX,  imageY, image_width, image_height, 20, 20, numRectPenSize, rectColor, bgColor);
             Text_Rollover ( &fontDefs[1], //Topaz font
                         tx, // X
                         ty, // Y
-                        state->screen_width * .80f,
+                        state->screen_width  * .80f,
+                        state->screen_width  * .90f,
                         8,
                         state->screen_height * .05f,
                         message, points, &colorScheme[0], VG_FILL_PATH, true);
@@ -1068,31 +1076,36 @@ void gui_menu_detail(tMenuState * menu)
             break;
             
         case 6: 
-            snprintf(temp, sizeof(temp), "[%d]", numResults);
+            snprintf(temp, sizeof(temp), "[%d]", numRow);
+            descr = temp;
+            break;
+   
+        case 7: 
+            snprintf(temp, sizeof(temp), "[%d]", numCol);
             descr = temp;
             break;
              
-        case 7:
+        case 8:
             snprintf(temp, sizeof(temp), "[1/%d]", numThumbWidth);
             descr = temp;
             break;
         
-        case 8: 
+        case 9: 
             snprintf(temp, sizeof(temp), "[%d]", numPointFontTiny);
             descr = temp;
             break;
         
-        case 9: 
+        case 10: 
             snprintf(temp, sizeof(temp), "[%d]", numPointFontSmall);
             descr = temp;
             break;
         
-        case 10: 
+        case 11: 
             snprintf(temp, sizeof(temp), "[%d]", numPointFontMed);
             descr = temp;
             break;
      
-        case 11: 
+        case 12: 
             snprintf(temp, sizeof(temp), "[%d]", numPointFontLarge);
             descr = temp;
             break;
@@ -1188,22 +1201,29 @@ void gui_menu_keypress(tMenuState * menu, int key)
             offset = -1;
         switch(menu->menuItems[menu->selectedItem].special)
         {
-            case 6: if(set_int(5, 15, offset, &numResults))
+            case 6: if(set_int(2, 15, offset, &numRow))
+                    numResults = numRow * numCol;
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 7: if(set_int(2, 20, offset * -1, &numThumbWidth))
+            
+            case 7: if(set_int(1, 4, offset, &numCol))
+                    numResults = numRow * numCol;
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 8 : if(set_int(5, 15, offset, &numPointFontTiny))
+                
+            case 8: if(set_int(2, 20, offset * -1, &numThumbWidth))
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 9: if(set_int(10, 20, offset, &numPointFontSmall))
+            case 9 : if(set_int(5, 15, offset, &numPointFontTiny))
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 10: if(set_int(15, 40, offset, &numPointFontMed))
+            case 10: if(set_int(10, 20, offset, &numPointFontSmall))
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 11: set_int(20, 50, offset, &numPointFontLarge);
+            case 11: if(set_int(15, 40, offset, &numPointFontMed))
+                    REDRAW_GUI_KEYPRESS; 
+                break;
+            case 12: set_int(20, 50, offset, &numPointFontLarge);
                 break;
         }
     }
@@ -1339,7 +1359,7 @@ int show_menu(tMenuState * menu)
                         downArrowImage, 0,0,
                         vgGetParameteri(downArrowImage, VG_IMAGE_WIDTH),
                         vgGetParameteri(downArrowImage, VG_IMAGE_HEIGHT));
-            //Poly(menu->downArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
+            //Poly(menu->downArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->scrollIndex > 0)
@@ -1348,7 +1368,7 @@ int show_menu(tMenuState * menu)
                         upArrowImage, 0,0,
                         vgGetParameteri(upArrowImage, VG_IMAGE_WIDTH),
                         vgGetParameteri(upArrowImage, VG_IMAGE_HEIGHT));
-            //Poly(menu->upArrow, 4, noRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
+            //Poly(menu->upArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->drawFooter != NULL)
@@ -1473,56 +1493,80 @@ VGImage load_jpeg2(char * url, unsigned int width, unsigned int height,
 //------------------------------------------------------------------------------
 void redraw_results(bool swap)
 {
-    int step = state->screen_height / numResults;
-    int halfStep = step / 2;
-    int rectHeight = (int) ((float) step * .9f);
-    int rectOffset = (int) ((float) state->screen_width * .05);
-    int rectWidth = state->screen_width - (rectOffset * 2);
-    int rectWidth2 = state->screen_width / numThumbWidth;
-    int jpegWidth =  rectWidth2 - noRectPenSize;
-   // jpegWidth = (int)((jpegWidth / 16)) * 16;
-    int txtXoffset = rectWidth2 + (rectOffset * 1.2);
-    int iLine = 0;
-    int rectDiff = (step - rectHeight) / 2;
-    int jpegOffset = rectOffset + ((rectWidth2 - jpegWidth) / 2);
-    int txtYstep  = state->screen_height * .04f;
-    int txtXmax   = state->screen_width * .85f;
-
+    tPointXY    offset;
+    tPointXY    step;
+    tRectBounds rbMain;
+    tRectBounds rbPic;
+    tRectBounds rbJpg;
+    tRectBounds rbTxt;
+    
+    int numRectPenSize2 = numRectPenSize * 2;   
+    offset.x = (int) ((float) state->screen_width * .05);
+    offset.y = (state->screen_height * .04f);
+    step.x   = (state->screen_width  - (offset.x * 2)) / numCol;
+    step.y   = (state->screen_height / numRow);
+    rbMain.h = step.y - numRectPenSize2;
+    rbMain.w = step.x - numRectPenSize2;
+    rbMain.x = offset.x;
+    rbPic.x  = rbMain.x;
+    rbPic.w  = state->screen_width / numThumbWidth;
+    rbPic.h  = rbMain.h;
+    rbJpg.x  = rbPic.x + numRectPenSize;
+    rbJpg.w  = rbPic.w - numRectPenSize2; 
+    rbJpg.h  = rbPic.h - numRectPenSize2;  
+    rbTxt.w  = rbMain.w - rbPic.w  - numRectPenSize2;
+    rbTxt.h  = rbMain.h - numRectPenSize2;
+    rbTxt.x  = rbMain.x + rbPic.w  + numRectPenSize;    
+    int txtBrk = rbTxt.w * .85f;
+    int maxLines = rbTxt.h / offset.y;
+    int rowCount = 0;
+    int count = 0;
     clear_screen(false);
-    struct result_rec * temp = first_rec;
+    struct result_rec * temp = first_rec;    
     while (temp != NULL)
     {
-        int y;
         if (selected_rec == NULL)
             selected_rec = temp;
-
-        iLine++;
-        y = state->screen_height - (iLine * step);
+ 
+        rbMain.y   = state->screen_height - ((rowCount+1) * step.y);
+        rbPic.y    = rbJpg.y = rbMain.y;
+        rbJpg.y   += numRectPenSize;
+        rbTxt.y    = rbMain.y + step.y - offset.y;   
 
         if (temp == selected_rec)
         {
-            Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, noRectPenSize, rectColor, selectedColor);
+            Roundrect(rbMain.x, rbMain.y, rbMain.w, rbMain.h, 20, 20, numRectPenSize, rectColor, selectedColor);
             if(temp->title != NULL)
-                textXY_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, numPointFontMed, selectedColor);
+                textXY_Rollover(rbTxt.x, rbTxt.y , rbTxt.x + txtBrk, rbTxt.x + rbTxt.w, maxLines, offset.y, temp->title, numPointFontMed, selectedColor);
         }
         else
         {
-            Roundrect(rectOffset, y, rectWidth, rectHeight, 20, 20, noRectPenSize, rectColor, outlineColor);
+            Roundrect(rbMain.x, rbMain.y, rbMain.w, rbMain.h, 20, 20, numRectPenSize, rectColor, outlineColor);
             if(temp->title != NULL)
-                textXY_Rollover(txtXoffset, y + halfStep, txtXmax, 2, txtYstep, temp->title, numPointFontMed, textColor);
+                textXY_Rollover(rbTxt.x, rbTxt.y , rbTxt.x + txtBrk, rbTxt.x + rbTxt.w, maxLines, offset.y, temp->title, numPointFontMed, textColor);
         }
 
-        Roundrect(rectOffset, y - rectDiff, rectWidth2, step, 20, 20, noRectPenSize / 2, rectColor2, outlineColor2);
+        Roundrect(rbPic.x, rbPic.y, rbPic.w, rbPic.h, 20, 20, numRectPenSize / 2, rectColor2, outlineColor2);
 
         if(temp->thumbSmall != NULL)
         {
             if(temp->image == 0)
-                temp->image = load_jpeg(temp->thumbSmall, jpegWidth, rectHeight);
-            vgSetPixels(jpegOffset, y, temp->image, 0,0,
-                        vgGetParameteri(temp->image, VG_IMAGE_WIDTH),
-                        vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
+                temp->image = load_jpeg(temp->thumbSmall, rbJpg.w, rbJpg.h);
+            vgSetPixels(rbJpg.x, rbJpg.y, temp->image, 0,0, rbJpg.w, rbJpg.h);
+                      //  vgGetParameteri(temp->image, VG_IMAGE_WIDTH),
+                      //  vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
         }
         temp = temp->next;
+        if(++rowCount == numRow)
+        {
+            rowCount = 0;
+            rbMain.x   += step.x;
+            rbTxt.x    += step.x;
+            rbPic.x    += step.x;
+            rbJpg.x    += step.x;
+        }
+        if(++count == numResults)
+            break;
     }
 
     switch(videoPlayer)

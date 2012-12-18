@@ -186,7 +186,7 @@ void term_show(tTermState * ts, bool swap)
               ts->image_width,
               ts->image_height,
               20, 20,
-              noRectPenSize,
+              numRectPenSize,
               rectColor,
               bgColor);
 

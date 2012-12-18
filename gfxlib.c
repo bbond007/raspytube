@@ -518,10 +518,15 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
     vgLoadMatrix(mm);
 }
 
+//------------------------------------------------------------------------------
+void Text_getHeight(tFontDef * fontDef, int pointsize)
+{
 
+
+}
 //------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, int maxLines, 
+void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, VGfloat maxLength, int maxLines, 
   VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags, bool bRichTXT)
 {
     float size = (float)pointsize;
@@ -537,6 +542,7 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, 
     for(i=0; i < max; i++)
     {
         unsigned int character = (unsigned int)s[i];
+        int glyphWidth = 0;
         if(bRichTXT && character == '~' && (i+1) < max)
         {
              char sColor[2] = {s[++i], 0x00};
@@ -546,6 +552,7 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, 
         else
         {
             int glyph = fontDef->characterMap[character];
+            
             if( glyph != -1 )
             {	
                 VGfloat mat[9] =
@@ -558,10 +565,11 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat maxLength, 
                 vgLoadMatrix(mm);
                 vgMultMatrix(mat);
                 vgDrawPath(fontDef->glyphs[glyph], renderFlags);
-                xx += size * fontDef->glyphAdvances[glyph] / 65536.0f;
+                glyphWidth = size * fontDef->glyphAdvances[glyph] / 65536.0f;
+                xx += glyphWidth;
             }
         }
-        if(character == '\n' || (xx >= maxLength && !isalnum(character))) //autoroll
+        if((character == '\n' || (xx + glyphWidth) >= maxLength)  || (xx >= brkLength && !isalnum(character))) //autoroll
         {
             xx = x;
             y -= yStep;
