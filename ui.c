@@ -1038,7 +1038,7 @@ void jskb_menu_detail(tMenuState * menu)
         }
         
         if(descr != NULL)
-            textXY(state->screen_width * .25,
+            textXY(state->screen_width * .30,
                  menu->txtRaster.y,
                  descr,
                  numPointFontMed, errorColor);
@@ -1113,7 +1113,7 @@ void gui_menu_detail(tMenuState * menu)
         }
         
         if(descr != NULL)
-            textXY(state->screen_width * .25,
+            textXY(state->screen_width * .30,
                  menu->txtRaster.y,
                  descr,
                  numPointFontMed, errorColor);
@@ -1211,7 +1211,7 @@ void gui_menu_keypress(tMenuState * menu, int key)
                     REDRAW_GUI_KEYPRESS; 
                 break;
                 
-            case 8: if(set_int(2, 20, offset * -1, &numThumbWidth))
+            case 8: if(set_int(3, 20, offset * -1, &numThumbWidth))
                     REDRAW_GUI_KEYPRESS; 
                 break;
             case 9 : if(set_int(5, 15, offset, &numPointFontTiny))

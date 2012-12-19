@@ -20,7 +20,6 @@ extern tColorDef colorScheme[];
 void term_clear(tTermState * ts, char c)
 {
     memset(ts->term_vbuff, c, ts->term_w * ts->term_h * sizeof(tScrChr));
-    //memset(ts->term_vbuff, VTERM_CLR, ts->term_w * ts->term_h);
     ts->term_cur_x = 0;
     ts->term_cur_y = 0;
 }

@@ -424,12 +424,18 @@ static void do_gui_menu()
             case 3:
                 resultFont = show_menu(&fontMenu);     
                 if(resultFont != -1)
+                {
                      set_font((int) resultFont);
+                     redraw_results(true);
+                }
                 break;
             case 4:
                 resultFont = show_menu(&titleFontMenu);     
                 if(resultFont != -1)
+                {
                      set_title_font((int) resultFont);
+                     redraw_results(true);
+                }
                break;
             case 12:
                do_jskb_menu();
