@@ -53,7 +53,7 @@ tMenuItem guiMenuItems[] =
     {"Font",		 "FONT",		      4},
     {"Title Font",	 "TFONT",		      5},
     {"Rows", 	 	 "ROW", 		      6},
-    {"Cols", 		 "COL", 		      7},	
+    {"Columns", 	 "COL", 		      7},	
     {"Thumb Width",	 "TW",			      8},	 	  
     {"Tiny Font Size", 	 "TF",			      9},
     {"Small Font Size",	 "SF",			      10},

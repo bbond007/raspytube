@@ -299,21 +299,21 @@ void init_ui_var()
     {
         numPointFontTiny  = 10;
         numPointFontSmall = 12;
-        numPointFontMed   = 20;
+        numPointFontMed   = 18;
         numPointFontLarge = 40;
     }
     else if (state->screen_width >= 1280)
     {
         numPointFontTiny  = 6;
         numPointFontSmall = 8;
-        numPointFontMed   = 15;
+        numPointFontMed   = 16;
         numPointFontLarge = 30;
     }
     else
     {
         numPointFontTiny  = 4;
         numPointFontSmall = 6;
-        numPointFontMed   = 13;
+        numPointFontMed   = 12;
         numPointFontLarge = 25;
     }
     if(tvImage == 0)
