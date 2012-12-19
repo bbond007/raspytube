@@ -1158,7 +1158,7 @@ void main_menu_detail(tMenuState * menu)
         }
 
         if(descr != NULL)
-            textXY(state->screen_width * .25,
+            textXY(state->screen_width * .30,
                  menu->txtRaster.y,
                  descr,
                  numPointFontMed, errorColor);
