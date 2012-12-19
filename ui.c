@@ -29,18 +29,19 @@ static VGImage downArrowImage    = 0;
 struct result_rec * first_rec    = NULL;
 struct result_rec * last_rec     = NULL;
 struct result_rec * selected_rec = NULL;
-
 int numPointFontTiny;
 int numPointFontSmall;
 int numPointFontMed;
 int numPointFontLarge;
-int numThumbWidth     = 8;
+int numThumbWidth     = 10;
 int numRow	      = 6;
 int numCol	      = 2;
 int numResults        = 12;
 int numFormat         = 0;
 int numStart          = 1;
+int numFontSpacing    = 24;
 int numRectPenSize;
+
 //int numResultsReturned;
 
 enum tSoundOutput soundOutput = soHDMI;
@@ -749,7 +750,7 @@ void show_big_message(char * title, char * message)
                     state->screen_width  * .85f,
                     state->screen_width  * .90f,
                     7, //max no of lines
-                    state->screen_height * .05f,
+                    state->screen_height * numFontSpacing / 1000.0f, 
                     message, numPointFontMed, textColor);
 }
 //------------------------------------------------------------------------------
@@ -1109,6 +1110,11 @@ void gui_menu_detail(tMenuState * menu)
             snprintf(temp, sizeof(temp), "[%d]", numPointFontLarge);
             descr = temp;
             break;
+
+        case 13: 
+            snprintf(temp, sizeof(temp), "[%d]", numFontSpacing);
+            descr = temp;
+            break;
                 
         }
         
@@ -1224,6 +1230,10 @@ void gui_menu_keypress(tMenuState * menu, int key)
                     REDRAW_GUI_KEYPRESS; 
                 break;
             case 12: set_int(20, 50, offset, &numPointFontLarge);
+                break;
+                
+            case 13: set_int(15, 50, offset, &numFontSpacing);
+                     REDRAW_GUI_KEYPRESS;
                 break;
         }
     }
@@ -1498,11 +1508,11 @@ void redraw_results(bool swap)
     tRectBounds rbMain;
     tRectBounds rbPic;
     tRectBounds rbJpg;
-    tRectBounds rbTxt;
-    
-    int numRectPenSize2 = numRectPenSize * 2;   
-    offset.x = (int) ((float) state->screen_width * .05);
-    offset.y = (state->screen_height * .04f);
+    tRectBounds rbTxt;    
+    int numRectPenSize2 = numRectPenSize  * 2;
+    int numRectPenSize5 = numRectPenSize  * 5;   
+    offset.x = (int) (state->screen_width * .05f);
+    offset.y = (int) (state->screen_height * numFontSpacing / 1000.0f);
     step.x   = (state->screen_width  - (offset.x * 2)) / numCol;
     step.y   = (state->screen_height / numRow);
     rbMain.h = step.y - numRectPenSize2;
@@ -1531,8 +1541,7 @@ void redraw_results(bool swap)
         rbMain.y   = state->screen_height - ((rowCount+1) * step.y);
         rbPic.y    = rbJpg.y = rbMain.y;
         rbJpg.y   += numRectPenSize;
-        rbTxt.y    = rbMain.y + step.y - offset.y;   
-
+        rbTxt.y    = rbMain.y + step.y - numRectPenSize5; 
         if (temp == selected_rec)
         {
             Roundrect(rbMain.x, rbMain.y, rbMain.w, rbMain.h, 20, 20, numRectPenSize, rectColor, selectedColor);

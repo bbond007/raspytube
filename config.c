@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 16
+#define VERSION_NUMBER 17
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -25,6 +25,7 @@ typedef struct tConfigRec
       int numPointFontSmall;
       int numPointFontMed;
       int numPointFontLarge;
+      int numFontSpacing;
       int numThumbWidth;
       int numRow;
       int numCol;
@@ -88,6 +89,7 @@ bool loadConfig()
      numPointFontSmall               = configRec.numPointFontSmall;
      numPointFontMed                 = configRec.numPointFontMed;
      numPointFontLarge               = configRec.numPointFontLarge;
+     numFontSpacing		     = configRec.numFontSpacing;
      numThumbWidth                   = configRec.numThumbWidth;
      numRow                          = configRec.numRow;
      numCol                          = configRec.numCol;  
@@ -116,6 +118,7 @@ void saveConfig()
      configRec.numPointFontSmall     = numPointFontSmall;
      configRec.numPointFontMed       = numPointFontMed;  
      configRec.numPointFontLarge     = numPointFontLarge;    
+     configRec.numFontSpacing	     = numFontSpacing;
      configRec.numThumbWidth         = numThumbWidth;              
      configRec.numRow	             = numRow;     
      configRec.numCol	             = numCol;                          

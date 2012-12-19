@@ -439,11 +439,11 @@ static void do_gui_menu()
                      setBGImage();
                 }
                break;
-            case 12:
+            case 13:
                do_jskb_menu();
                break;
                 
-            case 13:
+            case 14:
                 saveConfig();
                 break;
         }
