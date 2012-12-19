@@ -426,7 +426,8 @@ static void do_gui_menu()
                 if(resultFont != -1)
                 {
                      set_font((int) resultFont);
-                     redraw_results(true);
+                     redraw_results(false);
+                     setBGImage();
                 }
                 break;
             case 4:
@@ -434,7 +435,8 @@ static void do_gui_menu()
                 if(resultFont != -1)
                 {
                      set_title_font((int) resultFont);
-                     redraw_results(true);
+                     redraw_results(false);
+                     setBGImage();
                 }
                break;
             case 12:
