@@ -304,14 +304,14 @@ void init_ui_var()
     }
     else if (state->screen_width >= 1280)
     {
-        numPointFontTiny  = 6;
-        numPointFontSmall = 8;
-        numPointFontMed   = 16;
+        numPointFontTiny  = 7;
+        numPointFontSmall = 9;
+        numPointFontMed   = 13;
         numPointFontLarge = 30;
     }
     else
     {
-        numPointFontTiny  = 4;
+        numPointFontTiny  = 5;
         numPointFontSmall = 6;
         numPointFontMed   = 12;
         numPointFontLarge = 25;
@@ -1223,15 +1223,14 @@ void gui_menu_keypress(tMenuState * menu, int key)
             case 9 : if(set_int(5, 15, offset, &numPointFontTiny))
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 10: if(set_int(10, 20, offset, &numPointFontSmall))
+            case 10: if(set_int(5, 20, offset, &numPointFontSmall))
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 11: if(set_int(15, 40, offset, &numPointFontMed))
+            case 11: if(set_int(10, 40, offset, &numPointFontMed))
                     REDRAW_GUI_KEYPRESS; 
                 break;
-            case 12: set_int(20, 50, offset, &numPointFontLarge);
+            case 12: set_int(15, 50, offset, &numPointFontLarge);
                 break;
-                
             case 13: set_int(15, 50, offset, &numFontSpacing);
                      REDRAW_GUI_KEYPRESS;
                 break;

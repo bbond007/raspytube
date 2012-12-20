@@ -531,6 +531,7 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, 
 {
     float size = (float)pointsize;
     float xx = x;
+    float yy = y;
     float mm[9];
     int i;
     int iLines = 0;
@@ -551,15 +552,14 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, 
         }
         else
         {
-            int glyph = fontDef->characterMap[character];
-            
-            if( glyph != -1 )
+            int glyph = fontDef->characterMap[character];            
+            if( glyph != -1 && (character != ' ' || xx != x || yy == y))
             {	
                 VGfloat mat[9] =
                 {
                    size,	0.0f,	0.0f,
                    0.0f,	size,	0.0f,
-                   xx,		y,	1.0f
+                   xx,		yy,	1.0f
                 };
 
                 vgLoadMatrix(mm);
@@ -572,7 +572,7 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, 
         if((character == '\n' || (xx + glyphWidth) >= maxLength)  || (xx >= brkLength && !isalnum(character))) //autoroll
         {
             xx = x;
-            y -= yStep;
+            yy -= yStep;
             iLines++;
             if (maxLines > 0 && iLines == maxLines)
                 break;
