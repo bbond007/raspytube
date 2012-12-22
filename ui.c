@@ -1664,7 +1664,7 @@ bool point_in_rect(tPointXY * point, tRectBounds * rect)
     return false;
 }
 //------------------------------------------------------------------------------
-int mouse_select(tPointXY * point)
+tMSResult mouse_select(tPointXY * point)
 {
     tPointXY    offset;
     tPointXY    step;
@@ -1678,6 +1678,8 @@ int mouse_select(tPointXY * point)
     rbTest.w = step.x - numRectPenSize2;
     rbTest.x = offset.x;
     struct result_rec * temp = first_rec;
+    struct result_rec * save = selected_rec;
+   
     int rowCount = 0;
     while (temp != NULL)
     {
@@ -1685,7 +1687,7 @@ int mouse_select(tPointXY * point)
         if(point_in_rect(point, &rbTest))
         {
             selected_rec = temp;
-            return 0;
+            return selected_rec==save?msSameRec:msNewRec;
         }
 
         temp = temp->next;
@@ -1696,11 +1698,11 @@ int mouse_select(tPointXY * point)
         }
     }
     if (point->x < offset.x)
-        return -1;
+        return msFarLeft;
     else if (point->x > offset.x + rbTest.w * numCol)
-        return 1;
+        return msFarRight;
     else
-        return 0;
+        return msInvalid;
 }
 //------------------------------------------------------------------------------
 void redraw_results(bool swap)

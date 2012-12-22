@@ -117,8 +117,6 @@ int main(int argc, char **argv)
     char txt[200];
     bool quit = false;
     int result;
-    struct result_rec * save_rec;
-
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -139,21 +137,23 @@ int main(int argc, char **argv)
         {
 
         case MOUSE_1:
-            save_rec = selected_rec;
             switch(mouse_select(&clickXY))
             {
-            case -1:
+            case msFarLeft:
                 if(state->screen_height * 0.92f < clickXY.y)
                     do_main_menu(searchStr, userStr);
                 else
                     do_less(PICK_SEARCH_STR);
                 break;
-            case 1 :
+            case msFarRight:
                 do_more(PICK_SEARCH_STR);
                 break;
-            case 0 :
-                if(save_rec == selected_rec)
-                    do_info_menu(PICK_SEARCH_STR);
+            case msSameRec:
+                do_info_menu(PICK_SEARCH_STR);
+                break;
+            case msInvalid:
+                break;
+            case msNewRec:
                 break;
             }
             break;

@@ -90,9 +90,10 @@ typedef struct _tMenuState
 } tMenuState; 
 //------------------------------------------------------------------------------
     
-typedef enum tVideoPlayer {vpMPlayer   = 1, vpOMXPlayer = 0} tVideoPlayer;
-typedef enum tSoundOutput {soHDMI      = 1, soLOCAL     = 0} tSoundOutput;
-typedef enum tJpegDecoder {jdLibJpeg   = 1, jdOMX       = 0} tJpegDecoder;
+typedef enum tVideoPlayer {vpMPlayer   = 1, vpOMXPlayer   = 0} tVideoPlayer;
+typedef enum tSoundOutput {soHDMI      = 1, soLOCAL       = 0} tSoundOutput;
+typedef enum tJpegDecoder {jdLibJpeg   = 1, jdOMX         = 0} tJpegDecoder;
+typedef enum tMSResult    {msFarLeft =-1, msFarRight  = 1, msNewRec = 2, msSameRec = -2, msInvalid = 3} tMSResult;
 
 //------------------------------------------------------------------------------
 
@@ -116,6 +117,7 @@ int  show_selection_info(struct result_rec * rec);
 void show_message(char * message, int error, int points);
 void clear_output();
 void redraw_results(bool swap);
+tMSResult mouse_select(tPointXY * point);
 void replace_char_str(char * buf,  char old, char new);
 char *parse_url(char * url, char ** server, char ** page);
 char ** get_lastrec_column(int iBracket, int iBrace, char * key); 
