@@ -214,10 +214,12 @@ void debug_mouse()
     Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
     temp[1] = 0x00;
     temp[0] = (char) numPointerIndex;
+    int i;
+    for (i=0;i<2;i++)
     Text(&fontDefs[fontCount-1],
          mouseXY.x + pointerOffsetXY.x,
          mouseXY.y + pointerOffsetXY.y,
-         temp, numPointerSize, selectedColor, VG_FILL_PATH);
+         temp, i==0?numPointerSize+5:numPointerSize-5, &colorScheme[6-i], VG_FILL_PATH);
     //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------

@@ -178,6 +178,7 @@ extern tColorDef * outlineColor2;
 extern tColorDef * selectedColor;
 extern tColorDef * bgColor;
 extern tColorDef * errorColor;
+extern tColorDef colorScheme[];
 
 #define ESC_KEY 0x1b
 #define RTN_KEY 0x0a
