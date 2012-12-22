@@ -376,13 +376,14 @@ void draw_menu(tMenuState * menu)
               menu->selRect.w,
               menu->selRect.h,
               20, 20, numRectPenSize / 2, rectColor, selectedColor);
-
+    int i;for(i=0;i<2;i++)//shadow effect.
     Text(&fontDefs[titleFontMenu.selectedItem],
-         menu->titlePos.x, menu->titlePos.y,
+         menu->titlePos.x+i*numRectPenSize, 
+         menu->titlePos.y-i*numRectPenSize,
          menu->title,
          //menu->numPointFontTitle,
          numPointFontLarge,
-         selectedColor, VG_FILL_PATH);
+         &colorScheme[6-i], VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
 void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points)
@@ -1444,7 +1445,6 @@ int show_menu(tMenuState * menu)
         {
             if(count >= menu->scrollIndex)
             {
-
                 menu->selectedItem = y + menu->scrollIndex;
 
                 textXY(menu->txtRaster.x,
