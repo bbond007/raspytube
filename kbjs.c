@@ -36,11 +36,12 @@ tPointXY mouseXY;
 tPointXY clickXY;
 int mouseBGImage = -1;
 extern tFontDef fontDefs[];
+extern int fontCount; 
 
 int numMouseIndex    = 0;
 int numJoystickIndex = 0;
-int numPointerIndex  = 99;
-int numPointerSize   = 35;
+int numPointerIndex  = 101;
+int numPointerSize   = 90;
 int numTimer         = -1;
 int timerCount 	     = 0;
 
@@ -213,7 +214,7 @@ void debug_mouse()
     Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
     temp[1] = 0x00;
     temp[0] = (char) numPointerIndex;
-    Text(&fontDefs[10],
+    Text(&fontDefs[fontCount-1],
          mouseXY.x + pointerOffsetXY.x,
          mouseXY.y + pointerOffsetXY.y,
          temp, numPointerSize, selectedColor, VG_FILL_PATH);
@@ -443,8 +444,8 @@ void initKb(void)
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
 //    open_joystick();
 //    open_mouse();
-    pointerOffsetXY.x = -20;
-    pointerOffsetXY.y = -5;
+    pointerOffsetXY.x = -7;
+    pointerOffsetXY.y = -42;
 }
 //------------------------------------------------------------------------------
 void restoreKb(void)

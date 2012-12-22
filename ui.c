@@ -515,9 +515,6 @@ int show_selection_info(struct result_rec * rec)
             }
             else if (key == MOUSE_2)
                 key = ESC_KEY;
-            else if (key== CUR_L || key == CUR_R ||
-                     key == CUR_UP || key == CUR_DWN)
-                break;
         }
         while ( key != ESC_KEY &&
                 key != RTN_KEY &&
@@ -1365,13 +1362,13 @@ void jskb_menu_keypress(tMenuState * menu, int key)
             set_int(0, 255,     offset, &numPointerIndex);
             break;
         case 12:
-            set_int(10, 100,    offset, &numPointerSize);
+            set_int(10, 120,    offset, &numPointerSize);
             break;
         case 13:
-            set_int(-50, 50,     offset, &pointerOffsetXY.x);
+            set_int(-100, 100,     offset, &pointerOffsetXY.x);
             break;
         case 14:
-            set_int(-50, 50,    offset, &pointerOffsetXY.y);
+            set_int(-100, 100,    offset, &pointerOffsetXY.y);
             break;
         };
     }

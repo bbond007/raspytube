@@ -8,7 +8,9 @@
 #include "HydrogenWhiskey.inc"
 #include "RobotoRegular.inc"
 #include "Arial.inc"
-#include  "Teletext.inc"
+#include "Teletext.inc"
+#include "Arrows.inc"
+
 tFontDef fontDefs[] = 
 {
 	{    
@@ -140,8 +142,18 @@ tFontDef fontDefs[] =
              PacFont_glyphInstructionIndices,
 	     PacFont_glyphInstructionCounts, 
              PacFont_glyphAdvances,
-	     PacFont_characterMap, 
+ 	     PacFont_characterMap, 
 	     PacFont_glyphCount, NULL
+	},
+	{
+	     "Arrows", Arrows_glyphPoints, 
+	     Arrows_glyphPointIndices,
+	     Arrows_glyphInstructions, 
+             Arrows_glyphInstructionIndices,
+	     Arrows_glyphInstructionCounts, 
+             Arrows_glyphAdvances,
+	     Arrows_characterMap, 
+	     Arrows_glyphCount, NULL
 	}
 };
 	
