@@ -75,6 +75,8 @@ typedef struct _tMenuState
     tRectPer selPer;
     tRectBounds winRect;
     tRectBounds selRect;
+    VGfloat upArrow[8];
+    VGfloat downArrow[8]; 
     tRectPer upArrowPer;
     tRectPer downArrowPer;
     tRectBounds upArrowRect;

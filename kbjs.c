@@ -207,7 +207,7 @@ void debug_mouse()
 {
     char temp[25];
     snprintf(temp, sizeof(temp), "(%d, %d)", mouseXY.x, mouseXY.y);
-    Text(&fontDefs[11], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
+    Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
     temp[1] = 0x00;
     temp[0] = (char) numPointerIndex;
     Text(&fontDefs[10],  

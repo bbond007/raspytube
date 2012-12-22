@@ -716,7 +716,6 @@ bool input_string(char * prompt, char * buf, int max)
                 sel = 29;
             break;
 
-
         case JOY_1:
             if(sel == OSK_RTN)
             {
@@ -905,7 +904,6 @@ void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY)
     pointXY->x = pointPer->xPer * state->screen_width;
     pointXY->y = pointPer->yPer * state->screen_height;
 }
-
 //------------------------------------------------------------------------------
 void init_arrow(VGfloat * xy, tRectPer * rectPer, bool bFlip)
 {
@@ -963,16 +961,15 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->selPer.wPer = .50f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);
-    /*
-        tRectPer rectPer;
-        rectPer.xPer = .88f;
-        rectPer.yPer = .88f;
-        rectPer.wPer = .04f;
-        rectPer.hPer = .04f;
-        init_arrow(menu->upArrow, &rectPer, true);
-        rectPer.yPer = .08f;
-        init_arrow(menu->downArrow, &rectPer, false);
-    */
+    tRectPer rectPer;
+    rectPer.xPer = .88f;
+    rectPer.yPer = .83f;
+    rectPer.wPer = .04f;
+    rectPer.hPer = .04f;
+    init_arrow(menu->upArrow, &rectPer, true);
+    rectPer.yPer = .10f;
+    init_arrow(menu->downArrow, &rectPer, false);
+
     menu->upArrowPer.xPer = .88f;
     menu->upArrowPer.yPer = .83f;
     calc_rect_bounds(&menu->upArrowPer, &menu->upArrowRect);
@@ -1010,17 +1007,15 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->selPer.wPer = .35f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);
-    /*
-        tRectPer rectPer;
-        rectPer.xPer = .45f;
-        rectPer.yPer = .88f;
-        rectPer.wPer = .04f;
-        rectPer.hPer = .04f;
-        init_arrow(menu->upArrow, &rectPer, true);
-        rectPer.yPer = .53f;
-        init_arrow(menu->downArrow, &rectPer, false);
-    */
-    menu->upArrowPer.xPer = .47f;
+    tRectPer rectPer;
+    rectPer.xPer = .47f;
+    rectPer.yPer = .83f;
+    rectPer.wPer = .04f;
+    rectPer.hPer = .04f;
+    init_arrow(menu->upArrow, &rectPer, true);
+    rectPer.yPer = .53f;
+    init_arrow(menu->downArrow, &rectPer, false);
+    menu->upArrowPer.xPer = .47;
     menu->upArrowPer.yPer = .83f;
     calc_rect_bounds(&menu->upArrowPer, &menu->upArrowRect);
     menu->downArrowPer.xPer = .47f;
@@ -1114,12 +1109,7 @@ void jskb_menu_detail(tMenuState * menu)
             snprintf(temp, sizeof(temp), "[%d]", pointerOffsetXY.y);
             descr = temp;
             break;
-
-
-
-
         }
-
         if(descr != NULL)
             textXY(state->screen_width * .30,
                    menu->txtRaster.y,
@@ -1219,7 +1209,6 @@ void main_menu_detail(tMenuState * menu)
         char * descr = NULL;
         switch(menu->menuItems[menu->selectedItem].special)
         {
-
         case 1:
             number     = supported_formats[numFormat + 1][0];
             container  = supported_formats[numFormat + 1][1];
@@ -1240,9 +1229,7 @@ void main_menu_detail(tMenuState * menu)
         case 3:
             descr = regionMenu.menuItems[regionMenu.selectedItem].key;
             break;
-
         }
-
         if(descr != NULL)
             textXY(state->screen_width * .30,
                    menu->txtRaster.y,
@@ -1384,8 +1371,6 @@ void jskb_menu_keypress(tMenuState * menu, int key)
         case 14:
             set_int(-50, 50,    offset, &pointerOffsetXY.y);
             break;
-
-
         };
     }
 }
@@ -1497,18 +1482,22 @@ int show_menu(tMenuState * menu)
 
         if (bMoreItems)
         {
-            vgSetPixels(menu->downArrowRect.x, menu->downArrowRect.y,
+            if(downArrowImage > 0)
+                vgSetPixels(menu->downArrowRect.x, menu->downArrowRect.y,
                         downArrowImage, 0,0,
                         menu->downArrowRect.w, menu->downArrowRect.h);
-            //Poly(menu->downArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
+            else
+                Poly(menu->downArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->scrollIndex > 0)
         {
-            vgSetPixels(menu->upArrowRect.x, menu->upArrowRect.y,
+            if(upArrowImage > 0)
+                vgSetPixels(menu->upArrowRect.x, menu->upArrowRect.y,
                         upArrowImage, 0,0,
                         menu->downArrowRect.w, menu->downArrowRect.h);
-            //Poly(menu->upArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
+            else
+                Poly(menu->upArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->drawFooter != NULL)
@@ -1560,7 +1549,7 @@ int show_menu(tMenuState * menu)
                 key = ESC_KEY;
             break;
         case CUR_UP:
-LCUR_UP:
+             LCUR_UP:
             if (menu->selectedIndex > 0)
                 menu->selectedIndex--;
             else if(menu->scrollIndex > 0)
@@ -1568,7 +1557,7 @@ LCUR_UP:
             break;
 
         case CUR_DWN:
-LCUR_DWN:
+             LCUR_DWN:
             if (menu->selectedIndex < menu->maxItems -1)
             {
                 currentItem = &menu->menuItems[menu->selectedIndex + menu->scrollIndex + 1];
@@ -1603,7 +1592,6 @@ void clear_output()
         free_result_rec(temp_rec);
         temp_rec = next_rec;
     }
-
     first_rec    = NULL;
     last_rec     = NULL;
     selected_rec = NULL;
@@ -1619,7 +1607,6 @@ void replace_char_str(char * buf,  char oldChar, char newChar)
 //------------------------------------------------------------------------------
 VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
 {
-
     VGImage vgImage = 0;
     unsigned int fileSize = 0;
     unsigned char * downloadData;
