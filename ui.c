@@ -378,8 +378,8 @@ void draw_menu(tMenuState * menu)
               20, 20, numRectPenSize / 2, rectColor, selectedColor);
     int i;for(i=0;i<2;i++)//shadow effect.
     Text(&fontDefs[titleFontMenu.selectedItem],
-         menu->titlePos.x+i*numRectPenSize, 
-         menu->titlePos.y-i*numRectPenSize,
+         menu->titlePos.x-i*numRectPenSize, 
+         menu->titlePos.y-i*numRectPenSize/2,
          menu->title,
          //menu->numPointFontTitle,
          numPointFontLarge,
