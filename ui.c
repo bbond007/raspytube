@@ -91,8 +91,7 @@ void setBGImage()
     if(bgImage != 0)
         vgGetPixels(bgImage, 0,0, 0,0,state->screen_width, state->screen_height);
     else
-        vgDestroyImage(bgImage);
-    bgImage = createImageFromScreen();
+        bgImage = createImageFromScreen();
 }
 //------------------------------------------------------------------------------
 void drawBGImage()
@@ -228,9 +227,6 @@ void free_ui_var()
     if(downArrowImage > 0)
         vgDestroyImage(downArrowImage);
     
-    if(bgImage >  0)
-        vgDestroyImage(bgImage);
-   
     int i;
     for(i=0; i < fontCount; i++)
         unload_font(&fontDefs[i]);
