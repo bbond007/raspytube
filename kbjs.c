@@ -373,6 +373,7 @@ int readKb(void) //legacy function
     eglSwapBuffers(state->display, state->surface);
     return readKb_loop(false);
 }
+
 //------------------------------------------------------------------------------
 int readKb_mouse(void)
 {
@@ -380,14 +381,15 @@ int readKb_mouse(void)
     dumpJs();
     if (mouseEnabled && (mouse_fd > 0))
     {
-        mouseBGImage = createImageFromScreen();
+        if(mouseBGImage > 0)
+            vgGetPixels(mouseBGImage, 0,0, 0,0,state->screen_width, state->screen_height);
+        else 
+            mouseBGImage = createImageFromScreen();
         debug_mouse();
     }
     eglSwapBuffers(state->display, state->surface);
     int key = readKb_loop((mouse_fd > 0)?mouseEnabled:false);
-    if(mouseBGImage != -1)
-        vgDestroyImage(mouseBGImage);
-    mouseBGImage = -1;
+   // mouseBGImage = -1;
     return key;
 }
 //------------------------------------------------------------------------------
@@ -434,6 +436,9 @@ void restoreKb(void)
 //  delete_sample(&asiKbClick);
     close_joystick();
     close_mouse();
+    if(mouseBGImage != -1)
+         vgDestroyImage(mouseBGImage);
+
 }
 
 //------------------------------------------------------------------------------
