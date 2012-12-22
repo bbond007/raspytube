@@ -407,7 +407,7 @@ void clear_screen(bool swap)
 //------------------------------------------------------------------------------
 int show_selection_info(struct result_rec * rec)
 {
-    int key = 0x00;
+    int key = ESC_KEY;
 
     tPointXY offsetXY;
     offsetXY.y       = (state->screen_height * .060f);
