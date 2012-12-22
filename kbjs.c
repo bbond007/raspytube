@@ -39,15 +39,18 @@ extern tFontDef fontDefs[];
 
 int numMouseIndex    = 0;
 int numJoystickIndex = 0;
-int numPointerIndex  = 99; 
+int numPointerIndex  = 99;
 int numPointerSize   = 35;
+int numTimer         = -1;
+int timerCount 	     = 0;
+
 tPointXY pointerOffsetXY;
 //------------------------------------------------------------------------------
 int open_joystick()
 {
     close_joystick();
     jsDev[sizeof(jsDev)-2] = '0' + (char) numJoystickIndex;
-    joystick_fd = open(jsDev, O_RDONLY | O_NONBLOCK); 
+    joystick_fd = open(jsDev, O_RDONLY | O_NONBLOCK);
     if (joystick_fd < 0)
         return joystick_fd;
     return joystick_fd;
@@ -210,9 +213,9 @@ void debug_mouse()
     Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
     temp[1] = 0x00;
     temp[0] = (char) numPointerIndex;
-    Text(&fontDefs[10],  
-         mouseXY.x + pointerOffsetXY.x, 
-         mouseXY.y + pointerOffsetXY.y, 
+    Text(&fontDefs[10],
+         mouseXY.x + pointerOffsetXY.x,
+         mouseXY.y + pointerOffsetXY.y,
          temp, numPointerSize, selectedColor, VG_FILL_PATH);
     //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
 }
@@ -233,14 +236,14 @@ bool handle_mouse(int * key)
             case 272:
                 if(mousee.value == 1)
                     *key = MOUSE_1;
-                    clickXY.x = mouseXY.x;
-                    clickXY.y = mouseXY.y;
+                clickXY.x = mouseXY.x;
+                clickXY.y = mouseXY.y;
                 break;
             case 273:
                 if(mousee.value == 1)
                     *key = MOUSE_2;
-                    clickXY.x = mouseXY.x;
-                    clickXY.y = mouseXY.y;
+                clickXY.x = mouseXY.x;
+                clickXY.y = mouseXY.y;
                 break;
             }
             break;
@@ -314,7 +317,19 @@ int readKb_loop(bool checkMouse)
     int key;
     bool bMouseMove = false;
     do
-    {
+    {   //timer is high prioiry...
+        if(numTimer > 0)
+        {
+            if (++timerCount > numTimer)
+            {
+                timerCount = 0;
+                //printf("TImer...\n");
+                return TIMER_M;
+            }
+        }
+        else
+            timerCount = 0;
+
         if(read_joystick_event(&jse))
         {
             switch(jse.type)
@@ -351,11 +366,14 @@ int readKb_loop(bool checkMouse)
                 break;
             }
         }
+
         key = getchar();
         if(checkMouse && mouseEnabled)
             bMouseMove = handle_mouse(&key);
         if(!bMouseMove && key == EOF)
             usleep(1000);
+
+
     }
     while (key == EOF);
 
@@ -383,13 +401,12 @@ int readKb_mouse(void)
     {
         if(mouseBGImage > 0)
             vgGetPixels(mouseBGImage, 0,0, 0,0,state->screen_width, state->screen_height);
-        else 
+        else
             mouseBGImage = createImageFromScreen();
         debug_mouse();
     }
     eglSwapBuffers(state->display, state->surface);
     int key = readKb_loop((mouse_fd > 0)?mouseEnabled:false);
-   // mouseBGImage = -1;
     return key;
 }
 //------------------------------------------------------------------------------
@@ -426,8 +443,8 @@ void initKb(void)
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
 //    open_joystick();
 //    open_mouse();
-    pointerOffsetXY.x = -20; 
-    pointerOffsetXY.y = -5; 
+    pointerOffsetXY.x = -20;
+    pointerOffsetXY.y = -5;
 }
 //------------------------------------------------------------------------------
 void restoreKb(void)
@@ -437,7 +454,7 @@ void restoreKb(void)
     close_joystick();
     close_mouse();
     if(mouseBGImage != -1)
-         vgDestroyImage(mouseBGImage);
+        vgDestroyImage(mouseBGImage);
 
 }
 

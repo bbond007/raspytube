@@ -28,5 +28,6 @@ extern int numMouseIndex;
 extern int numJoystickIndex;
 extern int numPointerIndex;
 extern int numPointerSize;
+extern int numTimer;
 extern char mouseDev[];
 extern char jsDev[];

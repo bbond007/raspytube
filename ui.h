@@ -199,5 +199,6 @@ extern tColorDef * errorColor;
 #define MOUSE_1 4
 #define MOUSE_2 5
 #define MOUSE_M 6
+#define TIMER_M -99
 
 

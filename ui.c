@@ -809,23 +809,23 @@ void show_message(char * message, int error, int points)
     //tRectBounds imageRect;
     tRectBounds guruRect;
     tRectBounds tvRect;
-    offsetXY.y   = (state->screen_height * .060f);
-    offsetXY.x   = (state->screen_width  * .035f);
-    tvRect.w     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
-    tvRect.h     = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
-    tvRect.x     = (state->screen_width  - tvRect.w) / 2;
-    tvRect.y     = (state->screen_height - tvRect.h) / 2;
-    imageRect.h  = tvRect.h -  (offsetXY.y * 2);
-    imageRect.w  = tvRect.w  - (offsetXY.x * 2);
-    imageRect.x  = (state->screen_width - imageRect.w)   / 2;
-    imageRect.y  = (state->screen_height - imageRect.h) / 2;
-    int tx       = imageRect.x  + state->screen_width  * .03f;
-    int ty       = imageRect.y  + imageRect.h - offsetXY.x;
-    guruRect.w   = imageRect.w * .95f;
-    guruRect.h   = imageRect.h * .25f;
-    guruRect.x   = (state->screen_width - guruRect.w)   / 2;
-    guruRect.y   = imageRect.y  + imageRect.h - guruRect.h -  (state->screen_width  * .007f);
-
+    offsetXY.y      = (state->screen_height * .060f);
+    offsetXY.x      = (state->screen_width  * .035f);
+    tvRect.w        = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
+    tvRect.h        = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
+    tvRect.x        = (state->screen_width  - tvRect.w) / 2;
+    tvRect.y        = (state->screen_height - tvRect.h) / 2;
+    imageRect.h     = tvRect.h -  (offsetXY.y * 2);
+    imageRect.w     = tvRect.w  - (offsetXY.x * 2);
+    imageRect.x     = (state->screen_width - imageRect.w)   / 2;
+    imageRect.y     = (state->screen_height - imageRect.h) / 2;
+    int tx          = imageRect.x  + state->screen_width  * .03f;
+    int ty          = imageRect.y  + imageRect.h - offsetXY.x;
+    guruRect.w      = imageRect.w * .95f;
+    guruRect.h      = imageRect.h * .25f;
+    guruRect.x      = (state->screen_width - guruRect.w)   / 2;
+    guruRect.y      = imageRect.y  + imageRect.h - guruRect.h -  (state->screen_width  * .007f);
+    bool showGuru   = true;
     char * errorStr = NULL;
     int key = ESC_KEY;
     if(error)
@@ -835,13 +835,15 @@ void show_message(char * message, int error, int points)
         errorStr = malloc(sErrorStr);
         snprintf(errorStr, sErrorStr, formatStr, error, message);
         printf("ERROR->%d\n", error);
+        numTimer = 400; // starts TIMER_M messages
+        redraw_results(false);
+        setBGImage();
     }
 
     do
     {
-        if(error)
-            redraw_results(false);
-
+        if (error) drawBGImage();
+        //vgCopyPixels(0,0,0,0, state->screen_width, state->screen_height);        
         vgSetPixels(tvRect.x,
                     tvRect.y,
                     tvImage,
@@ -849,35 +851,25 @@ void show_message(char * message, int error, int points)
                     tvRect.w,
                     tvRect.h);
 
-        if(error)
-        {
-            Roundrect(imageRect.x, imageRect.y,  imageRect.w, imageRect.h, 20, 20, numRectPenSize, bgColor, bgColor);
-            Rect(guruRect.x, guruRect.y, guruRect.w, guruRect.h, numRectPenSize, bgColor, errorColor);
-            Text_Rollover ( &fontDefs[1], //Topaz font
-                            tx, // X
-                            ty, // Y
-                            state->screen_width  * .80f,
-                            state->screen_width  * .90f,
-                            6,
-                            state->screen_height * .05f,
-                            errorStr, points, &colorScheme[0], VG_FILL_PATH, true);
-        }
-        else
-        {
-            Roundrect(imageRect.x,  imageRect.y, imageRect.w, imageRect.h, 20, 20, numRectPenSize, rectColor, bgColor);
-            Text_Rollover ( &fontDefs[1], //Topaz font
-                            tx, // X
-                            ty, // Y
-                            state->screen_width  * .80f,
-                            state->screen_width  * .90f,
-                            8,
-                            state->screen_height * .05f,
-                            message, points, &colorScheme[0], VG_FILL_PATH, true);
-        }
+        Roundrect(imageRect.x, imageRect.y,  imageRect.w, imageRect.h, 20, 20, numRectPenSize, error?bgColor:rectColor, bgColor);
+        
+        if(error && showGuru)
+           Rect(guruRect.x, guruRect.y, guruRect.w, guruRect.h, numRectPenSize, bgColor, errorColor);
+    
+        Text_Rollover ( &fontDefs[1], //Topaz font
+                        tx, // X
+                        ty, // Y
+                        state->screen_width  * .80f,
+                        state->screen_width  * .90f,
+                        6,
+                        state->screen_height * .05f,
+                        error?errorStr:message, points, &colorScheme[0], VG_FILL_PATH, true);
+    
         if(error)
         {
             key = readKb_mouse();
-            redraw_results(true);
+            if(key == TIMER_M)
+                showGuru = !showGuru;                
         }
         else
             break;
@@ -890,6 +882,7 @@ void show_message(char * message, int error, int points)
             key != MOUSE_2);
     if(errorStr != NULL)
         free(errorStr);
+    numTimer = -1; //turn timer off;
 }
 //------------------------------------------------------------------------------
 void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds)
