@@ -37,7 +37,7 @@ tPointXY clickXY;
 int mouseBGImage = -1;
 extern tFontDef fontDefs[];
 
-int numMouseIndex    = 1;
+int numMouseIndex    = 0;
 int numJoystickIndex = 0;
 int numPointerIndex  = 99; 
 int numPointerSize   = 35;
