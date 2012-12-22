@@ -292,10 +292,11 @@ void init_font_menus()
     set_title_font(4);
 }
 
+
 //------------------------------------------------------------------------------
+static tPointXY arrowSize;
 void init_ui_var()
 {
-    int w, h;
     if(state->screen_width >= 1920)
     {
         numPointFontTiny  = 10;
@@ -319,25 +320,27 @@ void init_ui_var()
     }
     if(tvImage == 0)
     {
+        int w, h;
         w  = (state->screen_width  * .35f);
         h  = (state->screen_height * .45f);
         tvImage = create_image_from_buf((unsigned char *)
                                         tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }
+    
     numRectPenSize  = state->screen_width  * .005f;
     loadConfig();
     open_mouse();
     open_joystick();
     if(upArrowImage == 0)
     {
-        w  = (state->screen_width  * .05f);
-        h  = (state->screen_height * .07f);
+        arrowSize.x  = (state->screen_width  * .05f);
+        arrowSize.y  = (state->screen_height * .07f);
 
         upArrowImage = create_image_from_buf((unsigned char *)
-                                             menu_arrow_up_raw_data,  menu_arrow_up_raw_size, w, h);
+                                             menu_arrow_up_raw_data,  menu_arrow_up_raw_size, arrowSize.x, arrowSize.y);
 
         downArrowImage = create_image_from_buf((unsigned char *)
-                                               menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
+                                               menu_arrow_down_raw_data,  menu_arrow_down_raw_size, arrowSize.x, arrowSize.y);
     }
 }
 //------------------------------------------------------------------------------
@@ -1421,10 +1424,8 @@ int show_menu(tMenuState * menu)
     int selectedIndexSave = menu->selectedIndex;
     int key;
     int clickIndex;
-    menu->downArrowRect.w = vgGetParameteri(downArrowImage, VG_IMAGE_WIDTH);
-    menu->downArrowRect.h = vgGetParameteri(downArrowImage, VG_IMAGE_HEIGHT);
-    menu->upArrowRect.w = vgGetParameteri(upArrowImage, VG_IMAGE_WIDTH);
-    menu->upArrowRect.h = vgGetParameteri(upArrowImage, VG_IMAGE_HEIGHT);
+    menu->downArrowRect.w = menu->upArrowRect.w = arrowSize.x;
+    menu->downArrowRect.h = menu->upArrowRect.h = arrowSize.y;
 
     do
     {
