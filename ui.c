@@ -663,7 +663,12 @@ bool input_string(char * prompt, char * buf, int max)
             draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
             buf[endPos] = '_';
             buf[endPos+1]= 0x00;
-            textXY(state->screen_width * .10f, state->screen_height * .30f, buf, numPointFontLarge, textColor);
+            textXY_Rollover(state->screen_width * .10f, 
+                    state->screen_height * .30f, 
+                    state->screen_width * .80f,
+                    state->screen_width * .90f, 
+                    2, state->screen_width * .05f,
+                    buf, numPointFontLarge, textColor);
             buf[endPos] = 0x00;
             key = readKb_mouse();
         }
