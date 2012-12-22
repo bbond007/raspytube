@@ -370,16 +370,16 @@ void draw_menu(tMenuState * menu)
               menu->winRect.w,
               menu->winRect.h,
               30, 20, numRectPenSize, rectColor, selectedColor);
-
+    int n2 = numRectPenSize / 2;
     Roundrect(menu->selRect.x,
               menu->selRect.y,
               menu->selRect.w,
               menu->selRect.h,
-              20, 20, numRectPenSize / 2, rectColor, selectedColor);
+              20, 20, n2, rectColor, selectedColor);
     int i;for(i=0;i<2;i++)//shadow effect.
     Text(&fontDefs[titleFontMenu.selectedItem],
-         menu->titlePos.x-i*numRectPenSize, 
-         menu->titlePos.y-i*numRectPenSize/2,
+         menu->titlePos.x-i*n2, 
+         menu->titlePos.y-i*n2,
          menu->title,
          //menu->numPointFontTitle,
          numPointFontLarge,
