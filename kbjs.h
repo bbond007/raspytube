@@ -1,5 +1,6 @@
 bool kbHit(void);
 bool jsESC(void);
+bool rbPressed(void);
 int readKb(void);
 void dumpKb(void);
 void dumpJs(void);

@@ -753,7 +753,7 @@ static void play_video (char * url)
             wpid = waitpid(pid, &status, WNOHANG);
             if (wpid == 0)
             {
-                if(jsESC())
+                if(jsESC() || rbPressed())
                 {
                     system("killall omxplayer.bin");
                     switch(videoPlayer)

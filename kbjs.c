@@ -192,6 +192,17 @@ bool jsESC(void)
 }
 
 //------------------------------------------------------------------------------
+bool rbPressed(void)
+{
+    struct input_event mousee;
+    if(read_mouse_event(&mousee))
+    {
+        if(mousee.type == 1 && mousee.code == 273 && mousee.value == 1)
+            return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 void debug_mouse()
 {
     char temp[25];
