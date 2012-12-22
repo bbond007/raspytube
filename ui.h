@@ -36,8 +36,8 @@ typedef struct _tPointPer
 
 typedef struct _tPointXY
 {
-  float x;
-  float y;
+  int x;
+  int y;
 } tPointXY;
 
 typedef struct _tRectPer
@@ -50,10 +50,10 @@ typedef struct _tRectPer
 
 typedef struct _tRectBounds
 {
-  float x;
-  float y;
-  float w;
-  float h; 
+  int x;
+  int y;
+  int w;
+  int h; 
 } tRectBounds;
 
 typedef struct _tMenuState
@@ -75,12 +75,10 @@ typedef struct _tMenuState
     tRectPer selPer;
     tRectBounds winRect;
     tRectBounds selRect;
-    //VGfloat upArrow[8];
-    //VGfloat downArrow[8];
-    tPointPer upArrowPer;
-    tPointPer downArrowPer;
-    tPointXY upArrowPos;
-    tPointXY downArrowPos;
+    tRectPer upArrowPer;
+    tRectPer downArrowPer;
+    tRectBounds upArrowRect;
+    tRectBounds downArrowRect;        
     bool bCenterX;
     bool bCenterY;
     void (*drawHeader) (struct _tMenuState * menu);
@@ -122,6 +120,7 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key);
 int show_menu(tMenuState * menu);
 void calc_point_xy(tPointPer * pointPer, tPointXY * pointXY);
 void calc_rect_bounds(tRectPer * rectPer, tRectBounds * rectBounds);
+bool point_in_rect(tPointXY * point, tRectBounds * rect);
 void init_font_menus();
 void init_big_menu(tMenuState * menu, char * title);
 void init_format_menu(tMenuState * menu);
@@ -192,5 +191,9 @@ extern tColorDef * errorColor;
 #define CUR_L   20
 #define FUN_1 	1 
 #define FUN_2	2
+#define JOY_1   3
+#define MOUSE_1 4
+#define MOUSE_2 5
+#define MOUSE_M 6
 
 

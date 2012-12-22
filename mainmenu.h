@@ -60,7 +60,7 @@ tMenuItem guiMenuItems[] =
     {"Medium Font Size ","MF", 			      11},
     {"Large Font Size",  "LF",			      12},
     {"Font Vert. Space", "FS", 			      13},
-    {"JS/GP/KB Menu",    "KB", 			      0},
+    {"Input Menu",       "IM", 			      0},
     {"***Save config***","SC",			      0},
     {NULL,		NULL,			      0}
 };
@@ -76,6 +76,13 @@ tMenuItem jskbMenuItems[] =
     {"Menu Button",      "MB",		     	      5},
     {"Select Button",    "SB", 		      	      6},
     {"Back Button",      "BB",			      7},	 	  
+    {"Mouse",		 "MM",		              8},
+    {"Mouse Device",  	 "MD", 			      9}, 
+    {"Joystick Device",  "JD",                       10}, 		
+    {"Pointer",          "PP", 			     11},
+    {"Pointer Size",     "PS",			     12},
+    {"Pointer Offset X", "OX",			     13},
+    {"Pointer Offset Y", "OY",			     14},
     {NULL,		 NULL,			      0}
 };
      	

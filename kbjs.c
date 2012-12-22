@@ -7,9 +7,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "kbjs.h"
+#include <linux/input.h>
 #include "gfxlib.h"
 #include "ui.h"
+#include "kbjs.h"
 #include "joystick.h"
 #include "term.h"
 
@@ -19,8 +20,9 @@ static int ttflags;
 static struct termios oldt;
 static struct termios newt;
 static int joystick_fd = -1;
-char jsDev[] = "/dev/input/js0";
-
+static int mouse_fd = -1;
+char jsDev[] = "/dev/input/js#";
+char mouseDev[] = "/dev/input/event#";
 
 int jsXAxis     = 0;
 int jsYAxis     = 1;
@@ -29,17 +31,61 @@ int jsSelect    = 2;
 int jsBack      = 1;
 int jsInfo      = 8;
 int jsMenu      = 9;
+bool mouseEnabled = false;
+tPointXY mouseXY;
+tPointXY clickXY;
+int mouseBGImage = -1;
+extern tFontDef fontDefs[];
 
+int numMouseIndex    = 1;
+int numJoystickIndex = 0;
+int numPointerIndex  = 99; 
+int numPointerSize   = 35;
+tPointXY pointerOffsetXY;
 //------------------------------------------------------------------------------
-int open_joystick(char *joystick_device)
+int open_joystick()
 {
-    joystick_fd = open(joystick_device, O_RDONLY | O_NONBLOCK); /* read write for force feedback? */
+    close_joystick();
+    jsDev[sizeof(jsDev)-2] = '0' + (char) numJoystickIndex;
+    joystick_fd = open(jsDev, O_RDONLY | O_NONBLOCK); 
     if (joystick_fd < 0)
         return joystick_fd;
-    /* maybe ioctls to interrogate features here? */
     return joystick_fd;
 }
+//------------------------------------------------------------------------------
+int open_mouse()
+{
+    mouseDev[sizeof(mouseDev)-2] = '0' + (char) numMouseIndex;
+    close_mouse();
+    mouseXY.x = state->screen_width / 2;
+    mouseXY.y = state->screen_height / 2;
+    mouse_fd = open(mouseDev, O_RDONLY | O_NONBLOCK);
+    if (mouse_fd < 0)
+        return mouse_fd;
+    return mouse_fd;
+}
 
+//------------------------------------------------------------------------------
+void close_mouse()
+{
+    if (mouse_fd > 0)
+        close(mouse_fd);
+}
+
+//------------------------------------------------------------------------------
+bool read_mouse_event(struct input_event *mousee)
+{
+    int bytes;
+    if(mouse_fd > 0)
+    {
+        bytes = read(mouse_fd, mousee, sizeof(struct input_event));
+        if (bytes == -1)
+            return false;
+        if (bytes == sizeof(struct input_event))
+            return true;
+    }
+    return false;
+}
 //------------------------------------------------------------------------------
 bool read_joystick_event(struct js_event *jse)
 {
@@ -47,10 +93,8 @@ bool read_joystick_event(struct js_event *jse)
     if(joystick_fd > 0)
     {
         bytes = read(joystick_fd, jse, sizeof(*jse));
-
         if (bytes == -1)
             return false;
-
         if (bytes == sizeof(*jse))
             return true;
     }
@@ -126,9 +170,7 @@ int handleESC()
 bool kbHit(void)
 {
     int ch;
-  //  fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
     ch = getchar();
-  //  fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     if(ch != EOF)
     {
         ungetc(ch, stdin);
@@ -150,26 +192,120 @@ bool jsESC(void)
 }
 
 //------------------------------------------------------------------------------
-bool jsRTN;
-bool kbRTN;
+void debug_mouse()
+{
+    char temp[25];
+    snprintf(temp, sizeof(temp), "(%d, %d)", mouseXY.x, mouseXY.y);
+    Text(&fontDefs[11], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
+    temp[1] = 0x00;
+    temp[0] = (char) numPointerIndex;
+    Text(&fontDefs[10],  
+         mouseXY.x + pointerOffsetXY.x, 
+         mouseXY.y + pointerOffsetXY.y, 
+         temp, numPointerSize, selectedColor, VG_FILL_PATH);
+    //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
+}
+//------------------------------------------------------------------------------
+bool handle_mouse(int * key)
+{
+    if(mouse_fd < 0) return false;
+    struct input_event mousee;
+    tPointXY oldMouseXY;
+    memcpy(&oldMouseXY, &mouseXY, sizeof(tPointXY));
+    while(read_mouse_event(&mousee))
+    {
+        switch(mousee.type)
+        {
+        case 1:
+            switch (mousee.code)
+            {
+            case 272:
+                if(mousee.value == 1)
+                    *key = MOUSE_1;
+                    clickXY.x = mouseXY.x;
+                    clickXY.y = mouseXY.y;
+                break;
+            case 273:
+                if(mousee.value == 1)
+                    *key = MOUSE_2;
+                    clickXY.x = mouseXY.x;
+                    clickXY.y = mouseXY.y;
+                break;
+            }
+            break;
+        case 2:
+            switch(mousee.code)
+            {
 
-int readKb(void)
+            case 0 :
+                if(mousee.value < 0)
+                {
+                    if(mouseXY.x + mousee.value > 0)
+                        mouseXY.x += mousee.value;
+                    else
+                        mouseXY.x = 0;
+                }
+                if(mousee.value > 0)
+                {
+                    if(mouseXY.x + mousee.value < state->screen_width)
+                        mouseXY.x += mousee.value;
+                    else
+                        mouseXY.y = state->screen_width;
+                }
+                break;
+            case 1 :
+                mousee.value = mousee.value * -1;
+                if(mousee.value < 0)
+                {
+                    if(mouseXY.y + mousee.value > 0)
+                        mouseXY.y += mousee.value;
+                    else
+                        mouseXY.y = 0;
+                }
+                if(mousee.value > 0)
+                {
+                    if(mouseXY.y + mousee.value < state->screen_height)
+                        mouseXY.y += mousee.value;
+                    else
+                        mouseXY.y = state->screen_height;
+                }
+                break;
+            }
+            break;
+        }
+    }
+    if (mouseBGImage != -1 && (oldMouseXY.x != mouseXY.x || oldMouseXY.y != mouseXY.y))
+    {
+        vgSetPixels(0,0, mouseBGImage, 0, 0, state->screen_width, state->screen_height);
+        debug_mouse();
+        eglSwapBuffers(state->display, state->surface);
+        return true;
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+void dumpMouse()
+{
+    struct input_event mousee;
+    if(mouse_fd > 0)
+    {
+        while(read_mouse_event(&mousee))
+        {
+            // :)
+        }
+    }
+}
+//------------------------------------------------------------------------------
+int readKb_loop(bool checkMouse)
 {
     struct js_event jse;
     int key;
-    dumpKb();
-    dumpJs();
-    jsRTN = false;
-    kbRTN = false;
-    
-    #define JS_THRESHOLD 30000
+    bool bMouseMove = false;
     do
     {
         if(read_joystick_event(&jse))
         {
-            //printf("Event: time %8u, value %8hd, type: %3u, axis/button: %u\n",
-            //       jse.time, jse.value, jse.type, jse.number);
-
             switch(jse.type)
             {
             case 2:
@@ -186,7 +322,7 @@ int readKb(void)
                         return CUR_DWN;
                     else if(jse.value <= -jsThreshold)
                         return CUR_UP;
-                }       
+                }
                 break;
 
             case 1:
@@ -194,45 +330,64 @@ int readKb(void)
                 {
                     if (jse.number == jsBack)
                         return ESC_KEY;
-                    else if (jse.number == jsSelect) 
-                    {
-                        jsRTN = true;
-                        return RTN_KEY;
-                    }
-                    else if (jse.number == jsInfo) 
+                    else if (jse.number == jsSelect)
+                        return JOY_1;
+                    else if (jse.number == jsInfo)
                         return 'i';
-                    else if (jse.number == jsMenu) 
+                    else if (jse.number == jsMenu)
                         return 'm';
                 }
                 break;
             }
         }
-
         key = getchar();
-        usleep(1000);
-    } while (key == EOF);
+        if(checkMouse && mouseEnabled)
+            bMouseMove = handle_mouse(&key);
+        if(!bMouseMove && key == EOF)
+            usleep(1000);
+    }
+    while (key == EOF);
 
     if (key == ESC_KEY)
     {
-        //fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
         key = handleESC();
-        // fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);
     }
-    else if(key == RTN_KEY)
-        kbRTN = true;
-    //else play_sample(&asiKbClick, false);
     return key;
 }
-
+//------------------------------------------------------------------------------
+int readKb(void) //legacy function
+{
+    dumpKb();
+    dumpJs();
+    eglSwapBuffers(state->display, state->surface);
+    return readKb_loop(false);
+}
+//------------------------------------------------------------------------------
+int readKb_mouse(void)
+{
+    dumpKb();
+    dumpJs();
+    if (mouseEnabled && (mouse_fd > 0))
+    {
+        mouseBGImage = createImageFromScreen();
+        debug_mouse();
+    }
+    eglSwapBuffers(state->display, state->surface);
+    int key = readKb_loop((mouse_fd > 0)?mouseEnabled:false);
+    if(mouseBGImage != -1)
+        vgDestroyImage(mouseBGImage);
+    mouseBGImage = -1;
+    return key;
+}
 //------------------------------------------------------------------------------
 void dumpJs(void)
 {
     if(joystick_fd > 0)
     {
-    
+
         struct js_event jse;
         while (read_joystick_event(&jse))
-        {    
+        {
             //dumping joystick
         }
     }
@@ -240,12 +395,10 @@ void dumpJs(void)
 //------------------------------------------------------------------------------
 void dumpKb(void)
 {
-    //fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
     while (getchar()!= EOF)
     {
         // dumping kb :)
     }
-    //fcntl(STDIN_FILENO, F_SETFL, ttflags & ~O_NONBLOCK);   
 
 }
 //------------------------------------------------------------------------------
@@ -258,8 +411,10 @@ void initKb(void)
     ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
 //  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-    open_joystick(jsDev);
-
+//    open_joystick();
+//    open_mouse();
+    pointerOffsetXY.x = -20; 
+    pointerOffsetXY.y = -5; 
 }
 //------------------------------------------------------------------------------
 void restoreKb(void)
@@ -267,6 +422,7 @@ void restoreKb(void)
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
 //  delete_sample(&asiKbClick);
     close_joystick();
+    close_mouse();
 }
 
 //------------------------------------------------------------------------------
@@ -292,24 +448,25 @@ void do_joystick_test(void)
         do
         {
             if(read_joystick_event(&jse))
-            {    
+            {
                 snprintf(txt, size, format, jse.time, jse.value, jse.type, jse.number);
                 term_put_str(&ts, txt);
                 term_show(&ts, true);
             }
             else
                 usleep(1000);
-                
+
             key = getchar();
             if (key == ESC_KEY)
-              key = handleESC();
-        } while (key != ESC_KEY);        
+                key = handleESC();
+        }
+        while (key != ESC_KEY);
     }
     else
     {
         snprintf(txt, size, "%s was not opened.", jsDev);
-        term_put_str(&ts, txt); 
-        term_set_color(&ts, 5);    
+        term_put_str(&ts, txt);
+        term_set_color(&ts, 5);
         term_put_str(&ts, "\n\n\nPress any key to continue...");
         term_show(&ts, true);
         readKb();

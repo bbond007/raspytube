@@ -1,7 +1,6 @@
 raspytube - an OpenVG YouTube client for Raspberry Pi.
 
 keys:
-
 		M - main menu
  
 		S- search (edit existing txt)
@@ -36,8 +35,9 @@ binarybond007@gmail.com
 
 NOTES:
 
-		* MPlayer not working yet... 
- 
+		* MPlayer not working yet... mplayer still not working....
+		* Added mouse support!!!
+		 
 
 Thanks the the RPi community!
 

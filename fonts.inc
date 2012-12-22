@@ -9,7 +9,6 @@
 #include "RobotoRegular.inc"
 #include "Arial.inc"
 #include  "Teletext.inc"
-
 tFontDef fontDefs[] = 
 {
 	{    
@@ -111,18 +110,6 @@ tFontDef fontDefs[] =
              NULL
 	},
 	{
-	     "Pacman",
-	     PacFont_glyphPoints, 
-	     PacFont_glyphPointIndices,
-             PacFont_glyphInstructions, 
-	     PacFont_glyphInstructionIndices,
-             PacFont_glyphInstructionCounts, 
-	     PacFont_glyphAdvances,
-	     PacFont_characterMap,
-	     PacFont_glyphCount,
-             NULL
-	},
-	{
 	     "Gyparody",
 	     Gyparody_glyphPoints, 
 	     Gyparody_glyphPointIndices,
@@ -135,7 +122,7 @@ tFontDef fontDefs[] =
              NULL
 	},
 	{
-	     "Hydrogen Whiskey",
+	    "Hydrogen Whiskey",
 	     HydrogenWhiskey_glyphPoints, 
 	     HydrogenWhiskey_glyphPointIndices,
              HydrogenWhiskey_glyphInstructions, 
@@ -145,6 +132,16 @@ tFontDef fontDefs[] =
 	     HydrogenWhiskey_characterMap,
 	     HydrogenWhiskey_glyphCount,
              NULL
+	},
+	{
+	     "Pacman", PacFont_glyphPoints, 
+	     PacFont_glyphPointIndices,
+	     PacFont_glyphInstructions, 
+             PacFont_glyphInstructionIndices,
+	     PacFont_glyphInstructionCounts, 
+             PacFont_glyphAdvances,
+	     PacFont_characterMap, 
+	     PacFont_glyphCount, NULL
 	}
 };
 	

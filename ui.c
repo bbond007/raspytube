@@ -82,7 +82,7 @@ extern tMenuState titleFontMenu;
 extern tMenuItem videoMenuItems[];
 extern tMenuItem jpegMenuItems[];
 extern tMenuItem audioMenuItems[];
-extern tMenuItem fontMenuItems[]; 
+extern tMenuItem fontMenuItems[];
 extern const char tv_jpeg_raw_data[];
 extern const unsigned int tv_jpeg_raw_size;
 //------------------------------------------------------------------------------
@@ -183,21 +183,21 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
 //------------------------------------------------------------------------------
 VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
 {
-  
+
     switch (jpegDecoder)
     {
-            case jdOMX:
-                return OMXCreateImageFromBuf((unsigned char *)
-                        buf, bufSize, desired_width, desired_height);
-                break;
+    case jdOMX:
+        return OMXCreateImageFromBuf((unsigned char *)
+                                     buf, bufSize, desired_width, desired_height);
+        break;
 
-            case jdLibJpeg:
-                return createImageFromBuf((unsigned char *)
-                        buf, bufSize, desired_width, desired_height);
-                break;
-            default:
-                show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
-                break;
+    case jdLibJpeg:
+        return createImageFromBuf((unsigned char *)
+                                  buf, bufSize, desired_width, desired_height);
+        break;
+    default:
+        show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
+        break;
     }
     return 0;
 }
@@ -216,25 +216,25 @@ void free_ui_var()
 {
     if (tvImage > 0)
         vgDestroyImage(tvImage);
-        
+
     if (bgImage > 0)
-        vgDestroyImage(bgImage);    
-    
+        vgDestroyImage(bgImage);
+
     if(upArrowImage > 0)
         vgDestroyImage(upArrowImage);
-    
+
     if(downArrowImage > 0)
         vgDestroyImage(downArrowImage);
-        
+
     int i;
     for(i=0; i < fontCount; i++)
         unload_font(&fontDefs[i]);
     if(fontMenu.menuItems!= NULL)
-        free(fontMenu.menuItems);       
+        free(fontMenu.menuItems);
 }
 //------------------------------------------------------------------------------
 void set_menu_value(tMenuState * menu, int value)
-{    
+{
     if(value > menu->maxItems)
     {
         menu->selectedIndex = value % menu->maxItems;
@@ -255,17 +255,17 @@ void set_font(int font)
 //------------------------------------------------------------------------------
 void set_title_font(int font)
 {
-     set_menu_value(&titleFontMenu, font);
+    set_menu_value(&titleFontMenu, font);
 }
 //------------------------------------------------------------------------------
 int get_font()
 {
-     return fontMenu.selectedIndex;
+    return fontMenu.selectedIndex;
 }
 //------------------------------------------------------------------------------
 int get_title_font()
 {
-     return titleFontMenu.selectedItem;
+    return titleFontMenu.selectedItem;
 }
 
 //------------------------------------------------------------------------------
@@ -273,27 +273,27 @@ void init_font_menus()
 {
     init_small_menu(&fontMenu, "Font menu:");
     init_small_menu(&titleFontMenu, "Title Font menu:");
-    
-    int i;   
+
+    int i;
     fontMenu.menuItems = malloc(sizeof(tMenuItem) * (fontCount + 1));
     for (i = 0; i < fontCount; i++)
     {
-         load_font(&fontDefs[i]);
-         fontMenu.menuItems[i].key = fontDefs[i].name;
-         fontMenu.menuItems[i].description = fontDefs[i].name;
+        load_font(&fontDefs[i]);
+        fontMenu.menuItems[i].key = fontDefs[i].name;
+        fontMenu.menuItems[i].description = fontDefs[i].name;
     }
     fontMenu.menuItems[i].key = NULL;
     fontMenu.menuItems[i].description = NULL;
     fontMenu.drawDetail = &font_menu_detail;
     titleFontMenu.menuItems    = fontMenu.menuItems;
-    titleFontMenu.drawDetail   = fontMenu.drawDetail;    
+    titleFontMenu.drawDetail   = fontMenu.drawDetail;
     set_font(0);
-    set_title_font(4);    
+    set_title_font(4);
 }
-    
+
 //------------------------------------------------------------------------------
 void init_ui_var()
-{   
+{
     int w, h;
     if(state->screen_width >= 1920)
     {
@@ -320,22 +320,24 @@ void init_ui_var()
     {
         w  = (state->screen_width  * .35f);
         h  = (state->screen_height * .45f);
-           tvImage = create_image_from_buf((unsigned char *)
-           tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
+        tvImage = create_image_from_buf((unsigned char *)
+                                        tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }
     numRectPenSize  = state->screen_width  * .005f;
     loadConfig();
+    open_mouse();
+    open_joystick();
     if(upArrowImage == 0)
     {
         w  = (state->screen_width  * .05f);
         h  = (state->screen_height * .07f);
-        
+
         upArrowImage = create_image_from_buf((unsigned char *)
-            menu_arrow_up_raw_data,  menu_arrow_up_raw_size, w, h);
-            
+                                             menu_arrow_up_raw_data,  menu_arrow_up_raw_size, w, h);
+
         downArrowImage = create_image_from_buf((unsigned char *)
-            menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
-    }   
+                                               menu_arrow_down_raw_data,  menu_arrow_down_raw_size, w, h);
+    }
 }
 //------------------------------------------------------------------------------
 //
@@ -358,11 +360,11 @@ char * parse_url(char * url, char ** server, char ** page)
 //------------------------------------------------------------------------------
 void draw_menu(tMenuState * menu)
 {
-    
+
     Roundrect(menu->bCenterX?(state->screen_width - menu->winRect.w) / 2:menu->winRect.x,
               menu->winRect.y,
               menu->winRect.w,
-              menu->winRect.h, 
+              menu->winRect.h,
               30, 20, numRectPenSize, rectColor, selectedColor);
 
     Roundrect(menu->selRect.x,
@@ -370,13 +372,13 @@ void draw_menu(tMenuState * menu)
               menu->selRect.w,
               menu->selRect.h,
               20, 20, numRectPenSize / 2, rectColor, selectedColor);
-              
+
     Text(&fontDefs[titleFontMenu.selectedItem],
-        menu->titlePos.x, menu->titlePos.y, 
-        menu->title, 
-        //menu->numPointFontTitle, 
-        numPointFontLarge,
-        selectedColor, VG_FILL_PATH);        
+         menu->titlePos.x, menu->titlePos.y,
+         menu->title,
+         //menu->numPointFontTitle,
+         numPointFontLarge,
+         selectedColor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
 void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points)
@@ -405,32 +407,35 @@ void clear_screen(bool swap)
 int show_selection_info(struct result_rec * rec)
 {
     int key = 0x00;
-    
-    int offsetY      = (state->screen_height * .060f);
-    int offsetX      = (state->screen_width  * .035f);
-    int tv_width     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
-    int tv_height    = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
-    int tvX          = (state->screen_width  - tv_width) / 2;
-    int tvY          = (state->screen_height - tv_height);
-    int image_height = tv_height - (offsetY * 2);
-    int image_width  = tv_width  - (offsetX * 2);
-    int imageX       = (state->screen_width - image_width) / 2;
-    int imageY       = (state->screen_height - image_height) - (tv_height - image_height) / 2;
+
+    tPointXY offsetXY;
+    offsetXY.y       = (state->screen_height * .060f);
+    offsetXY.x       = (state->screen_width  * .035f);
+    tRectBounds tvRect;
+    tvRect.w         = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
+    tvRect.h         = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
+    tvRect.x         = (state->screen_width  - tvRect.w) / 2;
+    tvRect.y         = (state->screen_height - tvRect.h);
+    tRectBounds imageRect;
+    imageRect.h      = tvRect.h  - (offsetXY.y * 2);
+    imageRect.w      = tvRect.w  - (offsetXY.x * 2);
+    imageRect.x      = (state->screen_width - imageRect.w) / 2;
+    imageRect.y      = (state->screen_height - imageRect.h) - (tvRect.h - imageRect.h) / 2;
     unsigned char * downloadData = NULL;
     unsigned char * imageData = NULL;
     unsigned int imageDataSize;
-    
+
     if(rec->description)
     {
         redraw_results(false);
-        show_big_message("Info: loading...", rec->description);    
-        vgSetPixels(tvX,
-                    tvY,
+        show_big_message("Info: loading...", rec->description);
+        vgSetPixels(tvRect.x,
+                    tvRect.y,
                     tvImage,
                     0, 0,
-                    tv_width,
-                    tv_height);
-       
+                    tvRect.w,
+                    tvRect.h);
+
         eglSwapBuffers(state->display, state->surface);
     }
     else //description not found.
@@ -439,8 +444,8 @@ int show_selection_info(struct result_rec * rec)
     if(rec->thumbLarge != NULL)
     {
         if (rec->largeImage == 0)
-            rec->largeImage = load_jpeg2(rec->thumbLarge, image_width, image_height, 
-                &downloadData, &imageData, &imageDataSize);
+            rec->largeImage = load_jpeg2(rec->thumbLarge, imageRect.w, imageRect.h,
+                                         &downloadData, &imageData, &imageDataSize);
 
         char * infoStr = NULL;
 
@@ -450,9 +455,9 @@ int show_selection_info(struct result_rec * rec)
             if (T != NULL) *T= 0x00;
             char formatStr[] = "Info: #%s : %s : %s";
             size_t size = strlen(rec->id)   +
-                       strlen(rec->date) +
-                       strlen(rec->user) +
-                       strlen(formatStr);
+                          strlen(rec->date) +
+                          strlen(rec->user) +
+                          strlen(formatStr);
             infoStr = malloc(size);
             snprintf(infoStr, size, formatStr, rec->id, rec->user, rec->date);
             if (T != NULL) *T= 'T';
@@ -469,47 +474,55 @@ int show_selection_info(struct result_rec * rec)
             if(infoStr != NULL && rec->description != NULL)
                 show_big_message(infoStr, rec->description);
 
-            vgSetPixels(tvX,
-                        tvY,
+            vgSetPixels(tvRect.x,
+                        tvRect.y,
                         tvImage,
                         0, 0,
-                        tv_width,
-                        tv_height);
-                   
-            vgSetPixels(imageX,
-                        imageY,
+                        tvRect.w,
+                        tvRect.h);
+
+            vgSetPixels(imageRect.x,
+                        imageRect.y,
                         rec->largeImage,
                         0, 0,
-                        image_width,
-                        image_height);
+                        imageRect.w,
+                        imageRect.h);
 
-            eglSwapBuffers(state->display, state->surface);
-
-            key = toupper(readKb());
+            key = toupper(readKb_mouse());
             if (key == 'H' && imageData != NULL)
             {
                 vgDestroyImage(-rec->largeImage);
-                     rec->largeImage = OMXCreateImageFromBuf((unsigned char *)
-                        imageData, imageDataSize, image_width, image_height);
+                rec->largeImage = OMXCreateImageFromBuf((unsigned char *)
+                                                        imageData, imageDataSize, imageRect.w, imageRect.h);
             }
-            else
-            if (key == 'S' && imageData != NULL)
+            else if (key == 'S' && imageData != NULL)
             {
                 vgDestroyImage(rec->largeImage);
-                     rec->largeImage = createImageFromBuf((unsigned char *)
-                        imageData, imageDataSize, image_width, image_height);
+                rec->largeImage = createImageFromBuf((unsigned char *)
+                                                     imageData, imageDataSize, imageRect.w, imageRect.h);
             }
+            else if (key == MOUSE_1)
+            {
+                //handle the mouse
+                if(point_in_rect(&clickXY, &tvRect))
+                    key = RTN_KEY;
+                else
+                    key = ESC_KEY;
+            }
+            else if (key == MOUSE_2)
+                key = ESC_KEY;
             else if (key== CUR_L || key == CUR_R ||
                      key == CUR_UP || key == CUR_DWN)
                 break;
         }
         while ( key != ESC_KEY &&
                 key != RTN_KEY &&
+                key != JOY_1 &&
                 key != CUR_L &&
                 key != CUR_R &&
                 key != CUR_UP &&
                 key != CUR_DWN &&
-                key != 'I' && 
+                key != 'I' &&
                 key != 'F');
         if(infoStr != NULL) free(infoStr);
         //vgDestroyImage(image);
@@ -532,207 +545,241 @@ int show_selection_info(struct result_rec * rec)
 #define OSK_SPC 32
 #define OSK_CLR 33
 #define OSK_RTN 34
-       
-
-static char * oskKeyMap[2][30] = 
-    {	
-        {
-            "Q",  "W", "E", "R", "T", "Y", "U", "I", "O",  "P",
-            "A",  "S", "D", "F", "G", "H", "J", "K", "L",  "\"",
-            "`",   "Z", "X", "C", "V", "B", "N", "M", ",",  "."
-        },
-        {   "!", "@", "#", "$", "%",  "^", "&", "*", "(",  ")",  
-            "1", "2", "3", "4", "5",  "6", "7", "8", "9",  "0",
-            "~", "<", ">", "?", "[",  "]", "{", "}", "\\", "/"
-        }
-    };
-    
-
+//------------------------------------------------------------------------------
+static char * oskKeyMap[2][30] =
+{
+    {
+        "Q",  "W", "E", "R", "T", "Y", "U", "I", "O",  "P",
+        "A",  "S", "D", "F", "G", "H", "J", "K", "L",  "\"",
+        "`",   "Z", "X", "C", "V", "B", "N", "M", ",",  "."
+    },
+    {
+        "!", "@", "#", "$", "%",  "^", "&", "*", "(",  ")",
+        "1", "2", "3", "4", "5",  "6", "7", "8", "9",  "0",
+        "~", "<", ">", "?", "[",  "]", "{", "}", "\\", "/"
+    }
+};
+//------------------------------------------------------------------------------
 static int osk_key_index(int * page, int c)
 {
     int index;
     for ((*page) = 0; (*page) < 2; (*page)++)
         for(index = 0; index < 30; index++)
             if (oskKeyMap[(*page)][index][0] == c ||
-                oskKeyMap[(*page)][index][0] == toupper(c))
+                    oskKeyMap[(*page)][index][0] == toupper(c))
                 return index;
-    return -1;   
+    return -1;
 }
-
+//------------------------------------------------------------------------------
 bool input_string(char * prompt, char * buf, int max)
 {
+    tRectBounds keyRect;
     int std_key_width  = state->screen_width / 14;
-    int key_height = state->screen_height / 10;
     int std_key_w = std_key_width * .90f;
-    int key_h = key_height * .90f;
+    int large_key_width = std_key_width * 1.5f;
+    int large_key_w = large_key_width * .90f;
+    int key_height = state->screen_height / 10;
+    keyRect.h = key_height * .90f;
     int space_width = std_key_width * 4;
     int space_w = space_width * .97f;
-    tPointXY keyXY;
     tPointXY offsetXY;
-    int key, x, y;
-    int sel = 0; 
+    int key = 0x00;
+    int x, y;
+    int sel = 0;
+    int old;
     int result, page;
-    int keyMapIndex = 0;        
+    int keyMapIndex = 0;
     offsetXY.x = std_key_width / 3;
     offsetXY.y = key_height / 3;
-    int offsetX2 = std_key_width / 6; 
+    int offsetX2 = std_key_width / 6;
     char * save = malloc(max+1);
     strcpy(save, buf);
     do
     {
-        clear_screen(false); 
-        int key_width = std_key_width;
-        int key_w = std_key_w;
-        int i = 0;
+        if(key != MOUSE_1) clear_screen(false);
+        int endPos = strlen(buf);
+        keyRect.w = std_key_w;
+        int index = 0;
         for(y = 0; y < 3; y++)
-        {	
-            for (x = 0; x < 10; x++) 
+        {
+            for (x = 0; x < 10; x++)
             {
-                keyXY.x = (x + 2) * key_width;
-                keyXY.y = state->screen_height - ((y + 1) * key_height);
-                Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor, (sel==i)?COLOR_SELECTED:COLOR_NORMAL);
-                textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y, oskKeyMap[keyMapIndex][i], numPointFontLarge,  (sel==i)?TEXT_SELECTED:TEXT_NORMAL);
-                i++;
+                keyRect.x = (x + 2) * std_key_width;
+                keyRect.y = state->screen_height - ((y + 1) * key_height);
+                if (key == MOUSE_1)
+                {
+                    if (point_in_rect(&clickXY, &keyRect))sel=index;
+                }
+                else
+                {
+                    Roundrect(keyRect.x, keyRect.y,  keyRect.w, keyRect.h, 20, 20, numRectPenSize, rectColor, (sel==index)?COLOR_SELECTED:COLOR_NORMAL);
+                    textXY(keyRect.x + offsetXY.x, keyRect.y + offsetXY.y, oskKeyMap[keyMapIndex][index], numPointFontLarge,  (sel==index)?TEXT_SELECTED:TEXT_NORMAL);
+                }
+                index++;
             }
         }
-        
-        keyXY.x = (2) * key_width;
-        keyXY.y = state->screen_height - ((y + 1) * key_height);
-        key_width = key_width * 1.5f;
-        key_w = key_width * .90f;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, (keyMapIndex==0)?rectColor:rectColor3, (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "!@#", numPointFontLarge,  (sel==OSK_KEY)?TEXT_SELECTED:TEXT_NORMAL);
-        keyXY.x += key_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_DEL)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetXY.x, keyXY.y + offsetXY.y,  "DEL", numPointFontLarge,  (sel==OSK_DEL)?TEXT_SELECTED:TEXT_NORMAL);
-        keyXY.x += key_width;
-        Roundrect(keyXY.x, keyXY.y,  space_w, key_h, 20, 20, numRectPenSize, rectColor, (sel==OSK_SPC)?COLOR_SELECTED:COLOR_NORMAL);
-        keyXY.x += space_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_CLR)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "CLR", numPointFontLarge,    (sel==OSK_CLR)?TEXT_SELECTED:TEXT_NORMAL);
-        keyXY.x += key_width;
-        Roundrect(keyXY.x, keyXY.y,  key_w, key_h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_RTN)?COLOR_SELECTED:COLOR_NORMAL);
-        textXY(keyXY.x + offsetX2, keyXY.y + offsetXY.y,  "RTN", numPointFontLarge,  (sel==OSK_RTN)?TEXT_SELECTED:TEXT_NORMAL);        
-        draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
-      
-        int endPos = strlen(buf);
-     
-        buf[endPos] = '_';
-        buf[endPos+1]= 0x00;
-        textXY(state->screen_width * .10f, state->screen_height * .30f, buf, numPointFontLarge, textColor);
-        buf[endPos] = 0x00;
-    
-        eglSwapBuffers(state->display, state->surface);
-        key = readKb();   
+        keyRect.x = (2) * std_key_width;
+        keyRect.y = state->screen_height - ((y + 1) * key_height);
+        keyRect.w = large_key_w;
+        if (key == MOUSE_1)
+        {
+            if (point_in_rect(&clickXY, &keyRect))sel=OSK_KEY;
+            keyRect.x += large_key_width;
+            if (point_in_rect(&clickXY, &keyRect))sel=OSK_DEL;
+            keyRect.x += large_key_width;
+            keyRect.w = space_w;
+            if (point_in_rect(&clickXY, &keyRect))sel=OSK_SPC;
+            keyRect.x += space_width;
+            keyRect.w = large_key_w;
+            if (point_in_rect(&clickXY, &keyRect))sel=OSK_CLR;
+            keyRect.x += large_key_width;
+            if (point_in_rect(&clickXY, &keyRect))sel=OSK_RTN;
+            if(sel == - 1)
+            {
+                sel = old;
+                key = 0x00;
+            }
+            else
+                key = JOY_1;
+        }
+        else
+        {
+            Roundrect(keyRect.x, keyRect.y,  keyRect.w, keyRect.h, 20, 20, numRectPenSize, (keyMapIndex==0)?rectColor:rectColor3, (sel==OSK_KEY)?COLOR_SELECTED:COLOR_NORMAL);
+            textXY(keyRect.x + offsetX2, keyRect.y + offsetXY.y,  "!@#", numPointFontLarge,  (sel==OSK_KEY)?TEXT_SELECTED:TEXT_NORMAL);
+            keyRect.x += large_key_width;
+            Roundrect(keyRect.x, keyRect.y,  keyRect.w, keyRect.h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_DEL)?COLOR_SELECTED:COLOR_NORMAL);
+            textXY(keyRect.x + offsetXY.x, keyRect.y + offsetXY.y,  "DEL", numPointFontLarge,  (sel==OSK_DEL)?TEXT_SELECTED:TEXT_NORMAL);
+            keyRect.x += large_key_width;
+            keyRect.w = space_w;
+            Roundrect(keyRect.x, keyRect.y,  space_w, keyRect.h, 20, 20, numRectPenSize, rectColor, (sel==OSK_SPC)?COLOR_SELECTED:COLOR_NORMAL);
+            keyRect.x += space_width;
+            keyRect.w = large_key_w;
+            Roundrect(keyRect.x, keyRect.y,  keyRect.w, keyRect.h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_CLR)?COLOR_SELECTED:COLOR_NORMAL);
+            textXY(keyRect.x + offsetX2, keyRect.y + offsetXY.y,  "CLR", numPointFontLarge,    (sel==OSK_CLR)?TEXT_SELECTED:TEXT_NORMAL);
+            keyRect.x += large_key_width;
+            Roundrect(keyRect.x, keyRect.y,  keyRect.w, keyRect.h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_RTN)?COLOR_SELECTED:COLOR_NORMAL);
+            textXY(keyRect.x + offsetX2, keyRect.y + offsetXY.y,  "RTN", numPointFontLarge,  (sel==OSK_RTN)?TEXT_SELECTED:TEXT_NORMAL);
+            draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
+            buf[endPos] = '_';
+            buf[endPos+1]= 0x00;
+            textXY(state->screen_width * .10f, state->screen_height * .30f, buf, numPointFontLarge, textColor);
+            buf[endPos] = 0x00;
+            key = readKb_mouse();
+        }
+
         switch(key)
         {
-            case CUR_L:
-                if (sel > 0) 
-                    sel--;
-                else
-                    sel = OSK_RTN; 
-                break;
-            
-            case CUR_R:
-                if(sel < OSK_RTN)
-                    sel++;
-                else
-                    sel = 0;
-                break;
-          
-            case CUR_DWN:
-                if(sel < 20) 
-                    sel += 10;
-                else if (sel == 20 || sel == 21)
-                    sel = OSK_KEY;
-                else if(sel == 22)
-                    sel = OSK_DEL;
-                else if(sel >= 23 && sel <= 26)
-                    sel = OSK_SPC;
-                else if(sel == 27)
-                    sel = OSK_CLR;
-                else if(sel == 28 || sel == 29)
-                    sel = OSK_RTN;
-                break;
-            
-            case CUR_UP:
-                if(sel >= 10 && sel <= 30) 
-                    sel -= 10;
-                else if(sel == OSK_DEL)
-                    sel = 22;
-                else if(sel == OSK_SPC)
-                    sel = 23;
-                else if(sel == OSK_CLR)
-                    sel = 27;
-                else if(sel == OSK_RTN)
-                    sel = 29;
-                break;
-            
-            case RTN_KEY:
-                if(jsRTN)
-                {
-                    if(sel != OSK_RTN)
-                        key = 0x00;
-                        
-                    if(sel == OSK_KEY)
-                    {
-                        keyMapIndex += 1;
-                        if(keyMapIndex > 1)
-                            keyMapIndex = 0;
-                    }
-                    else if(sel == OSK_DEL)
-                    {	
-                         if(endPos > 0)
-                             buf[endPos-1] = 0x00;
-                    }
-                    else if(sel == OSK_CLR)
-                    {
-                        buf[0] = 0x00;
-                    }
-                    else if ((strlen(buf) + 3) < max)
-                    {
-                        if(sel >= 0 && sel < OSK_KEY)
-                             strcat(buf, oskKeyMap[keyMapIndex][sel]);    
-                        else if(sel == OSK_SPC)
-                             strcat(buf, " "); 
-                    }
-                }
-            
-                break;
-                
-            case ESC_KEY:
-                strcpy(buf, save);
-                break;
-            
-            case DEL_KEY:
+        case MOUSE_1:
+            old = sel;
+            sel = -1;
+            break;
+
+        case CUR_L:
+            if (sel > 0)
+                sel--;
+            else
+                sel = OSK_RTN;
+            break;
+
+        case CUR_R:
+            if(sel < OSK_RTN)
+                sel++;
+            else
+                sel = 0;
+            break;
+
+        case CUR_DWN:
+            if(sel < 20)
+                sel += 10;
+            else if (sel == 20 || sel == 21)
+                sel = OSK_KEY;
+            else if(sel == 22)
+                sel = OSK_DEL;
+            else if(sel >= 23 && sel <= 26)
+                sel = OSK_SPC;
+            else if(sel == 27)
+                sel = OSK_CLR;
+            else if(sel == 28 || sel == 29)
+                sel = OSK_RTN;
+            break;
+
+        case CUR_UP:
+            if(sel >= 10 && sel <= 30)
+                sel -= 10;
+            else if(sel == OSK_DEL)
+                sel = 22;
+            else if(sel == OSK_SPC)
+                sel = 23;
+            else if(sel == OSK_CLR)
+                sel = 27;
+            else if(sel == OSK_RTN)
+                sel = 29;
+            break;
+
+
+        case JOY_1:
+            if(sel == OSK_RTN)
+            {
+                key = RTN_KEY;
+            }
+            else if(sel == OSK_KEY)
+            {
+                keyMapIndex += 1;
+                if(keyMapIndex > 1)
+                    keyMapIndex = 0;
+            }
+            else if(sel == OSK_DEL)
+            {
                 if(endPos > 0)
-                  buf[endPos-1] = 0x00;
-                  sel = OSK_DEL;
-                break;
-                
-            default:
-                result = osk_key_index(&page,key);
-                if(result != -1)
+                    buf[endPos-1] = 0x00;
+            }
+            else if(sel == OSK_CLR)
+            {
+                buf[0] = 0x00;
+            }
+            else if ((strlen(buf) + 3) < max)
+            {
+                if(sel >= 0 && sel < OSK_KEY)
+                    strcat(buf, oskKeyMap[keyMapIndex][sel]);
+                else if(sel == OSK_SPC)
+                    strcat(buf, " ");
+            }
+            break;
+
+        case MOUSE_2:
+            key = ESC_KEY;
+        case ESC_KEY:
+            strcpy(buf, save);
+            break;
+
+        case DEL_KEY:
+            if(endPos > 0)
+                buf[endPos-1] = 0x00;
+            sel = OSK_DEL;
+            break;
+
+        default:
+            result = osk_key_index(&page,key);
+            if(result != -1)
+            {
+                keyMapIndex = page;
+                if(keyMapIndex == page)
+                    sel = result;
+            }
+            if(result != -1 || key == ' ')
+            {
+                if ((strlen(buf) + 3) < max)
                 {
-                    keyMapIndex = page;
-                    if(keyMapIndex == page)
-                        sel = result;
+                    result = strlen(buf);
+                    buf[result] = key;
+                    buf[result+1] = 0x00;
                 }
-                if(result != -1 || key == ' ')
-                {
-                    if ((strlen(buf) + 3) < max)
-                    {
-                        result = strlen(buf);
-                        buf[result] = key;
-                        buf[result+1] = 0x00;
-                    }
-                    if (key == ' ')
-                        sel = OSK_SPC;
-                }            
+                if (key == ' ')
+                    sel = OSK_SPC;
+            }
         }
-    
-    } while (key != ESC_KEY && key != RTN_KEY);
-    
+    }
+    while (key != ESC_KEY && key != RTN_KEY);
     free(save);
     if(key == ESC_KEY)
         return false;
@@ -750,90 +797,97 @@ void show_big_message(char * title, char * message)
                     state->screen_width  * .85f,
                     state->screen_width  * .90f,
                     7, //max no of lines
-                    state->screen_height * numFontSpacing / 1000.0f, 
+                    state->screen_height * numFontSpacing / 1000.0f,
                     message, numPointFontMed, textColor);
 }
+
 //------------------------------------------------------------------------------
+static tRectBounds imageRect;
 void show_message(char * message, int error, int points)
 {
-    int offsetY      = (state->screen_height * .060f);
-    int offsetX      = (state->screen_width  * .035f);
-    int tv_width     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
-    int tv_height    = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
-    int tvX          = (state->screen_width  - tv_width) / 2;
-    int tvY          = (state->screen_height - tv_height) / 2;
-    int image_height = tv_height - (offsetY * 2);
-    int image_width  = tv_width  - (offsetX * 2);
-    int imageX       = (state->screen_width - image_width)   / 2;
-    int imageY       = (state->screen_height - image_height) / 2;
-    int tx 	     = imageX  + state->screen_width  * .03f;
-    int ty 	     = imageY  + image_height - offsetX;
-    int guru_width   = image_width  * .95f;
-    int guru_height  = image_height * .25f;
-    int guruX        = (state->screen_width - guru_width)   / 2;
-    int guruY        = imageY  + image_height - guru_height -  (state->screen_width  * .007f);
- 
-    char * errorStr = NULL; 
+    tPointXY offsetXY;
+    //tRectBounds imageRect;
+    tRectBounds guruRect;
+    tRectBounds tvRect;
+    offsetXY.y   = (state->screen_height * .060f);
+    offsetXY.x   = (state->screen_width  * .035f);
+    tvRect.w     = vgGetParameteri(tvImage, VG_IMAGE_WIDTH);
+    tvRect.h     = vgGetParameteri(tvImage, VG_IMAGE_HEIGHT);
+    tvRect.x     = (state->screen_width  - tvRect.w) / 2;
+    tvRect.y     = (state->screen_height - tvRect.h) / 2;
+    imageRect.h  = tvRect.h -  (offsetXY.y * 2);
+    imageRect.w  = tvRect.w  - (offsetXY.x * 2);
+    imageRect.x  = (state->screen_width - imageRect.w)   / 2;
+    imageRect.y  = (state->screen_height - imageRect.h) / 2;
+    int tx       = imageRect.x  + state->screen_width  * .03f;
+    int ty       = imageRect.y  + imageRect.h - offsetXY.x;
+    guruRect.w   = imageRect.w * .95f;
+    guruRect.h   = imageRect.h * .25f;
+    guruRect.x   = (state->screen_width - guruRect.w)   / 2;
+    guruRect.y   = imageRect.y  + imageRect.h - guruRect.h -  (state->screen_width  * .007f);
+
+    char * errorStr = NULL;
     int key = ESC_KEY;
     if(error)
     {
-         char formatStr[] = "~7GURU MEDITATION #%08X\n\n~0%s";
-         size_t sErrorStr = strlen(formatStr) + strlen(message) + 8;
-         errorStr = malloc(sErrorStr);
-         snprintf(errorStr, sErrorStr, formatStr, error, message);
-         printf("ERROR->%d\n", error);
+        char formatStr[] = "~7GURU MEDITATION #%08X\n\n~0%s";
+        size_t sErrorStr = strlen(formatStr) + strlen(message) + 8;
+        errorStr = malloc(sErrorStr);
+        snprintf(errorStr, sErrorStr, formatStr, error, message);
+        printf("ERROR->%d\n", error);
     }
-           
+
     do
     {
         if(error)
             redraw_results(false);
-           
-        vgSetPixels(tvX,
-                tvY,
-                tvImage,
-                0, 0,
-                tv_width,
-                tv_height);
-       
+
+        vgSetPixels(tvRect.x,
+                    tvRect.y,
+                    tvImage,
+                    0, 0,
+                    tvRect.w,
+                    tvRect.h);
+
         if(error)
         {
-            Roundrect(imageX, imageY,  image_width, image_height, 20, 20, numRectPenSize, bgColor, bgColor);
-            Rect(guruX, guruY, guru_width, guru_height, numRectPenSize, bgColor, errorColor);
+            Roundrect(imageRect.x, imageRect.y,  imageRect.w, imageRect.h, 20, 20, numRectPenSize, bgColor, bgColor);
+            Rect(guruRect.x, guruRect.y, guruRect.w, guruRect.h, numRectPenSize, bgColor, errorColor);
             Text_Rollover ( &fontDefs[1], //Topaz font
-                        tx, // X
-                        ty, // Y
-                        state->screen_width  * .80f,
-                        state->screen_width  * .90f,
-                        6,
-                        state->screen_height * .05f,
-                        errorStr, points, &colorScheme[0], VG_FILL_PATH, true);
+                            tx, // X
+                            ty, // Y
+                            state->screen_width  * .80f,
+                            state->screen_width  * .90f,
+                            6,
+                            state->screen_height * .05f,
+                            errorStr, points, &colorScheme[0], VG_FILL_PATH, true);
         }
         else
         {
-            Roundrect(imageX,  imageY, image_width, image_height, 20, 20, numRectPenSize, rectColor, bgColor);
+            Roundrect(imageRect.x,  imageRect.y, imageRect.w, imageRect.h, 20, 20, numRectPenSize, rectColor, bgColor);
             Text_Rollover ( &fontDefs[1], //Topaz font
-                        tx, // X
-                        ty, // Y
-                        state->screen_width  * .80f,
-                        state->screen_width  * .90f,
-                        8,
-                        state->screen_height * .05f,
-                        message, points, &colorScheme[0], VG_FILL_PATH, true);
+                            tx, // X
+                            ty, // Y
+                            state->screen_width  * .80f,
+                            state->screen_width  * .90f,
+                            8,
+                            state->screen_height * .05f,
+                            message, points, &colorScheme[0], VG_FILL_PATH, true);
         }
-                       
-        eglSwapBuffers(state->display,
-                       state->surface);
         if(error)
         {
-            key = readKb();
+            key = readKb_mouse();
             redraw_results(true);
         }
         else
             break;
 
     }
-    while (key != ESC_KEY && key != RTN_KEY);
+    while (key != ESC_KEY &&
+            key != RTN_KEY &&
+            key != JOY_1 &&
+            key != MOUSE_1 &&
+            key != MOUSE_2);
     if(errorStr != NULL)
         free(errorStr);
 }
@@ -909,22 +963,22 @@ void init_big_menu(tMenuState * menu, char * title)
     menu->selPer.wPer = .50f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);
-/*
-    tRectPer rectPer;
-    rectPer.xPer = .88f;
-    rectPer.yPer = .88f;
-    rectPer.wPer = .04f;
-    rectPer.hPer = .04f;
-    init_arrow(menu->upArrow, &rectPer, true);
-    rectPer.yPer = .08f;
-    init_arrow(menu->downArrow, &rectPer, false);    
-*/
+    /*
+        tRectPer rectPer;
+        rectPer.xPer = .88f;
+        rectPer.yPer = .88f;
+        rectPer.wPer = .04f;
+        rectPer.hPer = .04f;
+        init_arrow(menu->upArrow, &rectPer, true);
+        rectPer.yPer = .08f;
+        init_arrow(menu->downArrow, &rectPer, false);
+    */
     menu->upArrowPer.xPer = .88f;
     menu->upArrowPer.yPer = .83f;
-    calc_point_xy(&menu->upArrowPer, &menu->upArrowPos);
+    calc_rect_bounds(&menu->upArrowPer, &menu->upArrowRect);
     menu->downArrowPer.xPer = .88f;
     menu->downArrowPer.yPer = .10f;
-    calc_point_xy(&menu->downArrowPer, &menu->downArrowPos); 
+    calc_rect_bounds(&menu->downArrowPer, &menu->downArrowRect);
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
@@ -956,23 +1010,22 @@ void init_small_menu(tMenuState * menu, char * title)
     menu->selPer.wPer = .35f;
     menu->selPer.hPer = .04f;
     calc_rect_bounds(&menu->selPer, &menu->selRect);
-/*
-    tRectPer rectPer;
-    rectPer.xPer = .45f;
-    rectPer.yPer = .88f;
-    rectPer.wPer = .04f;
-    rectPer.hPer = .04f;
-    init_arrow(menu->upArrow, &rectPer, true);
-    rectPer.yPer = .53f;
-    init_arrow(menu->downArrow, &rectPer, false);
-*/
+    /*
+        tRectPer rectPer;
+        rectPer.xPer = .45f;
+        rectPer.yPer = .88f;
+        rectPer.wPer = .04f;
+        rectPer.hPer = .04f;
+        init_arrow(menu->upArrow, &rectPer, true);
+        rectPer.yPer = .53f;
+        init_arrow(menu->downArrow, &rectPer, false);
+    */
     menu->upArrowPer.xPer = .47f;
     menu->upArrowPer.yPer = .83f;
-    calc_point_xy(&menu->upArrowPer, &menu->upArrowPos);
+    calc_rect_bounds(&menu->upArrowPer, &menu->upArrowRect);
     menu->downArrowPer.xPer = .47f;
     menu->downArrowPer.yPer = .53f;
-    calc_point_xy(&menu->downArrowPer, &menu->downArrowPos);
-    
+    calc_rect_bounds(&menu->downArrowPer, &menu->downArrowRect);
     menu->drawHeader = NULL;
     menu->drawDetail = NULL;
     menu->drawFooter = NULL;
@@ -986,8 +1039,8 @@ void format_menu_header(tMenuState * menu)
     int x;
     for (x = 0; x < AFORMAT_WIDTH; x++)
         textXY((x+1) * (state->screen_width /  (AFORMAT_WIDTH  + 2)),
-                        menu->txtRaster.y + menu->yStep,
-                        supported_formats[0][x], (x>=3)?numPointFontSmall:numPointFontMed, errorColor);
+               menu->txtRaster.y + menu->yStep,
+               supported_formats[0][x], (x>=3)?numPointFontSmall:numPointFontMed, errorColor);
 }
 //------------------------------------------------------------------------------
 void format_menu_detail(tMenuState * menu)
@@ -1011,7 +1064,7 @@ void jskb_menu_detail(tMenuState * menu)
         case 1:
             snprintf(temp, sizeof(temp), "[%d]", jsXAxis);
             descr = temp;
-            break;   
+            break;
         case 2:
             snprintf(temp, sizeof(temp), "[%d]", jsYAxis);
             descr = temp;
@@ -1019,7 +1072,7 @@ void jskb_menu_detail(tMenuState * menu)
         case 3:
             snprintf(temp, sizeof(temp), "[%d]", jsThreshold);
             descr = temp;
-            break;   
+            break;
         case 4:
             snprintf(temp, sizeof(temp), "[%d]", jsInfo);
             descr = temp;
@@ -1027,7 +1080,7 @@ void jskb_menu_detail(tMenuState * menu)
         case 5:
             snprintf(temp, sizeof(temp), "[%d]", jsMenu);
             descr = temp;
-            break;   
+            break;
         case 6:
             snprintf(temp, sizeof(temp), "[%d]", jsSelect);
             descr = temp;
@@ -1036,17 +1089,44 @@ void jskb_menu_detail(tMenuState * menu)
             snprintf(temp, sizeof(temp), "[%d]", jsBack);
             descr = temp;
             break;
+        case 8:
+            descr = mouseEnabled?"[true]":"[false]";
+            break;
+        case 9:
+            descr = mouseDev;
+            break;
+        case 10:
+            descr = jsDev;
+            break;
+        case 11:
+            snprintf(temp, sizeof(temp), "[%d]", numPointerIndex);
+            descr = temp;
+            break;
+        case 12:
+            snprintf(temp, sizeof(temp), "[%d]", numPointerSize);
+            descr = temp;
+            break;
+        case 13:
+            snprintf(temp, sizeof(temp), "[%d]", pointerOffsetXY.x);
+            descr = temp;
+            break;
+        case 14:
+            snprintf(temp, sizeof(temp), "[%d]", pointerOffsetXY.y);
+            descr = temp;
+            break;
+
+
+
+
         }
-        
+
         if(descr != NULL)
             textXY(state->screen_width * .30,
-                 menu->txtRaster.y,
-                 descr,
-                 numPointFontMed, errorColor);
+                   menu->txtRaster.y,
+                   descr,
+                   numPointFontMed, errorColor);
     }
 }
-
-
 //------------------------------------------------------------------------------
 void gui_menu_detail(tMenuState * menu)
 {
@@ -1059,71 +1139,71 @@ void gui_menu_detail(tMenuState * menu)
         case 1:
             descr = videoMenuItems[(int) videoPlayer].description;
             break;
-            
+
         case 2:
             descr = audioMenuItems[(int) soundOutput].description;
             break;
-            
+
         case 3:
             descr = jpegMenuItems[(int) jpegDecoder].description;
-            break;            
+            break;
 
         case 4:
             descr = fontMenu.menuItems[(int) get_font()].description;
-            break;            
+            break;
 
         case 5:
             descr = titleFontMenu.menuItems[(int) get_title_font()].description;
             break;
-            
-        case 6: 
+
+        case 6:
             snprintf(temp, sizeof(temp), "[%d]", numRow);
             descr = temp;
             break;
-   
-        case 7: 
+
+        case 7:
             snprintf(temp, sizeof(temp), "[%d]", numCol);
             descr = temp;
             break;
-             
+
         case 8:
             snprintf(temp, sizeof(temp), "[1/%d]", numThumbWidth);
             descr = temp;
             break;
-        
-        case 9: 
+
+        case 9:
             snprintf(temp, sizeof(temp), "[%d]", numPointFontTiny);
             descr = temp;
             break;
-        
-        case 10: 
+
+        case 10:
             snprintf(temp, sizeof(temp), "[%d]", numPointFontSmall);
             descr = temp;
             break;
-        
-        case 11: 
+
+        case 11:
             snprintf(temp, sizeof(temp), "[%d]", numPointFontMed);
             descr = temp;
             break;
-     
-        case 12: 
+
+        case 12:
             snprintf(temp, sizeof(temp), "[%d]", numPointFontLarge);
             descr = temp;
             break;
 
-        case 13: 
+        case 13:
             snprintf(temp, sizeof(temp), "[%d]", numFontSpacing);
             descr = temp;
             break;
-                
+
         }
-        
+
         if(descr != NULL)
             textXY(state->screen_width * .30,
-                 menu->txtRaster.y,
-                 descr,
-                 numPointFontMed, errorColor);
-    }       
+                   menu->txtRaster.y,
+                   descr,
+                   numPointFontMed, errorColor);
+    }
 }
 //------------------------------------------------------------------------------
 void main_menu_detail(tMenuState * menu)
@@ -1156,18 +1236,18 @@ void main_menu_detail(tMenuState * menu)
         case 2:
             descr = regionMenu.menuItems[regionMenu.selectedItem].description;
             break;
-       
+
         case 3:
             descr = regionMenu.menuItems[regionMenu.selectedItem].key;
             break;
-       
+
         }
 
         if(descr != NULL)
             textXY(state->screen_width * .30,
-                 menu->txtRaster.y,
-                 descr,
-                 numPointFontMed, errorColor);
+                   menu->txtRaster.y,
+                   descr,
+                   numPointFontMed, errorColor);
         if(videoFormat != NULL)
             free(videoFormat);
     }
@@ -1176,7 +1256,7 @@ void main_menu_detail(tMenuState * menu)
 bool set_int(int min, int max, int offset, int * value)
 {
     int oldValue = *value;
-    
+
     if(offset > 0)
     {
         if (*value + offset <= max)
@@ -1199,7 +1279,7 @@ bool set_int(int min, int max, int offset, int * value)
 //------------------------------------------------------------------------------
 #define REDRAW_GUI_KEYPRESS {redraw_results(false);setBGImage();dumpKb();}
 void gui_menu_keypress(tMenuState * menu, int key)
-{ 
+{
     if(key == CUR_R || key == CUR_L)
     {
         int offset = 1;
@@ -1207,68 +1287,115 @@ void gui_menu_keypress(tMenuState * menu, int key)
             offset = -1;
         switch(menu->menuItems[menu->selectedItem].special)
         {
-            case 6: if(set_int(2, 15, offset, &numRow))
-                    numResults = numRow * numCol;
-                    REDRAW_GUI_KEYPRESS; 
-                break;
-            
-            case 7: if(set_int(1, 4, offset, &numCol))
-                    numResults = numRow * numCol;
-                    REDRAW_GUI_KEYPRESS; 
-                break;
-                
-            case 8: if(set_int(3, 20, offset * -1, &numThumbWidth))
-                    REDRAW_GUI_KEYPRESS; 
-                break;
-            case 9 : if(set_int(5, 15, offset, &numPointFontTiny))
-                    REDRAW_GUI_KEYPRESS; 
-                break;
-            case 10: if(set_int(5, 20, offset, &numPointFontSmall))
-                    REDRAW_GUI_KEYPRESS; 
-                break;
-            case 11: if(set_int(10, 40, offset, &numPointFontMed))
-                    REDRAW_GUI_KEYPRESS; 
-                break;
-            case 12: set_int(15, 50, offset, &numPointFontLarge);
-                break;
-            case 13: set_int(15, 50, offset, &numFontSpacing);
-                     REDRAW_GUI_KEYPRESS;
-                break;
+        case 6:
+            if(set_int(2, 15, offset, &numRow))
+                numResults = numRow * numCol;
+            REDRAW_GUI_KEYPRESS;
+            break;
+
+        case 7:
+            if(set_int(1, 4, offset, &numCol))
+                numResults = numRow * numCol;
+            REDRAW_GUI_KEYPRESS;
+            break;
+
+        case 8:
+            if(set_int(3, 20, offset * -1, &numThumbWidth))
+                REDRAW_GUI_KEYPRESS;
+            break;
+        case 9 :
+            if(set_int(5, 15, offset, &numPointFontTiny))
+                REDRAW_GUI_KEYPRESS;
+            break;
+        case 10:
+            if(set_int(5, 20, offset, &numPointFontSmall))
+                REDRAW_GUI_KEYPRESS;
+            break;
+        case 11:
+            if(set_int(10, 40, offset, &numPointFontMed))
+                REDRAW_GUI_KEYPRESS;
+            break;
+        case 12:
+            set_int(15, 50, offset, &numPointFontLarge);
+            break;
+        case 13:
+            set_int(15, 50, offset, &numFontSpacing);
+            REDRAW_GUI_KEYPRESS;
+            break;
         }
     }
 }
 //------------------------------------------------------------------------------
 void jskb_menu_keypress(tMenuState * menu, int key)
-{ 
+{
     if(key == CUR_R || key == CUR_L)
     {
         int offset = 1;
-        
+
         if (strcmp(menu->menuItems[menu->selectedItem].key, "TH") == 0)
             offset = 1000;
-            
+
         if(key == CUR_L)
             offset *= -1;
-        
+
         switch(menu->menuItems[menu->selectedItem].special)
         {
-            case 1: set_int(0,    15,    offset, &jsXAxis    );break;
-            case 2: set_int(0,    15,    offset, &jsYAxis    );break;
-            case 3: set_int(1, 32767,    offset, &jsThreshold);break;
-            case 4: set_int(0,    15,    offset, &jsInfo     );break;
-            case 5: set_int(0,    15,    offset, &jsMenu     );break;
-            case 6: set_int(0,    15,    offset, &jsSelect   );break;
-            case 7: set_int(0,    15,    offset, &jsBack     );break;
+        case 1:
+            set_int(0,    15,    offset, &jsXAxis    );
+            break;
+        case 2:
+            set_int(0,    15,    offset, &jsYAxis    );
+            break;
+        case 3:
+            set_int(1, 32767,    offset, &jsThreshold);
+            break;
+        case 4:
+            set_int(0,    15,    offset, &jsInfo     );
+            break;
+        case 5:
+            set_int(0,    15,    offset, &jsMenu     );
+            break;
+        case 6:
+            set_int(0,    15,    offset, &jsSelect   );
+            break;
+        case 7:
+            set_int(0,    15,    offset, &jsBack     );
+            break;
+        case 8:
+            //mouseEnabled = !mouseEnabled;
+            break;
+        case 9:
+            set_int(0,    5,    offset, &numMouseIndex);
+            open_mouse();
+            break;
+        case 10:
+            set_int(0,    5,    offset, &numJoystickIndex);
+            open_joystick();
+            break;
+        case 11:
+            set_int(0, 255,     offset, &numPointerIndex);
+            break;
+        case 12:
+            set_int(10, 100,    offset, &numPointerSize);
+            break;
+        case 13:
+            set_int(-50, 50,     offset, &pointerOffsetXY.x);
+            break;
+        case 14:
+            set_int(-50, 50,    offset, &pointerOffsetXY.y);
+            break;
+
+
         };
     }
 }
 //------------------------------------------------------------------------------
 void font_menu_detail(tMenuState * menu)
 {
-     Text(&fontDefs[menu->selectedItem], state->screen_width * .25,
-             menu->txtRaster.y,
-             "abcdefgABCDEFG01234...",
-             numPointFontMed, errorColor, VG_FILL_PATH);
+    Text(&fontDefs[menu->selectedItem], state->screen_width * .25,
+         menu->txtRaster.y,
+         "abcdefgABCDEFG01234...",
+         numPointFontMed, errorColor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
 void init_format_menu(tMenuState * menu)
@@ -1309,6 +1436,12 @@ int show_menu(tMenuState * menu)
     int scrollIndexSave   = menu->scrollIndex;
     int selectedIndexSave = menu->selectedIndex;
     int key;
+    int clickIndex;
+    menu->downArrowRect.w = vgGetParameteri(downArrowImage, VG_IMAGE_WIDTH);
+    menu->downArrowRect.h = vgGetParameteri(downArrowImage, VG_IMAGE_HEIGHT);
+    menu->upArrowRect.w = vgGetParameteri(upArrowImage, VG_IMAGE_WIDTH);
+    menu->upArrowRect.h = vgGetParameteri(upArrowImage, VG_IMAGE_HEIGHT);
+
     do
     {
         drawBGImage();
@@ -1331,13 +1464,13 @@ int show_menu(tMenuState * menu)
             {
 
                 menu->selectedItem = y + menu->scrollIndex;
-               
+
                 textXY(menu->txtRaster.x,
-                     menu->txtRaster.y,
-                     currentItem->description,
-                     numPointFontMed,
-                     textColor);
-                
+                       menu->txtRaster.y,
+                       currentItem->description,
+                       numPointFontMed,
+                       textColor);
+
                 if (menu->drawDetail != NULL)
                     menu->drawDetail(menu);
                 y++;
@@ -1364,35 +1497,70 @@ int show_menu(tMenuState * menu)
 
         if (bMoreItems)
         {
-            vgSetPixels(menu->downArrowPos.x, menu->downArrowPos.y, 
+            vgSetPixels(menu->downArrowRect.x, menu->downArrowRect.y,
                         downArrowImage, 0,0,
-                        vgGetParameteri(downArrowImage, VG_IMAGE_WIDTH),
-                        vgGetParameteri(downArrowImage, VG_IMAGE_HEIGHT));
+                        menu->downArrowRect.w, menu->downArrowRect.h);
             //Poly(menu->downArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->scrollIndex > 0)
         {
-             vgSetPixels(menu->upArrowPos.x, menu->upArrowPos.y, 
+            vgSetPixels(menu->upArrowRect.x, menu->upArrowRect.y,
                         upArrowImage, 0,0,
-                        vgGetParameteri(upArrowImage, VG_IMAGE_WIDTH),
-                        vgGetParameteri(upArrowImage, VG_IMAGE_HEIGHT));
+                        menu->downArrowRect.w, menu->downArrowRect.h);
             //Poly(menu->upArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
         if (menu->drawFooter != NULL)
             menu->drawFooter(menu);
-        eglSwapBuffers(state->display, state->surface);
 
 
-        key = toupper(readKb());
+        key = toupper(readKb_mouse());
         if(menu->keyPress != NULL)
             menu->keyPress(menu, key);
 
         switch (key)
         {
 
+        case MOUSE_1:
+            if(point_in_rect(&clickXY, &menu->winRect))
+            {
+                if(point_in_rect(&clickXY, &menu->upArrowRect))
+                {
+                    goto LCUR_UP;
+                }
+                else if(point_in_rect(&clickXY, &menu->downArrowRect))
+                    goto LCUR_DWN;
+
+                clickIndex = (state->screen_height - clickXY.y - menu->txtOffset.y) / menu->yStep;
+                //printf("Got click (%d, %d):\n", clickXY.x, clickXY.y);
+                //printf("menu->menu->yStep = %d\n", menu->yStep);
+                //printf("menu->txtOffset.y = %d\n", menu->txtOffset.y);
+                //printf("clickIndex = %d\n", clickIndex);
+                if (clickIndex < menu->maxItems && clickIndex >= 0)
+                {
+                    if (clickIndex < menu->selectedIndex)
+                    {
+                        menu->selectedIndex = clickIndex;
+                    }
+                    else if (clickIndex > menu->selectedIndex)
+                    {
+                        while(clickIndex > menu->selectedIndex &&
+                                (&menu->menuItems[menu->selectedIndex + 1].key != NULL &&
+                                 &menu->menuItems[menu->selectedIndex + 1].description != NULL))
+                        {
+                            menu->selectedIndex++;
+                        };
+                    }
+                    else if (clickIndex == menu->selectedIndex)
+                        key = RTN_KEY;
+                }
+            }
+            else
+                key = ESC_KEY;
+            break;
         case CUR_UP:
+LCUR_UP:
             if (menu->selectedIndex > 0)
                 menu->selectedIndex--;
             else if(menu->scrollIndex > 0)
@@ -1400,6 +1568,7 @@ int show_menu(tMenuState * menu)
             break;
 
         case CUR_DWN:
+LCUR_DWN:
             if (menu->selectedIndex < menu->maxItems -1)
             {
                 currentItem = &menu->menuItems[menu->selectedIndex + menu->scrollIndex + 1];
@@ -1412,9 +1581,9 @@ int show_menu(tMenuState * menu)
             break;
         }
     }
-    
-    while (key != 'Q' && key != RTN_KEY && key != ESC_KEY);
-    if(key == 'Q' || key == ESC_KEY)
+
+    while (key != RTN_KEY && key != JOY_1 && key != ESC_KEY && key != MOUSE_2);
+    if(key == ESC_KEY || key == MOUSE_2)
     {
         //restore previous value
         menu->scrollIndex = scrollIndexSave;
@@ -1474,8 +1643,8 @@ VGImage load_jpeg(char * url, unsigned int width, unsigned int height)
 }
 
 //------------------------------------------------------------------------------
-VGImage load_jpeg2(char * url, unsigned int width, unsigned int height, 
-    unsigned char ** downloadData, unsigned char ** imageData, unsigned int * imageDataSize)
+VGImage load_jpeg2(char * url, unsigned int width, unsigned int height,
+                   unsigned char ** downloadData, unsigned char ** imageData, unsigned int * imageDataSize)
 {
     VGImage vgImage  = 0;
     char * server    = NULL;
@@ -1498,7 +1667,53 @@ VGImage load_jpeg2(char * url, unsigned int width, unsigned int height,
     if(freeMe != NULL)free(freeMe);
     return vgImage;
 }
+//------------------------------------------------------------------------------
+bool point_in_rect(tPointXY * point, tRectBounds * rect)
+{
+    if ((point->x >= rect->x && point->x <= (rect->x + rect->w)) &&
+            (point->y >= rect->y && point->y <= (rect->y + rect->h)))
+        return true;
+    return false;
+}
+//------------------------------------------------------------------------------
+int mouse_select(tPointXY * point)
+{
+    tPointXY    offset;
+    tPointXY    step;
+    tRectBounds rbTest;
+    int numRectPenSize2 = numRectPenSize  * 2;
+    offset.x = (int) (state->screen_width * .05f);
+    offset.y = (int) (state->screen_height * numFontSpacing / 1000.0f);
+    step.x   = (state->screen_width  - (offset.x * 2)) / numCol;
+    step.y   = (state->screen_height / numRow);
+    rbTest.h = step.y - numRectPenSize2;
+    rbTest.w = step.x - numRectPenSize2;
+    rbTest.x = offset.x;
+    struct result_rec * temp = first_rec;
+    int rowCount = 0;
+    while (temp != NULL)
+    {
+        rbTest.y   = state->screen_height - ((rowCount+1) * step.y);
+        if(point_in_rect(point, &rbTest))
+        {
+            selected_rec = temp;
+            return 0;
+        }
 
+        temp = temp->next;
+        if(++rowCount == numRow)
+        {
+            rowCount = 0;
+            rbTest.x   += step.x;
+        }
+    }
+    if (point->x < offset.x)
+        return -1;
+    else if (point->x > offset.x + rbTest.w * numCol)
+        return 1;
+    else
+        return 0;
+}
 //------------------------------------------------------------------------------
 void redraw_results(bool swap)
 {
@@ -1507,9 +1722,9 @@ void redraw_results(bool swap)
     tRectBounds rbMain;
     tRectBounds rbPic;
     tRectBounds rbJpg;
-    tRectBounds rbTxt;    
+    tRectBounds rbTxt;
     int numRectPenSize2 = numRectPenSize  * 2;
-    int numRectPenSize5 = numRectPenSize  * 5;   
+    int numRectPenSize5 = numRectPenSize  * 5;
     offset.x = (int) (state->screen_width * .05f);
     offset.y = (int) (state->screen_height * numFontSpacing / 1000.0f);
     step.x   = (state->screen_width  - (offset.x * 2)) / numCol;
@@ -1521,26 +1736,26 @@ void redraw_results(bool swap)
     rbPic.w  = state->screen_width / numThumbWidth;
     rbPic.h  = rbMain.h;
     rbJpg.x  = rbPic.x + numRectPenSize;
-    rbJpg.w  = rbPic.w - numRectPenSize2; 
-    rbJpg.h  = rbPic.h - numRectPenSize2;  
+    rbJpg.w  = rbPic.w - numRectPenSize2;
+    rbJpg.h  = rbPic.h - numRectPenSize2;
     rbTxt.w  = rbMain.w - rbPic.w  - numRectPenSize2;
     rbTxt.h  = rbMain.h - numRectPenSize2;
-    rbTxt.x  = rbMain.x + rbPic.w  + numRectPenSize;    
+    rbTxt.x  = rbMain.x + rbPic.w  + numRectPenSize;
     int txtBrk = rbTxt.w * .85f;
     int maxLines = rbTxt.h / offset.y;
     int rowCount = 0;
     int count = 0;
     clear_screen(false);
-    struct result_rec * temp = first_rec;    
+    struct result_rec * temp = first_rec;
     while (temp != NULL)
     {
         if (selected_rec == NULL)
             selected_rec = temp;
- 
+
         rbMain.y   = state->screen_height - ((rowCount+1) * step.y);
         rbPic.y    = rbJpg.y = rbMain.y;
         rbJpg.y   += numRectPenSize;
-        rbTxt.y    = rbMain.y + step.y - numRectPenSize5; 
+        rbTxt.y    = rbMain.y + step.y - numRectPenSize5;
         if (temp == selected_rec)
         {
             Roundrect(rbMain.x, rbMain.y, rbMain.w, rbMain.h, 20, 20, numRectPenSize, rectColor, selectedColor);
@@ -1561,8 +1776,8 @@ void redraw_results(bool swap)
             if(temp->image == 0)
                 temp->image = load_jpeg(temp->thumbSmall, rbJpg.w, rbJpg.h);
             vgSetPixels(rbJpg.x, rbJpg.y, temp->image, 0,0, rbJpg.w, rbJpg.h);
-                      //  vgGetParameteri(temp->image, VG_IMAGE_WIDTH),
-                      //  vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
+            //  vgGetParameteri(temp->image, VG_IMAGE_WIDTH),
+            //  vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
         }
         temp = temp->next;
         if(++rowCount == numRow)
@@ -1621,42 +1836,61 @@ void redraw_results(bool swap)
 //------------------------------------------------------------------------------
 bool yes_no_dialog(char * prompt, bool val)
 {
-    char formatNo[]  = "\n%s\n\n ~7yes ~5[no]";
-    char formatYes[] = "\n%s\n\n ~5[yes] ~7no";
+    char formatNo[]  = "\n%s\n\n ~7yes      ~5[no]";
+    char formatYes[] = "\n%s\n\n ~5[yes]      ~7no";
     size_t size = strlen(formatYes) + strlen(prompt);
     char * temp = malloc(size);
     int key;
+    bool old;
     do
-    {	
+    {
         drawBGImage();
         if(val)
             snprintf(temp, size, formatYes, prompt);
         else
             snprintf(temp, size, formatNo, prompt);
-    
+
         show_message(temp, false, numPointFontLarge);
-        key = toupper(readKb());
+        key = toupper(readKb_mouse());
         switch(key)
         {
-            case 'Y':
-                free(temp);
-                return true;
-            case 'N':
-                free(temp);
-                return false;
-            case CUR_L:
-                val = true;
-                break;
-            case CUR_R:
-                val = false;
-                break;
-            case RTN_KEY:
-                free(temp);
-                return val;
+        case MOUSE_1:
+            if(point_in_rect(&clickXY, &imageRect))
+            {
+                old = val;
+                if (clickXY.x - imageRect.x > imageRect.w / 2)
+                    val = false;
+                else
+                    val = true;
+                if(val == old)
+                    key = RTN_KEY;
+            }
+            break;
+        case 'Y':
+            val = true;
+            key = RTN_KEY;
+            break;
+        case 'N':
+            val = true;
+            key = RTN_KEY;
+            break;
+        case CUR_L:
+            val = true;
+            break;
+        case CUR_R:
+            val = false;
+            break;
+        case ESC_KEY:
+            val = false;
+            break;
+        case JOY_1:
+        case RTN_KEY:
+            key = RTN_KEY;
+            break;
         }
-    } while (key != ESC_KEY);
+    }
+    while (key != ESC_KEY && key != RTN_KEY);
     free(temp);
-    return false;
+    return val;
 }
-                
-                
+

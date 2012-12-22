@@ -42,7 +42,7 @@ struct wwvi_js_event {
 	int stick_y;
 };
 
-extern int open_joystick(char *joystick_device);
+extern int open_joystick();
 extern bool read_joystick_event(struct js_event *jse);
 extern void close_joystick();
 

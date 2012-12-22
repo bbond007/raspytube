@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "kbjs.h"
 #include "gfxlib.h"
 #include "ui.h"
+#include "kbjs.h"
 #include "term.h"
 #include "boing.h"
 

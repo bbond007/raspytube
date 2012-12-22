@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 17
+#define VERSION_NUMBER 6502
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -30,6 +30,7 @@ typedef struct tConfigRec
       int numRow;
       int numCol;
       int numFormat;
+      bool mouseEnabled;
       int jsXAxis;
       int jsYAxis;
       int jsThreshold;
@@ -37,6 +38,11 @@ typedef struct tConfigRec
       int jsBack;
       int jsInfo;
       int jsMenu;
+      int numMouseIndex;
+      int numJoystickIndex;
+      int numPointerIndex;
+      int numPointerSize;
+      tPointXY pointerOffsetXY;
       int numVersion;
 } tConfigRec;
 
@@ -105,6 +111,13 @@ bool loadConfig()
      jsBack		     	     = configRec.jsBack;
      jsInfo		     	     = configRec.jsInfo;
      jsMenu		     	     = configRec.jsMenu;
+     mouseEnabled	             = configRec.mouseEnabled;
+     numJoystickIndex                = configRec.numJoystickIndex;
+     numMouseIndex                   = configRec.numMouseIndex;
+     numPointerIndex 		     = configRec.numPointerIndex;
+     numPointerSize		     = configRec.numPointerSize;     
+     pointerOffsetXY.x 		     = configRec.pointerOffsetXY.x;
+     memcpy(&pointerOffsetXY, &configRec.pointerOffsetXY, sizeof(tPointXY));
      set_font(configRec.font);
      set_title_font(configRec.titleFont);
           
@@ -135,6 +148,12 @@ void saveConfig()
      configRec.jsBack	     	     = jsBack;
      configRec.jsInfo	     	     = jsInfo;
      configRec.jsMenu	 	     = jsMenu;
+     configRec.mouseEnabled	     = mouseEnabled;
+     configRec.numJoystickIndex      = numJoystickIndex;
+     configRec.numMouseIndex         = numMouseIndex;
+     configRec.numPointerIndex 	     = numPointerIndex; 
+     configRec.numPointerSize        = numPointerSize;
+     memcpy(&configRec.pointerOffsetXY, &pointerOffsetXY, sizeof(tPointXY));
      configRec.numVersion            = VERSION_NUMBER;
      
      FILE * cfgFile;      
@@ -159,10 +178,10 @@ void saveConfig()
           return;
      }
      
-     message = setMessage("Config file saved...\n\n~5press [ESC]", fileName);
+     message = setMessage("Config file saved...\n\n~5press any key...", fileName);
      free(fileName);
      show_message(message,  false, ERROR_POINT);
      free(message);
      dumpKb();
-     readKb();
+     readKb_mouse();
 }

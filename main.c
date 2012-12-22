@@ -60,7 +60,8 @@ static void do_cur_up();
 static void do_cur_down();
 static void do_cur_right(char * searchStr);
 static void do_cur_left(char * searchStr);
-
+static void do_more(char * searchStr);
+static void do_less(char * searchStr);
 #define USERAGENT "RASPITUBE 1.0"
 #define PORT 80
 #define HOST "gdata.youtube.com"
@@ -73,8 +74,10 @@ tMenuState titleFontMenu;
 tMenuState formatMenu;
 tMenuState jskbMenu;
 
+static void do_main_menu(char * searchStr, char * userStr);
 static void do_gui_menu();
 static void do_jskb_menu();
+static void do_info_menu(char * searchStr);
 static void do_change_audio_dev();
 static void do_change_jpeg_dec();
 static void do_change_video_player();
@@ -96,7 +99,7 @@ int main(int argc, char **argv)
     init_big_menu(&regionMenu, "Select region:");
     init_format_menu(&formatMenu);
     init_small_menu(&guiMenu, "GUI menu:");
-    init_small_menu(&jskbMenu, "JS/GP/KB Menu");
+    init_small_menu(&jskbMenu, "Input Menu");
     jskbMenu.menuItems = jskbMenuItems;
     jskbMenu.drawDetail = jskb_menu_detail;
     jskbMenu.keyPress = jskb_menu_keypress;
@@ -106,13 +109,15 @@ int main(int argc, char **argv)
     guiMenu.menuItems = guiMenuItems;
     guiMenu.drawDetail = gui_menu_detail;
     guiMenu.keyPress = gui_menu_keypress;
-    set_menu_value(&regionMenu,0);    
+    set_menu_value(&regionMenu,0);
     clear_output();
-    redraw_results(true);
+    redraw_results(false);
     char searchStr [100] = "";
     char userStr[100] = "";
     char txt[200];
     bool quit = false;
+    int result;
+    struct result_rec * save_rec;
 
     if(argc > 1)
     {
@@ -126,12 +131,32 @@ int main(int argc, char **argv)
         youtube_search("raspberry+pi");
 
     int key;
-    int result;
     do
     {
-        key = toupper(readKb()); //wait for keypress
+        redraw_results(false);
+        key = toupper(readKb_mouse()); //wait for keypress
         switch (key)
         {
+
+        case MOUSE_1:
+            save_rec = selected_rec;
+            switch(mouse_select(&clickXY))
+            {
+            case -1:
+                if(state->screen_height * 0.92f < clickXY.y)
+                    do_main_menu(searchStr, userStr);
+                else
+                    do_less(PICK_SEARCH_STR);
+                break;
+            case 1 :
+                do_more(PICK_SEARCH_STR);
+                break;
+            case 0 :
+                if(save_rec == selected_rec)
+                    do_info_menu(PICK_SEARCH_STR);
+                break;
+            }
+            break;
 
         case CUR_UP :
             do_cur_up();
@@ -151,82 +176,23 @@ int main(int argc, char **argv)
 
         case 'H' :
             do_change_audio_dev();
-            redraw_results(true);
             break;
 
-        case 'J' :  
+        case 'J' :
             do_joystick_test();
-            redraw_results(true);
             break;
-            
+
         case 'T' :
             show_message("TEST-->\n~0|0:~0X~0|1:~1X~0|2:~2X~0|3:~3X~0|4:~4X~0|5:~5X~0|6:~6X~0|7:~7X\n~5press [ESC]", 0xDEADBEEF, ERROR_POINT);
             /*
-            redraw_results(false);
             setBGImage();
             result = input_string_osk("TEST OSK:", searchStr, 50);
             redraw_results(true);
             */
             break;
-            
+
         case 'M':
-            redraw_results(false);
-            setBGImage();
-            do
-            {
-                result =  show_menu(&mainMenu);
-                if(result > -1)
-                {
-                    switch(result)
-                    {
-                    case 1:
-                        show_format_menu(&formatMenu);
-                        break;
-                    case 2:
-                        do_search(searchStr);
-                        break;
-                    case 3:
-                    case 4:
-                        do_user_search(userStr);
-                        break;
-                    case 5:
-                        show_menu(&regionMenu);
-                        break;
-                    case 6:
-                    case 7:
-                    case 8:
-                    case 9:
-                    case 10:
-                    case 11:
-                    case 12:
-                    case 13:
-                        numStart = 1;
-                        clear_output();
-                        clear_screen(true);
-                        youtube_search(NULL);
-                        if (selected_rec == NULL)
-                            show_message("Region search returned 0 results!", 1, ERROR_POINT);
-                        break;
-                //  case 14:
-                //  case 15:
-                //      break;
-                    case 16:
-                        do_gui_menu();
-                        break;
-                    default:
-                        snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n~5**UNDER CONSTRUCTION**",
-                                result,
-                                mainMenuItems[result].key,
-                                mainMenuItems[result].description);
-                        show_message(txt, 0x08675309, ERROR_POINT);
-                        break;
-                    }
-                }
-            }
-            while (result !=  -1 && 
-                   !(result >= 2 && result <= 4) && 
-                   !(result >= 6 && result <= 13));
-            redraw_results(true);
+            do_main_menu(searchStr, userStr);
             break;
 
         case 'R':
@@ -236,17 +202,15 @@ int main(int argc, char **argv)
             if(result > -1)
             {
                 snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s",
-                        result,
-                        regionMenuItems[result].key,
-                        regionMenuItems[result].description);
+                         result,
+                         regionMenuItems[result].key,
+                         regionMenuItems[result].description);
                 show_message(txt, 3, ERROR_POINT);
             }
-            redraw_results(true);
             break;
 
         case 'X' :
             do_change_jpeg_dec();
-            redraw_results(true);
             break;
 
         case 'F' :
@@ -258,50 +222,10 @@ int main(int argc, char **argv)
 
         case 'P':
             do_change_video_player();
-            redraw_results(true);
             break;
 
         case 'I':
-            if(selected_rec != NULL)
-            {
-                do
-                {
-                    result = show_selection_info(selected_rec);
-                    switch(result)
-                    {
-                    
-                    case 'F':
-                        redraw_results(false);
-                        setBGImage();
-                        show_format_menu(&formatMenu);
-                        break;
-                    case 'I': 
-                        redraw_results(false);
-                        setBGImage();
-                        if(selected_rec != NULL && selected_rec->url != NULL)
-                            if(yes_no_dialog("Download?", true))
-                                do_download(selected_rec->url, selected_rec->title);
-                        break;
-                    case CUR_L :
-                        do_cur_left(PICK_SEARCH_STR);
-                        break;
-                    case CUR_R:
-                        do_cur_right(PICK_SEARCH_STR);
-                        break;
-                    case CUR_UP :
-                        do_cur_up();
-                        break;
-                    case CUR_DWN:
-                        do_cur_down();
-                        break;
-                    case RTN_KEY:
-                        if(selected_rec != NULL && selected_rec->url != NULL)
-                            play_video(selected_rec->url);
-                        break;
-                    }
-                }
-                while (result != ESC_KEY);
-            }
+            do_info_menu(PICK_SEARCH_STR);
             break;
 
         case 'N': //new search -> fall through to 'S'
@@ -311,10 +235,11 @@ int main(int argc, char **argv)
             redraw_results(false);
             setBGImage();
             mainMenu.scrollIndex   = 0;
-            mainMenu.selectedIndex = mainMenu.selectedItem = 2; 
+            mainMenu.selectedIndex = mainMenu.selectedItem = 2;
             do_search(searchStr);
             break;
 
+        case JOY_1:
         case RTN_KEY:
             if(selected_rec != NULL)
             {
@@ -325,14 +250,14 @@ int main(int argc, char **argv)
             }
             break;
 
+        case MOUSE_2:
         case ESC_KEY:
             redraw_results(false);
             setBGImage();
             quit = yes_no_dialog("Quit?", false);
             if(!quit)
-                redraw_results(true);
-            break;
-            
+                break;
+
         default :
             break;
         }
@@ -363,29 +288,92 @@ static void do_download(char * url, char * title)
     if(title != NULL)
         term_put_str(&ts, title);
     term_put_str(&ts, "\n");
-    term_put_str(&ts, url);    
+    term_put_str(&ts, url);
     term_set_color(&ts, 0);
     term_put_str(&ts, "\n");
-    term_show(&ts, true); 
+    term_show(&ts, true);
     if(server != NULL && page != NULL)
     {
         if (numFormat > 0)
             snprintf(request_format, sizeof(request_format), "-f%s", supported_formats[numFormat+1][0]);
         char youtube_dl_format[] = "youtube-dl -t %s http://%s/%s";
-        
+
         size_t stCommand = strlen(server) +
                            strlen(page) +
                            strlen(request_format) +
                            strlen(youtube_dl_format);
         char * youtube_dl_command   = malloc(stCommand);
         snprintf(youtube_dl_command, stCommand, youtube_dl_format, request_format, server, page);
-        term_command(&ts, youtube_dl_command);     
+        term_command(&ts, youtube_dl_command);
         free(youtube_dl_command);
     }
     term_free(&ts);
     free(freeMe);
 }
 
+//------------------------------------------------------------------------------
+static void do_main_menu(char * searchStr, char * userStr)
+{
+    int result;
+    redraw_results(false);
+    char txt[100];
+    setBGImage();
+    do
+    {
+        result =  show_menu(&mainMenu);
+        if(result > -1)
+        {
+            switch(result)
+            {
+            case 1:
+                show_format_menu(&formatMenu);
+                break;
+            case 2:
+                do_search(searchStr);
+                break;
+            case 3:
+            case 4:
+                do_user_search(userStr);
+                break;
+            case 5:
+                show_menu(&regionMenu);
+                break;
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+                numStart = 1;
+                clear_output();
+                clear_screen(true);
+                youtube_search(NULL);
+                if (selected_rec == NULL)
+                    show_message("Region search returned 0 results!", 1, ERROR_POINT);
+                break;
+                //  case 14:
+                //  case 15:
+                //      break;
+            case 16:
+                do_gui_menu();
+                break;
+            default:
+                snprintf(txt, sizeof(txt), "item #%d\nkey->%s\ndescription->%s\n~5**UNDER CONSTRUCTION**",
+                         result,
+                         mainMenuItems[result].key,
+                         mainMenuItems[result].description);
+                show_message(txt, 0x08675309, ERROR_POINT);
+                break;
+            }
+        }
+    }
+    while (result !=  -1 &&
+            !(result >= 2 && result <= 4) &&
+            !(result >= 6 && result <= 13));
+
+}
 //------------------------------------------------------------------------------
 static void do_jskb_menu()
 {
@@ -395,11 +383,14 @@ static void do_jskb_menu()
         result = show_menu(&jskbMenu);
         switch(result)
         {
-            case 0:
-                break;
+        case 0:
+            break;
+            
+        case 7: mouseEnabled = !mouseEnabled;
+        break;
         }
-        
-    }while (result != -1);   
+    }
+    while (result != -1);
 }
 
 //------------------------------------------------------------------------------
@@ -412,49 +403,96 @@ static void do_gui_menu()
         result = show_menu(&guiMenu);
         switch(result)
         {
-            case 0:
-                do_change_video_player();
-                break;
-            case 1:
-                do_change_audio_dev();
-                break;
-            case 2:
-                do_change_jpeg_dec();
-                break;
-            case 3:
-                resultFont = show_menu(&fontMenu);     
-                if(resultFont != -1)
-                {
-                     set_font((int) resultFont);
-                     redraw_results(false);
-                     setBGImage();
-                }
-                break;
-            case 4:
-                resultFont = show_menu(&titleFontMenu);     
-                if(resultFont != -1)
-                {
-                     set_title_font((int) resultFont);
-                     redraw_results(false);
-                     setBGImage();
-                }
-               break;
-            case 13:
-               do_jskb_menu();
-               break;
-                
-            case 14:
-                saveConfig();
-                break;
+        case 0:
+            do_change_video_player();
+            break;
+        case 1:
+            do_change_audio_dev();
+            break;
+        case 2:
+            do_change_jpeg_dec();
+            break;
+        case 3:
+            resultFont = show_menu(&fontMenu);
+            if(resultFont != -1)
+            {
+                set_font((int) resultFont);
+                redraw_results(false);
+                setBGImage();
+            }
+            break;
+        case 4:
+            resultFont = show_menu(&titleFontMenu);
+            if(resultFont != -1)
+            {
+                set_title_font((int) resultFont);
+                redraw_results(false);
+                setBGImage();
+            }
+            break;
+        case 13:
+            do_jskb_menu();
+            break;
+
+        case 14:
+            saveConfig();
+            break;
         }
-    }while (result != -1);
+    }
+    while (result != -1);
 }
 
+//------------------------------------------------------------------------------
+static void do_info_menu(char * searchStr)
+{
+    int result;
+    if(selected_rec != NULL)
+    {
+        do
+        {
+            result = show_selection_info(selected_rec);
+            switch(result)
+            {
+
+            case 'F':
+                redraw_results(false);
+                setBGImage();
+                show_format_menu(&formatMenu);
+                break;
+            case 'I':
+                redraw_results(false);
+                setBGImage();
+                if(selected_rec != NULL && selected_rec->url != NULL)
+                    if(yes_no_dialog("Download?", true))
+                        do_download(selected_rec->url, selected_rec->title);
+                break;
+            case CUR_L :
+                do_cur_left(searchStr);
+                break;
+            case CUR_R:
+                do_cur_right(searchStr);
+                break;
+            case CUR_UP :
+                do_cur_up();
+                break;
+            case CUR_DWN:
+                do_cur_down();
+                break;
+            case JOY_1:
+            case RTN_KEY:
+                if(selected_rec != NULL && selected_rec->url != NULL)
+                    play_video(selected_rec->url);
+                break;
+            }
+        }
+        while (result != ESC_KEY);
+    }
+}
 //------------------------------------------------------------------------------
 static bool try_move(int step, bool foward)
 {
     int i;
-    if(selected_rec == NULL) 
+    if(selected_rec == NULL)
         return false;
     struct result_rec * temp_rec = selected_rec;
     for (i=0; i < step; i++)
@@ -467,7 +505,7 @@ static bool try_move(int step, bool foward)
             return false;
     }
     selected_rec = temp_rec;
-    return true; 
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -479,8 +517,6 @@ static void do_cur_up()
             selected_rec = selected_rec->prev;
         else
             selected_rec = last_rec;
-
-        redraw_results(true);
     }
 }
 
@@ -493,71 +529,72 @@ static void do_cur_down()
             selected_rec = selected_rec->next;
         else
             selected_rec = first_rec;
-        redraw_results(true);
     }
 }
 
 //------------------------------------------------------------------------------
+static void do_more(char * searchStr)
+{
+    if(numStart < 500)
+    {
+        numStart += numResults;
+        clear_output();
+        clear_screen(true);
+        youtube_search(searchStr);
+    }
+}
+//------------------------------------------------------------------------------
+static void do_less(char * searchStr)
+{
+    if (numStart > 1)
+    {
+        numStart -= numResults;
+        if(numStart < 1)
+            numStart = 1;
+        clear_output();
+        clear_screen(true);
+        youtube_search(searchStr);
+    }
+}
+//------------------------------------------------------------------------------
 static void do_cur_right(char * searchStr)
 {
-    if(try_move(numRow, true))
-         redraw_results(true);
-    else
-    {  
-        if(numStart < 500)
-        {
-             numStart += numResults;
-             clear_output();
-             clear_screen(true);
-             youtube_search(searchStr);
-        }
-    }
+    if(!try_move(numRow, true))
+        do_more(searchStr);
 }
 
 //------------------------------------------------------------------------------
 static void do_cur_left(char * searchStr)
 {
-    if(try_move(numRow, false))
-        redraw_results(true);
-    else
-    {
-        if (numStart > 1)
-        {
-             numStart -= numResults;
-             if(numStart < 1)
-                 numStart = 1;
-             clear_output();
-             clear_screen(true);
-             youtube_search(searchStr);
-        }
-    }
+    if(!try_move(numRow, false))
+        do_less(searchStr);
 }
 
 //------------------------------------------------------------------------------
 static void do_change_audio_dev()
 {
     if (soundOutput == soHDMI)
-       soundOutput = soLOCAL;
+        soundOutput = soLOCAL;
     else
-       soundOutput = soHDMI;
-}    
+        soundOutput = soHDMI;
+}
 
 //------------------------------------------------------------------------------
 static void do_change_jpeg_dec()
 {
-     if (jpegDecoder == jdOMX)
-       jpegDecoder = jdLibJpeg;
-     else
-       jpegDecoder = jdOMX;                                           
+    if (jpegDecoder == jdOMX)
+        jpegDecoder = jdLibJpeg;
+    else
+        jpegDecoder = jdOMX;
 }
 
 //------------------------------------------------------------------------------
 static void do_change_video_player()
 {
     if (videoPlayer == vpOMXPlayer)
-       videoPlayer = vpMPlayer;
+        videoPlayer = vpMPlayer;
     else
-       videoPlayer = vpOMXPlayer;
+        videoPlayer = vpOMXPlayer;
 }
 
 //------------------------------------------------------------------------------
@@ -575,8 +612,6 @@ static void do_search(char * searchStr)
         if (selected_rec == NULL)
             show_message("Search returned 0 results!", 5, ERROR_POINT);
     }
-    else
-        redraw_results(true);
 }
 
 //------------------------------------------------------------------------------
@@ -598,8 +633,6 @@ static void do_user_search(char * userStr)
         if (selected_rec == NULL)
             show_message("User search returned 0 results!", 6, ERROR_POINT);
     }
-    else
-        redraw_results(true);
 }
 
 //------------------------------------------------------------------------------
@@ -613,13 +646,14 @@ static void play_video (char * url)
     int status;
     redraw_results(false);
     show_message("Calling youtube_dl...", false, numPointFontMed);
+    eglSwapBuffers(state->display, state->surface);
     //show_message(url, false, 20);
     if(server != NULL && page != NULL)
     {
         if (numFormat > 0)
             snprintf(request_format, sizeof(request_format), "-f%s", supported_formats[numFormat+1][0]);
         char youtube_dl_format[] = "youtube-dl %s -g http://%s/%s";
-        
+
         size_t stCommand = strlen(server) +
                            strlen(page) +
                            strlen(request_format) +
@@ -658,9 +692,11 @@ static void play_video (char * url)
         {
         case vpMPlayer:
             show_message("Calling youtube_dl... ~5DONE~0\nStarting Mplayer...", false, numPointFontMed);
+            eglSwapBuffers(state->display, state->surface);
             break;
         case vpOMXPlayer:
             show_message("Calling youtube_dl... ~5DONE~0\nStarting OMXPlayer...", false, numPointFontMed);
+            eglSwapBuffers(state->display, state->surface);
             break;
         }
 
@@ -719,26 +755,23 @@ static void play_video (char * url)
             {
                 if(jsESC())
                 {
-                  //printf("\n***quitting!***");
-                  //kill(pid, SIGTERM);
-                  //ungetc('q', stdin);
                     system("killall omxplayer.bin");
                     switch(videoPlayer)
                     {
-                        case vpOMXPlayer:
-                            system("killall omxplayer.bin");
+                    case vpOMXPlayer:
+                        system("killall omxplayer.bin");
                         break;
-                        case vpMPlayer:
-                            system("killall mplayer");
+                    case vpMPlayer:
+                        system("killall mplayer");
                         break;
                     }
-                                                                     
+
                 }
                 else
                     usleep(2000);
             }
-        } while (wpid == 0);
-     // printf("\n***done***\n");            
+        }
+        while (wpid == 0);
         redraw_results(true);
     }
     else
@@ -1041,7 +1074,6 @@ static bool youtube_search(char * searchStr)
         goto cleanup;
     }
 
-    redraw_results(true);
 cleanup:
 
     if (get != NULL)
@@ -1169,16 +1201,16 @@ static char *get_ip(char *host)
 
 static char *build_youtube_query(char *host, char *searchStr, int results, int startIndex)
 {
-    #define MAIN_MENU_SPEC_REGION 3
-    
+#define MAIN_MENU_SPEC_REGION 3
+
     char * query;
     char tempBegin[] = "GET /feeds/api/";
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
-    char * temp; 
-    
+    char * temp;
+
     char * tempMid = mainMenuItems[
-        (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?mainMenu.selectedItem:2].key;
-                            
+                         (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?mainMenu.selectedItem:2].key;
+
     char country[6] = "";
     size_t stTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
     temp = malloc(stTemp);
@@ -1195,12 +1227,12 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
         }
         searchStr = country;
     }
-      
-    size_t stQuery = strlen(host) + 
+
+    size_t stQuery = strlen(host) +
                      strlen(searchStr)+
                      strlen(USERAGENT)+
                      strlen(temp) + 30;
-    query = malloc (stQuery);     
+    query = malloc (stQuery);
     snprintf(query, stQuery, temp, searchStr, results, startIndex, host, USERAGENT);
     free(temp);
     //show_message(query, true, ERROR_POINT);
