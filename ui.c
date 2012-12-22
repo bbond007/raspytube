@@ -89,6 +89,8 @@ extern const unsigned int tv_jpeg_raw_size;
 void setBGImage()
 {
     if(bgImage != 0)
+        vgGetPixels(bgImage, 0,0, 0,0,state->screen_width, state->screen_height);
+    else
         vgDestroyImage(bgImage);
     bgImage = createImageFromScreen();
 }
@@ -225,7 +227,10 @@ void free_ui_var()
 
     if(downArrowImage > 0)
         vgDestroyImage(downArrowImage);
-
+    
+    if(bgImage >  0)
+        vgDestroyImage(bgImage);
+   
     int i;
     for(i=0; i < fontCount; i++)
         unload_font(&fontDefs[i]);

@@ -31,7 +31,7 @@ int jsSelect    = 2;
 int jsBack      = 1;
 int jsInfo      = 8;
 int jsMenu      = 9;
-bool mouseEnabled = false;
+bool mouseEnabled = true;
 tPointXY mouseXY;
 tPointXY clickXY;
 int mouseBGImage = -1;
