@@ -226,7 +226,7 @@ void free_ui_var()
 
     if(downArrowImage > 0)
         vgDestroyImage(downArrowImage);
-    
+
     int i;
     for(i=0; i < fontCount; i++)
         unload_font(&fontDefs[i]);
@@ -326,7 +326,7 @@ void init_ui_var()
         tvImage = create_image_from_buf((unsigned char *)
                                         tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }
-    
+
     numRectPenSize  = state->screen_width  * .005f;
     loadConfig();
     open_mouse();
@@ -376,14 +376,15 @@ void draw_menu(tMenuState * menu)
               menu->selRect.w,
               menu->selRect.h,
               20, 20, n2, rectColor, selectedColor);
-    int i;for(i=0;i<2;i++)//shadow effect.
-    Text(&fontDefs[titleFontMenu.selectedItem],
-         menu->titlePos.x-i*n2, 
-         menu->titlePos.y-i*n2,
-         menu->title,
-         //menu->numPointFontTitle,
-         numPointFontLarge,
-         &colorScheme[6-i], VG_FILL_PATH);
+    int i;
+    for(i=0; i<2; i++) //shadow effect.
+        Text(&fontDefs[titleFontMenu.selectedItem],
+             menu->titlePos.x-i*n2,
+             menu->titlePos.y-i*n2,
+             menu->title,
+             //menu->numPointFontTitle,
+             numPointFontLarge,
+             &colorScheme[6-i], VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
 void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, float tXp, float tYp, int points)
@@ -395,11 +396,12 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
     int txtBrk = width + x - numRectPenSize;
-    int n2 = numRectPenSize / 2;  
+    int n2 = numRectPenSize / 2;
     Roundrect(x,y, width, height, 20, 20, numRectPenSize, rectColor, selectedColor);
-    int i;for(i=0;i<2;i++) 
-        Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx-n2*i, ty-n2*i, 
-            txtBrk, txtBrk, 1, 0, message, points, &colorScheme[6-i], VG_FILL_PATH, false);
+    int i;
+    for(i=0; i<2; i++)
+        Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx-n2*i, ty-n2*i,
+                      txtBrk, txtBrk, 1, 0, message, points, &colorScheme[6-i], VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
 void clear_screen(bool swap)
@@ -496,29 +498,41 @@ int show_selection_info(struct result_rec * rec)
                         imageRect.w,
                         imageRect.h);
 
-            key = toupper(readKb_mouse());
-            if (key == 'H' && imageData != NULL)
+            key = readKb_mouse();
+            if (imageData != NULL)
             {
-                vgDestroyImage(-rec->largeImage);
-                rec->largeImage = OMXCreateImageFromBuf((unsigned char *)
-                                                        imageData, imageDataSize, imageRect.w, imageRect.h);
+                switch (key)
+                {
+
+                case 'h':
+                case 'H':
+                    vgDestroyImage(-rec->largeImage);
+                    rec->largeImage = OMXCreateImageFromBuf((unsigned char *)
+                                                            imageData, imageDataSize, imageRect.w, imageRect.h);
+                    break;
+
+                case 's':
+                case 'S':
+                    vgDestroyImage(rec->largeImage);
+                    rec->largeImage = createImageFromBuf((unsigned char *)
+                                                         imageData, imageDataSize, imageRect.w, imageRect.h);
+                    break;
+                }
             }
-            else if (key == 'S' && imageData != NULL)
+            switch(key)
             {
-                vgDestroyImage(rec->largeImage);
-                rec->largeImage = createImageFromBuf((unsigned char *)
-                                                     imageData, imageDataSize, imageRect.w, imageRect.h);
-            }
-            else if (key == MOUSE_1)
-            {
-                //handle the mouse
+            case MOUSE_1:
                 if(point_in_rect(&clickXY, &tvRect))
                     key = RTN_KEY;
                 else
                     key = ESC_KEY;
-            }
-            else if (key == MOUSE_2)
+                break;
+
+            case MOUSE_2:
                 key = ESC_KEY;
+                break;
+
+            }
         }
         while ( key != ESC_KEY &&
                 key != RTN_KEY &&
@@ -667,12 +681,12 @@ bool input_string(char * prompt, char * buf, int max)
             draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .48f, numPointFontLarge);
             buf[endPos] = '_';
             buf[endPos+1]= 0x00;
-            textXY_Rollover(state->screen_width * .10f, 
-                    state->screen_height * .30f, 
-                    state->screen_width * .80f,
-                    state->screen_width * .90f, 
-                    2, state->screen_width * .05f,
-                    buf, numPointFontLarge, textColor);
+            textXY_Rollover(state->screen_width * .10f,
+                            state->screen_height * .30f,
+                            state->screen_width * .80f,
+                            state->screen_width * .90f,
+                            2, state->screen_width * .05f,
+                            buf, numPointFontLarge, textColor);
             buf[endPos] = 0x00;
             key = readKb_mouse();
         }
@@ -852,7 +866,7 @@ void show_message(char * message, int error, int points)
     do
     {
         if (error) drawBGImage();
-        //vgCopyPixels(0,0,0,0, state->screen_width, state->screen_height);        
+        //vgCopyPixels(0,0,0,0, state->screen_width, state->screen_height);
         vgSetPixels(tvRect.x,
                     tvRect.y,
                     tvImage,
@@ -861,10 +875,10 @@ void show_message(char * message, int error, int points)
                     tvRect.h);
 
         Roundrect(imageRect.x, imageRect.y,  imageRect.w, imageRect.h, 20, 20, numRectPenSize, error?bgColor:rectColor, bgColor);
-        
+
         if(error && showGuru)
-           Rect(guruRect.x, guruRect.y, guruRect.w, guruRect.h, numRectPenSize, bgColor, errorColor);
-    
+            Rect(guruRect.x, guruRect.y, guruRect.w, guruRect.h, numRectPenSize, bgColor, errorColor);
+
         Text_Rollover ( &fontDefs[1], //Topaz font
                         tx, // X
                         ty, // Y
@@ -873,12 +887,12 @@ void show_message(char * message, int error, int points)
                         6,
                         state->screen_height * .05f,
                         error?errorStr:message, points, &colorScheme[0], VG_FILL_PATH, true);
-    
+
         if(error)
         {
             key = readKb_mouse();
             if(key == TIMER_M)
-                showGuru = !showGuru;                
+                showGuru = !showGuru;
         }
         else
             break;
@@ -1270,10 +1284,10 @@ bool set_int(int min, int max, int offset, int * value)
 #define REDRAW_GUI_KEYPRESS {redraw_results(false);setBGImage();dumpKb();}
 void gui_menu_keypress(tMenuState * menu, int key)
 {
-    if(key == CUR_R || key == CUR_L)
+    if(key == CUR_R || key == CUR_L || key == MOUSE_F || key ==MOUSE_B)
     {
         int offset = 1;
-        if(key == CUR_L)
+        if(key == CUR_L || key == MOUSE_B)
             offset = -1;
         switch(menu->menuItems[menu->selectedItem].special)
         {
@@ -1318,14 +1332,14 @@ void gui_menu_keypress(tMenuState * menu, int key)
 //------------------------------------------------------------------------------
 void jskb_menu_keypress(tMenuState * menu, int key)
 {
-    if(key == CUR_R || key == CUR_L)
+    if(key == CUR_R || key == CUR_L || key == MOUSE_F || key == MOUSE_B)
     {
         int offset = 1;
 
         if (strcmp(menu->menuItems[menu->selectedItem].key, "TH") == 0)
             offset = 1000;
 
-        if(key == CUR_L)
+        if(key == CUR_L || key == MOUSE_B)
             offset *= -1;
 
         switch(menu->menuItems[menu->selectedItem].special)
@@ -1484,8 +1498,8 @@ int show_menu(tMenuState * menu)
         {
             if(downArrowImage > 0)
                 vgSetPixels(menu->downArrowRect.x, menu->downArrowRect.y,
-                        downArrowImage, 0,0,
-                        menu->downArrowRect.w, menu->downArrowRect.h);
+                            downArrowImage, 0,0,
+                            menu->downArrowRect.w, menu->downArrowRect.h);
             else
                 Poly(menu->downArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
@@ -1494,8 +1508,8 @@ int show_menu(tMenuState * menu)
         {
             if(upArrowImage > 0)
                 vgSetPixels(menu->upArrowRect.x, menu->upArrowRect.y,
-                        upArrowImage, 0,0,
-                        menu->downArrowRect.w, menu->downArrowRect.h);
+                            upArrowImage, 0,0,
+                            menu->downArrowRect.w, menu->downArrowRect.h);
             else
                 Poly(menu->upArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
@@ -1504,7 +1518,7 @@ int show_menu(tMenuState * menu)
             menu->drawFooter(menu);
 
 
-        key = toupper(readKb_mouse());
+        key = readKb_mouse();
         if(menu->keyPress != NULL)
             menu->keyPress(menu, key);
 
@@ -1549,7 +1563,7 @@ int show_menu(tMenuState * menu)
                 key = ESC_KEY;
             break;
         case CUR_UP:
-             LCUR_UP:
+LCUR_UP:
             if (menu->selectedIndex > 0)
                 menu->selectedIndex--;
             else if(menu->scrollIndex > 0)
@@ -1557,7 +1571,7 @@ int show_menu(tMenuState * menu)
             break;
 
         case CUR_DWN:
-             LCUR_DWN:
+LCUR_DWN:
             if (menu->selectedIndex < menu->maxItems -1)
             {
                 currentItem = &menu->menuItems[menu->selectedIndex + menu->scrollIndex + 1];
@@ -1678,7 +1692,7 @@ tMSResult mouse_select(tPointXY * point)
     rbTest.x = offset.x;
     struct result_rec * temp = first_rec;
     struct result_rec * save = selected_rec;
-   
+
     int rowCount = 0;
     while (temp != NULL)
     {
@@ -1840,7 +1854,7 @@ bool yes_no_dialog(char * prompt, bool val)
             snprintf(temp, size, formatNo, prompt);
 
         show_message(temp, false, numPointFontLarge);
-        key = toupper(readKb_mouse());
+        key = readKb_mouse();
         switch(key)
         {
         case MOUSE_1:
@@ -1855,10 +1869,12 @@ bool yes_no_dialog(char * prompt, bool val)
                     key = RTN_KEY;
             }
             break;
+        case 'y':
         case 'Y':
             val = true;
             key = RTN_KEY;
             break;
+        case 'n':
         case 'N':
             val = true;
             key = RTN_KEY;

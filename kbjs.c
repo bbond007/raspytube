@@ -235,18 +235,24 @@ bool handle_mouse(int * key)
         case 1:
             switch (mousee.code)
             {
-            case 272:
+            case BTN_LEFT:
                 if(mousee.value == 1)
                     *key = MOUSE_1;
                 clickXY.x = mouseXY.x;
                 clickXY.y = mouseXY.y;
                 break;
-            case 273:
+            case BTN_RIGHT:
                 if(mousee.value == 1)
                     *key = MOUSE_2;
                 clickXY.x = mouseXY.x;
                 clickXY.y = mouseXY.y;
                 break;
+            case 115: //BTN_FORWARD:
+                *key = MOUSE_F;
+                break;
+            case 116: //BTN_BACK:
+                *key = MOUSE_B;
+                break;          
             }
             break;
         case 2:
@@ -317,7 +323,6 @@ int readKb_loop(bool checkMouse)
 {
     struct js_event jse;
     int key;
-    bool bMouseMove = false;
     do
     {   //timer is high prioiry...
         if(numTimer > 0)
@@ -325,7 +330,6 @@ int readKb_loop(bool checkMouse)
             if (++timerCount > numTimer)
             {
                 timerCount = 0;
-                //printf("TImer...\n");
                 return TIMER_M;
             }
         }
@@ -361,21 +365,19 @@ int readKb_loop(bool checkMouse)
                     else if (jse.number == jsSelect)
                         return JOY_1;
                     else if (jse.number == jsInfo)
-                        return 'i';
+                        return 'I';
                     else if (jse.number == jsMenu)
-                        return 'm';
+                        return 'M';
                 }
                 break;
             }
         }
 
         key = getchar();
-        if(checkMouse && mouseEnabled)
-            bMouseMove = handle_mouse(&key);
-        if(!bMouseMove && key == EOF)
+        if(key == EOF && checkMouse && mouseEnabled)
+           handle_mouse(&key);
+        if(key == EOF)
             usleep(1000);
-
-
     }
     while (key == EOF);
 

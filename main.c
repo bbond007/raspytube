@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     do
     {
         redraw_results(false);
-        key = toupper(readKb_mouse()); //wait for keypress
+        key = readKb_mouse(); //wait for keypress
         switch (key)
         {
 
@@ -174,22 +174,27 @@ int main(int argc, char **argv)
             do_cur_left(PICK_SEARCH_STR);
             break;
 
+        case 'h':
         case 'H' :
             do_change_audio_dev();
             break;
 
+        case 'j':
         case 'J' :
             do_joystick_test();
             break;
 
+        case 't':
         case 'T' :
             //show_message("TEST-->\n~0|0:~0X~0|1:~1X~0|2:~2X~0|3:~3X~0|4:~4X~0|5:~5X~0|6:~6X~0|7:~7X\n~5press [ESC]", 0xDEADBEEF, ERROR_POINT);
             break;
 
+        case 'm':
         case 'M':
             do_main_menu(searchStr, userStr);
             break;
 
+        case 'r':
         case 'R':
             redraw_results(false);
             setBGImage();
@@ -204,10 +209,12 @@ int main(int argc, char **argv)
             }
             break;
 
+        case 'x':
         case 'X' :
             do_change_jpeg_dec();
             break;
 
+        case 'f':
         case 'F' :
             redraw_results(false);
             setBGImage();
@@ -215,17 +222,21 @@ int main(int argc, char **argv)
             redraw_results(true);
             break;
 
+        case 'p':
         case 'P':
             do_change_video_player();
             break;
 
+        case 'i':
         case 'I':
             do_info_menu(PICK_SEARCH_STR);
             break;
 
+        case 'n':
         case 'N': //new search -> fall through to 'S'
             searchStr[0] = 0x00;
 
+        case 's':
         case 'S' : //modify existing search
             redraw_results(false);
             setBGImage();
