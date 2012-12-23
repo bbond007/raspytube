@@ -395,8 +395,11 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
     int txtBrk = width + x - numRectPenSize;
+    int n2 = numRectPenSize / 2;  
     Roundrect(x,y, width, height, 20, 20, numRectPenSize, rectColor, selectedColor);
-    Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx, ty, txtBrk, txtBrk, 1, 0, message, points, selectedColor, VG_FILL_PATH, false);
+    int i;for(i=0;i<2;i++) 
+        Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx-n2*i, ty-n2*i, 
+            txtBrk, txtBrk, 1, 0, message, points, &colorScheme[6-i], VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
 void clear_screen(bool swap)
@@ -661,7 +664,7 @@ bool input_string(char * prompt, char * buf, int max)
             keyRect.x += large_key_width;
             Roundrect(keyRect.x, keyRect.y,  keyRect.w, keyRect.h, 20, 20, numRectPenSize, rectColor,   (sel==OSK_RTN)?COLOR_SELECTED:COLOR_NORMAL);
             textXY(keyRect.x + offsetX2, keyRect.y + offsetXY.y,  "RTN", numPointFontLarge,  (sel==OSK_RTN)?TEXT_SELECTED:TEXT_NORMAL);
-            draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .50f, numPointFontLarge);
+            draw_txt_box_cen(prompt, .95f, .50f, .05, .10f, .48f, numPointFontLarge);
             buf[endPos] = '_';
             buf[endPos+1]= 0x00;
             textXY_Rollover(state->screen_width * .10f, 
@@ -797,9 +800,9 @@ bool input_string(char * prompt, char * buf, int max)
 void show_big_message(char * title, char * message)
 {
     redraw_results(false);
-    draw_txt_box_cen(title, .95f, .47f, .04, .10f, .45f, numPointFontLarge);
+    draw_txt_box_cen(title, .95f, .47f, .04, .10f, .44f, numPointFontLarge);
     textXY_Rollover(state->screen_width  * .10f,
-                    state->screen_height * .40f,
+                    state->screen_height * .38f,
                     state->screen_width  * .85f,
                     state->screen_width  * .90f,
                     7, //max no of lines

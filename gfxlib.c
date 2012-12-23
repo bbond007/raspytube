@@ -505,27 +505,24 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
 void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, 
                VGfloat sw, tColorDef * fill,  tColorDef *stroke)
 {
-    float size = (float)pointsize;
-    float mm[9];
-    vgGetMatrix(mm);
-    setfill(fill);
-    //setfill(stroke);
-    //setstroke(stroke, sw);
     int glyph = fontDef->characterMap[c];
     if( glyph != -1 )
     {
+        float size = (float)pointsize;
+        float mm[9];
+        vgGetMatrix(mm);
+        setfill(fill);
         VGfloat mat[9] =
         {
             size,	0.0f,	0.0f,
             0.0f,	size,	0.0f,
             x,		y,		1.0f
         };
-
         vgLoadMatrix(mm);
         vgMultMatrix(mat);
         vgDrawPath(fontDef->glyphs[glyph], VG_FILL_PATH);// | VG_STROKE_PATH);
+        vgLoadMatrix(mm);
     }
-    vgLoadMatrix(mm);
 }
 
 //------------------------------------------------------------------------------
