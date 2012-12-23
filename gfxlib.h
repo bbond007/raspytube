@@ -57,6 +57,7 @@ void exit_func(void);
 void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags);
 void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, VGfloat maxLength, int maxLines, 
   VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags, bool bRichTXT);
+void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags);
 void Poly(VGfloat *xy, VGint n, VGfloat sw, tColorDef * fill, tColorDef * stroke, VGboolean dofill);
 void setfill(tColorDef * color);
 void setstroke(tColorDef *color, float width);

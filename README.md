@@ -34,7 +34,7 @@ the following are also available from the menu:
 binarybond007@gmail.com
 
 NOTES:
-
+		* you need 64MB VRAM ro run this program.
 		* MPlayer not working yet... mplayer still not working....
 		* Added mouse support!!!
 		 

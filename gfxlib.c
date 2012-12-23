@@ -517,6 +517,30 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
     }
     vgLoadMatrix(mm);
 }
+//------------------------------------------------------------------------------ 
+// Text renders a string of text at a specified location, using the specified font glyphs
+void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags)
+{
+    float size = (float)pointsize;
+    float mm[9];
+    vgGetMatrix(mm);
+    setfill(fillcolor);
+    int glyph = fontDef->characterMap[c];
+    if( glyph != -1 )
+    {
+        VGfloat mat[9] =
+        {
+            size,	0.0f,	0.0f,
+            0.0f,	size,	0.0f,
+            x,		y,		1.0f
+        };
+
+        vgLoadMatrix(mm);
+        vgMultMatrix(mat);
+        vgDrawPath(fontDef->glyphs[glyph], renderFlags);
+    }
+    vgLoadMatrix(mm);
+}
 
 //------------------------------------------------------------------------------
 void Text_getHeight(tFontDef * fontDef, int pointsize)

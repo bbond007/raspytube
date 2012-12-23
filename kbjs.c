@@ -207,19 +207,18 @@ bool rbPressed(void)
     return false;
 }
 //------------------------------------------------------------------------------
-void debug_mouse()
+void draw_mouse()
 {
-    char temp[25];
+    char temp[14]; // (1920, 1024)"                
     snprintf(temp, sizeof(temp), "(%d, %d)", mouseXY.x, mouseXY.y);
     Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
-    temp[1] = 0x00;
-    temp[0] = (char) numPointerIndex;
-    int i;
-    for (i=0;i<2;i++)
-    Text(&fontDefs[fontCount-1],
-         mouseXY.x + pointerOffsetXY.x,
-         mouseXY.y + pointerOffsetXY.y,
-         temp, i==0?numPointerSize+5:numPointerSize-5, &colorScheme[6-i], VG_FILL_PATH);
+    int i;for (i=0;i<2;i++)
+    Text_Char(&fontDefs[fontCount-1],
+               mouseXY.x + pointerOffsetXY.x,
+               mouseXY.y + pointerOffsetXY.y,
+               numPointerIndex, 
+               i==0?numPointerSize+5:numPointerSize-5, 
+               &colorScheme[6-i], VG_FILL_PATH);
     //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------
@@ -294,7 +293,7 @@ bool handle_mouse(int * key)
     if (mouseBGImage != -1 && (oldMouseXY.x != mouseXY.x || oldMouseXY.y != mouseXY.y))
     {
         vgSetPixels(0,0, mouseBGImage, 0, 0, state->screen_width, state->screen_height);
-        debug_mouse();
+        draw_mouse();
         eglSwapBuffers(state->display, state->surface);
         return true;
     }
@@ -406,7 +405,7 @@ int readKb_mouse(void)
             vgGetPixels(mouseBGImage, 0,0, 0,0,state->screen_width, state->screen_height);
         else
             mouseBGImage = createImageFromScreen();
-        debug_mouse();
+        draw_mouse();
     }
     eglSwapBuffers(state->display, state->surface);
     int key = readKb_loop((mouse_fd > 0)?mouseEnabled:false);
