@@ -111,16 +111,7 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
     jpeg_read_header(&jdc, TRUE);
     jdc.scale_num = 1;
     jdc.scale_denom = 1;
-    /*
-    if(desired_height > jdc.image_height)
-        jdc.scale_denom = 1;
-    else if(desired_height > (jdc.image_height / 2))
-        jdc.scale_denom = 2;
-    else if(desired_height > (jdc.image_height / 4))
-        jdc.scale_denom = 4;
-    else
-        jdc.scale_denom = 8;
-    */
+
     jpeg_start_decompress(&jdc);
     bitmap.w  = jdc.output_width;
     bitmap.h = jdc.output_height;
@@ -219,16 +210,6 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
     jdc.scale_num = 1;
     jdc.scale_denom = 1;
 
-    /*
-        if(desired_height > jdc.image_height)
-            jdc.scale_denom = 1;
-        else if(desired_height > (jdc.image_height / 2))
-            jdc.scale_denom = 2;
-        else if(desired_height > (jdc.image_height / 4))
-            jdc.scale_denom = 4;
-        else
-            jdc.scale_denom = 8;
-    */
     jpeg_start_decompress(&jdc);
     bitmap.w = jdc.output_width;
     bitmap.h = jdc.output_height;
@@ -342,17 +323,19 @@ void ResizeBitmap8BITIDX(BITMAP * src, BITMAP * dst)
 //
 VGImage ResizeImage(VGImage src, int width, int height)
 {
+/*
     int orig_width = vgGetParameteri(src, VG_IMAGE_WIDTH);
     int orig_height = vgGetParameteri(src, VG_IMAGE_HEIGHT);
-    //printf("(%d, %d)\n", orig_width, orig_height);
+    printf("(%d, %d)\n", orig_width, orig_height);
 
     VGImage dst = vgCreateImage(getRGBAFormat(), width, height, VG_IMAGE_QUALITY_BETTER);
-    /*
+    
     	vgCopyImage(dst, VGint dx, VGint dy,
                                  VGImage src, VGint sx, VGint sy,
                                  VGint width, VGint height,
                                  VGboolean dither) VG_API_EXIT;
-                                 */
+                                
+ */
     return src;
 }
 //------------------------------------------------------------------------------
@@ -519,12 +502,15 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
 }
 //------------------------------------------------------------------------------ 
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags)
+void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, 
+               VGfloat sw, tColorDef * fill,  tColorDef *stroke)
 {
     float size = (float)pointsize;
     float mm[9];
     vgGetMatrix(mm);
-    setfill(fillcolor);
+    setfill(fill);
+    //setfill(stroke);
+    //setstroke(stroke, sw);
     int glyph = fontDef->characterMap[c];
     if( glyph != -1 )
     {
@@ -537,7 +523,7 @@ void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, t
 
         vgLoadMatrix(mm);
         vgMultMatrix(mat);
-        vgDrawPath(fontDef->glyphs[glyph], renderFlags);
+        vgDrawPath(fontDef->glyphs[glyph], VG_FILL_PATH);// | VG_STROKE_PATH);
     }
     vgLoadMatrix(mm);
 }

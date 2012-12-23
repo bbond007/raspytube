@@ -218,7 +218,7 @@ void draw_mouse()
                mouseXY.y + pointerOffsetXY.y,
                numPointerIndex, 
                i==0?numPointerSize+5:numPointerSize-5, 
-               &colorScheme[6-i], VG_FILL_PATH);
+               1, &colorScheme[6-i],bgColor);
     //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------
