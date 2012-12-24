@@ -552,7 +552,9 @@ int show_selection_info(struct result_rec * rec)
                 key != CUR_R &&
                 key != CUR_UP &&
                 key != CUR_DWN &&
+                key != 'i' &&
                 key != 'I' &&
+                key != 'f' &&
                 key != 'F');
         if(infoStr != NULL) free(infoStr);
         //vgDestroyImage(image);
