@@ -18,8 +18,6 @@
 #include "GLES/gl.h"
 #include "gfxlib.h"
 #include "ui.h"
-#include "region.h"
-#include "mainmenu.h"
 #include "config.h"
 #include "kbjs.h"
 #include "term.h"
@@ -66,13 +64,6 @@ static void do_less(char * searchStr);
 #define PORT 80
 #define HOST "gdata.youtube.com"
 #define AUTHOR binarybond007@gmail.com
-tMenuState regionMenu;
-tMenuState mainMenu;
-tMenuState fontMenu;
-tMenuState guiMenu;
-tMenuState titleFontMenu;
-tMenuState formatMenu;
-tMenuState jskbMenu;
 
 static void do_main_menu(char * searchStr, char * userStr);
 static void do_gui_menu();
@@ -89,27 +80,10 @@ static void do_download(char * url, char * title);
 int main(int argc, char **argv)
 {
     bcm_host_init();
-    memset( state, 0, sizeof( *state ) );
-    init_ogl(state);
     initKb();
-    init_font_menus();
-    init_ui_var();
-    //init menus...
-    init_small_menu(&mainMenu, "Main Menu:");
-    init_big_menu(&regionMenu, "Select region:");
-    init_format_menu(&formatMenu);
-    init_small_menu(&guiMenu, "GUI menu:");
-    init_small_menu(&jskbMenu, "Input Menu");
-    jskbMenu.menuItems = jskbMenuItems;
-    jskbMenu.drawDetail = jskb_menu_detail;
-    jskbMenu.keyPress = jskb_menu_keypress;
-    mainMenu.menuItems = mainMenuItems;
-    mainMenu.drawDetail = main_menu_detail;
-    regionMenu.menuItems = regionMenuItems;
-    guiMenu.menuItems = guiMenuItems;
-    guiMenu.drawDetail = gui_menu_detail;
-    guiMenu.keyPress = gui_menu_keypress;
-    set_menu_value(&regionMenu,0);
+    init_ui();
+    open_joystick();
+    open_mouse();
     clear_output();
     redraw_results(false);
     char searchStr [100] = "";
@@ -214,6 +188,9 @@ int main(int argc, char **argv)
             do_change_jpeg_dec();
             break;
 
+        case 'q':
+        case 'Q': resize_ui();
+            break;
         case 'f':
         case 'F' :
             redraw_results(false);
@@ -270,10 +247,8 @@ int main(int argc, char **argv)
     }
     while (!quit);
     clear_output();
-    free_ui_var();
-    free_boing();
+    free_ui();
     restoreKb();
-    exit_func();
     return 0;
 }
 
@@ -460,11 +435,13 @@ static void do_info_menu(char * searchStr)
             switch(result)
             {
 
+            case 'f':
             case 'F':
                 redraw_results(false);
                 setBGImage();
                 show_format_menu(&formatMenu);
                 break;
+            case 'i':
             case 'I':
                 redraw_results(false);
                 setBGImage();

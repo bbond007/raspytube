@@ -177,9 +177,8 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
     // Cleanup
     jpeg_destroy_decompress(&jdc);
     free(pBitmap->data);
-    return img;
-    return img;
 
+    return img;
 }
 
 VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
@@ -616,7 +615,7 @@ void Poly(VGfloat *xy, VGint n, VGfloat sw, tColorDef * fill, tColorDef * stroke
 //------------------------------------------------------------------------------
 // init_ogl sets the display, OpenGL|ES context and screen information
 // state holds the OGLES model information
-void init_ogl(STATE_T *state)
+void init_ogl(STATE_T *state, bool bQScreen)
 {
     int32_t success = 0;
     EGLBoolean result;
@@ -663,6 +662,12 @@ void init_ogl(STATE_T *state)
 
     // create an EGL window surface
     success = graphics_get_display_size(0 /* LCD */, &state->screen_width, &state->screen_height);
+    if(bQScreen)
+    {
+        state->screen_width = state->screen_width / 2;
+        state->screen_height = state->screen_height / 2;
+    }
+    
     assert( success >= 0 );
 
     dst_rect.x = 0;
@@ -803,20 +808,8 @@ void DoSnapshot()
 
 //------------------------------------------------------------------------------
 VGImage createImageFromScreen()
-{/*
-    unsigned int stride = state->screen_width * 4;
-    unsigned int bitmapSize = stride * state->screen_height;
-    unsigned char * bitmapData = malloc(bitmapSize);;
-    vgReadPixels(bitmapData, stride,
-                 VG_sABGR_8888,
-                 0,0,
-                 state->screen_width, state->screen_height);
-*/
-    //VGImageFormat rgbaFormat = VG_sABGR_8888;
+{
     VGImage vgImage = vgCreateImage(getRGBAFormat(), state->screen_width, state->screen_height, VG_IMAGE_QUALITY_BETTER);
     vgGetPixels(vgImage, 0,0, 0,0,state->screen_width, state->screen_height);
-    //vgImageSubData(vgImage, bitmapData,
-    //               stride, getRGBAFormat(), 0, 0, state->screen_width, state->screen_height);
-    //free(bitmapData);
     return vgImage;
 }

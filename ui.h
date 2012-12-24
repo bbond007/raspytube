@@ -97,8 +97,12 @@ typedef enum tMSResult    {msFarLeft =-1, msFarRight  = 1, msNewRec = 2, msSameR
 
 //------------------------------------------------------------------------------
 
+void init_ui();
+void free_ui();
 void init_ui_var();
 void free_ui_var();
+void free_font_menus();
+void resize_ui();
 struct result_rec * init_result_rec();
 void free_result_rec(struct result_rec * rec);
 void draw_txt_box_cen(
@@ -166,7 +170,15 @@ extern int numFontSpacing;
 extern enum tSoundOutput soundOutput;
 extern enum tVideoPlayer videoPlayer;
 extern enum tJpegDecoder jpegDecoder;
-
+extern tMenuState regionMenu;
+extern tMenuState mainMenu;  
+extern tMenuState fontMenu;  
+extern tMenuState guiMenu;   
+extern tMenuState titleFontMenu;
+extern tMenuState formatMenu;   
+extern tMenuState jskbMenu;  
+extern tMenuItem regionMenuItems[];
+extern tMenuItem mainMenuItems[];   
 #define ERROR_POINT (numPointFontMed)
 
 extern tColorDef * textColor;

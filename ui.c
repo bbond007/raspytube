@@ -17,6 +17,9 @@
 #include "menu_arrow_up.inc"
 #include "menu_arrow_down.inc"
 #include "kbjs.h"
+#include "mainmenu.h"
+#include "region.h"
+
 /* sounds disabled because it sucked
 static AudioSampleInfo asiKbClick;
 extern const signed char soundraw_data[];
@@ -75,14 +78,15 @@ tColorDef * rectColor3       = &colorScheme[8];
 extern unsigned char *download_file(char * host, char * fileName, unsigned int * fileSize);
 extern unsigned char *find_jpg_start(unsigned char * buf, unsigned int * bufSize);
 extern VGImage OMXCreateImageFromBuf(unsigned char * buf, unsigned int bufLength, unsigned int outputWidth, unsigned int outputHeight);
-extern tMenuState regionMenu;
-extern tMenuState fontMenu;
-extern tMenuState mainMenu;
-extern tMenuState titleFontMenu;
-extern tMenuItem videoMenuItems[];
-extern tMenuItem jpegMenuItems[];
-extern tMenuItem audioMenuItems[];
-extern tMenuItem fontMenuItems[];
+tMenuState regionMenu;
+tMenuState mainMenu;
+tMenuState fontMenu;
+tMenuState guiMenu;
+tMenuState titleFontMenu;
+tMenuState formatMenu;
+tMenuState jskbMenu;
+
+
 extern const char tv_jpeg_raw_data[];
 extern const unsigned int tv_jpeg_raw_size;
 //------------------------------------------------------------------------------
@@ -203,36 +207,45 @@ VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desi
     return 0;
 }
 //------------------------------------------------------------------------------
-void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor)
+inline void textXY(VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor)
 {
     Text(&fontDefs[fontMenu.selectedItem], x, y, s, pointsize, fillcolor, VG_FILL_PATH);
 }
 //------------------------------------------------------------------------------
-void textXY_Rollover (VGfloat x, VGfloat y,VGfloat brkLength, VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor)
+inline void textXY_Rollover (VGfloat x, VGfloat y,VGfloat brkLength, VGfloat maxLength, int maxLines, VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor)
 {
     Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, brkLength, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
 void free_ui_var()
 {
-    if (tvImage > 0)
+    if (tvImage != 0)
         vgDestroyImage(tvImage);
-
-    if (bgImage > 0)
+    
+    if (bgImage != 0)
         vgDestroyImage(bgImage);
-
-    if(upArrowImage > 0)
+    
+    if(upArrowImage != 0)
         vgDestroyImage(upArrowImage);
-
-    if(downArrowImage > 0)
+    
+    if(downArrowImage != 0)
         vgDestroyImage(downArrowImage);
-
+   
+    upArrowImage = 0;
+    downArrowImage = 0;
+    tvImage = 0;
+    bgImage = 0;   
+}
+//------------------------------------------------------------------------------
+void free_font_menus()
+{
     int i;
     for(i=0; i < fontCount; i++)
         unload_font(&fontDefs[i]);
     if(fontMenu.menuItems!= NULL)
         free(fontMenu.menuItems);
 }
+
 //------------------------------------------------------------------------------
 void set_menu_value(tMenuState * menu, int value)
 {
@@ -329,8 +342,6 @@ void init_ui_var()
 
     numRectPenSize  = state->screen_width  * .005f;
     loadConfig();
-    open_mouse();
-    open_joystick();
     if(upArrowImage == 0)
     {
         arrowSize.x  = (state->screen_width  * .05f);
@@ -1496,7 +1507,7 @@ int show_menu(tMenuState * menu)
 
         if (bMoreItems)
         {
-            if(downArrowImage > 0)
+            if(downArrowImage != 0)
                 vgSetPixels(menu->downArrowRect.x, menu->downArrowRect.y,
                             downArrowImage, 0,0,
                             menu->downArrowRect.w, menu->downArrowRect.h);
@@ -1504,9 +1515,9 @@ int show_menu(tMenuState * menu)
                 Poly(menu->downArrow, 4, numRectPenSize / 2, selectedColor, bgColor, VG_TRUE);
         }
 
-        if (menu->scrollIndex > 0)
+        if (menu->scrollIndex > -1)
         {
-            if(upArrowImage > 0)
+            if(upArrowImage != 0)
                 vgSetPixels(menu->upArrowRect.x, menu->upArrowRect.y,
                             upArrowImage, 0,0,
                             menu->downArrowRect.w, menu->downArrowRect.h);
@@ -1717,6 +1728,60 @@ tMSResult mouse_select(tPointXY * point)
     else
         return msInvalid;
 }
+
+//------------------------------------------------------------------------------
+bool bQScreen = false; 
+void init_ui()
+{
+    // bcm_host_init();
+    memset( state, 0, sizeof( *state ) );
+    init_ogl(state, bQScreen);
+    init_font_menus();
+    init_ui_var();
+    init_small_menu(&mainMenu, "Main Menu:");
+    init_big_menu(&regionMenu, "Select region:");
+    init_format_menu(&formatMenu);
+    init_small_menu(&jskbMenu, "Input Menu");
+    init_small_menu(&guiMenu, "GUI Menu");
+    jskbMenu.menuItems = jskbMenuItems;
+    jskbMenu.drawDetail = jskb_menu_detail;
+    jskbMenu.keyPress = jskb_menu_keypress;
+    mainMenu.menuItems = mainMenuItems;
+    mainMenu.drawDetail = main_menu_detail;
+    regionMenu.menuItems = regionMenuItems;
+    guiMenu.menuItems = guiMenuItems;
+    guiMenu.drawDetail = gui_menu_detail;
+    guiMenu.keyPress = gui_menu_keypress;
+    set_menu_value(&regionMenu,0);
+};
+
+//------------------------------------------------------------------------------
+void free_ui()
+{
+    free_ui_var();
+    free_font_menus();
+    free_mouse_BGImage();
+    exit_func();
+    free_boing();
+}
+//------------------------------------------------------------------------------
+void resize_ui()
+{
+    free_ui();
+    bQScreen = !bQScreen;                           
+    init_ui();
+    if(bQScreen)
+    {	
+        numPointFontTiny    = numPointFontTiny  / 2;
+        numPointFontSmall   = numPointFontSmall / 2;
+        numPointFontMed     = numPointFontMed   / 2;
+        numPointFontLarge   = numPointFontLarge / 2;
+        numPointerSize      = numPointerSize    / 2;
+        pointerOffsetXY.x   = pointerOffsetXY.x / 2;
+        pointerOffsetXY.y   = pointerOffsetXY.y / 2;
+    }
+}
+
 //------------------------------------------------------------------------------
 void redraw_results(bool swap)
 {

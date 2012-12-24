@@ -34,7 +34,7 @@ int jsMenu      = 9;
 bool mouseEnabled = true;
 tPointXY mouseXY;
 tPointXY clickXY;
-int mouseBGImage = -1;
+int mouseBGImage = 0;
 extern tFontDef fontDefs[];
 extern int fontCount; 
 
@@ -296,7 +296,7 @@ inline bool handle_mouse(int * key)
             break;
         }
     }
-    if (mouseBGImage != -1 && (oldMouseXY.x != mouseXY.x || oldMouseXY.y != mouseXY.y))
+    if (mouseBGImage != 0 && (oldMouseXY.x != mouseXY.x || oldMouseXY.y != mouseXY.y))
     {
         vgSetPixels(0,0, mouseBGImage, 0, 0, state->screen_width, state->screen_height);
         draw_mouse();
@@ -403,7 +403,7 @@ int readKb_mouse(void)
     dumpJs();
     if (mouseEnabled && (mouse_fd > 0))
     {
-        if(mouseBGImage > 0)
+        if(mouseBGImage != 0)
             vgGetPixels(mouseBGImage, 0,0, 0,0,state->screen_width, state->screen_height);
         else
             mouseBGImage = createImageFromScreen();
@@ -457,11 +457,17 @@ void restoreKb(void)
 //  delete_sample(&asiKbClick);
     close_joystick();
     close_mouse();
-    if(mouseBGImage != -1)
+    if(mouseBGImage != 0)
         vgDestroyImage(mouseBGImage);
-
+    mouseBGImage = 0;
 }
-
+//------------------------------------------------------------------------------
+void free_mouse_BGImage(void)
+{
+    if(mouseBGImage != 0)
+        vgDestroyImage(mouseBGImage);
+    mouseBGImage = 0;
+}
 //------------------------------------------------------------------------------
 void do_joystick_test(void)
 {

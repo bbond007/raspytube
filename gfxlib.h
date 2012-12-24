@@ -52,7 +52,7 @@ void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst);
 void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, tColorDef * fill, tColorDef *  stroke);
 void Roundrect(VGfloat x, VGfloat y,VGfloat w, VGfloat h, VGfloat rw, VGfloat rh, VGfloat sw, tColorDef * fill, tColorDef * stroke);
 void loadfont(const int *Points, const int *PointIndices, const unsigned char *Instructions, const int *InstructionIndices, const int *InstructionCounts, int ng, VGPath *glyphs);
-void init_ogl(STATE_T *state);
+void init_ogl(STATE_T *state, bool bQScreen);
 void exit_func(void);
 void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags);
 void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, VGfloat maxLength, int maxLines, 

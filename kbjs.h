@@ -12,6 +12,7 @@ void do_joystick_test(void);
 int open_mouse();
 void close_mouse();
 int open_joystick();
+void free_mouse_BGImage(void);
 void close_joystick();
 extern int jsXAxis;
 extern int jsYAxis;
