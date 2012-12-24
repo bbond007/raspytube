@@ -207,7 +207,7 @@ bool rbPressed(void)
     return false;
 }
 //------------------------------------------------------------------------------
-void draw_mouse()
+inline void draw_mouse()
 {
     char temp[14]; // (1920, 1024)"                
     snprintf(temp, sizeof(temp), "(%d, %d)", mouseXY.x, mouseXY.y);
@@ -222,7 +222,7 @@ void draw_mouse()
     //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------
-bool handle_mouse(int * key)
+inline bool handle_mouse(int * key)
 {
     if(mouse_fd < 0) return false;
     struct input_event mousee;
@@ -319,7 +319,7 @@ void dumpMouse()
     }
 }
 //------------------------------------------------------------------------------
-int readKb_loop(bool checkMouse)
+inline int readKb_loop(bool checkMouse)
 {
     struct js_event jse;
     int key;

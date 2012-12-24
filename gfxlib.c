@@ -803,7 +803,7 @@ void DoSnapshot()
 
 //------------------------------------------------------------------------------
 VGImage createImageFromScreen()
-{
+{/*
     unsigned int stride = state->screen_width * 4;
     unsigned int bitmapSize = stride * state->screen_height;
     unsigned char * bitmapData = malloc(bitmapSize);;
@@ -811,11 +811,12 @@ VGImage createImageFromScreen()
                  VG_sABGR_8888,
                  0,0,
                  state->screen_width, state->screen_height);
-
+*/
     //VGImageFormat rgbaFormat = VG_sABGR_8888;
     VGImage vgImage = vgCreateImage(getRGBAFormat(), state->screen_width, state->screen_height, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(vgImage, bitmapData,
-                   stride, getRGBAFormat(), 0, 0, state->screen_width, state->screen_height);
-    free(bitmapData);
+    vgGetPixels(vgImage, 0,0, 0,0,state->screen_width, state->screen_height);
+    //vgImageSubData(vgImage, bitmapData,
+    //               stride, getRGBAFormat(), 0, 0, state->screen_width, state->screen_height);
+    //free(bitmapData);
     return vgImage;
 }
