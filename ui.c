@@ -44,6 +44,7 @@ int numFormat         = 0;
 int numStart          = 1;
 int numFontSpacing    = 24;
 int numRectPenSize;
+int numShadowOffset; 
 
 //int numResultsReturned;
 
@@ -109,19 +110,22 @@ struct result_rec * init_result_rec()
     struct result_rec * new_rec = malloc(sizeof(struct result_rec));
     if (new_rec != NULL)
     {
-        new_rec->image       = 0;
-        new_rec->largeImage  = 0;
-        new_rec->id          = NULL;
-        new_rec->title       = NULL;
-        new_rec->date        = NULL;
-        new_rec->category    = NULL;
-        new_rec->user 	     = NULL;
-        new_rec->description = NULL;
-        new_rec->url         = NULL;
-        new_rec->thumbSmall  = NULL;
-        new_rec->thumbLarge  = NULL;
-        new_rec->next        = (struct result_rec *) NULL;
-        new_rec->prev        = (struct result_rec *) NULL;
+        new_rec->image                = 0;
+        new_rec->largeImage           = 0;
+        new_rec->id                   = NULL;
+        new_rec->title                = NULL;
+        new_rec->date                 = NULL;
+        new_rec->category             = NULL;
+        new_rec->user 	              = NULL;
+        new_rec->description          = NULL;
+        new_rec->url                  = NULL;
+        new_rec->thumbSmall           = NULL;
+        new_rec->thumbLarge           = NULL;
+        new_rec->tnSmallDLData        = NULL;
+        new_rec->tnSmallImageData     = NULL;
+        new_rec->tnSmallImageDataSize = 0;
+        new_rec->next                 = (struct result_rec *) NULL;
+        new_rec->prev                 = (struct result_rec *) NULL;
     }
     return new_rec;
 }
@@ -149,9 +153,11 @@ void free_result_rec(struct result_rec * rec)
             free(rec->thumbSmall);
         if(rec->thumbLarge != NULL)
             free(rec->thumbLarge);
+        if(rec->tnSmallDLData)
+            free(rec->tnSmallDLData);
         if(rec->image > 0)
             vgDestroyImage(rec->image);
-        if(rec->image > 0)
+        if(rec->largeImage > 0)
             vgDestroyImage(rec->largeImage);
         free(rec);
     }
@@ -341,6 +347,7 @@ void init_ui_var()
     }
 
     numRectPenSize  = state->screen_width  * .005f;
+    numShadowOffset = numRectPenSize / 2;
     loadConfig();
     if(upArrowImage == 0)
     {
@@ -381,17 +388,16 @@ void draw_menu(tMenuState * menu)
               menu->winRect.w,
               menu->winRect.h,
               30, 20, numRectPenSize, rectColor, selectedColor);
-    int n2 = numRectPenSize / 2;
     Roundrect(menu->selRect.x,
               menu->selRect.y,
               menu->selRect.w,
               menu->selRect.h,
-              20, 20, n2, rectColor, selectedColor);
+              20, 20, numShadowOffset, rectColor, selectedColor);
     int i;
     for(i=0; i<2; i++) //shadow effect.
         Text(&fontDefs[titleFontMenu.selectedItem],
-             menu->titlePos.x-i*n2,
-             menu->titlePos.y-i*n2,
+             menu->titlePos.x-i*numShadowOffset,
+             menu->titlePos.y-i*numShadowOffset,
              menu->title,
              //menu->numPointFontTitle,
              numPointFontLarge,
@@ -407,11 +413,10 @@ void draw_txt_box_cen(char * message, float widthP, float heightP, float boxYp, 
     int tx = state->screen_width * tXp;
     int ty = state->screen_height * tYp;
     int txtBrk = width + x - numRectPenSize;
-    int n2 = numRectPenSize / 2;
     Roundrect(x,y, width, height, 20, 20, numRectPenSize, rectColor, selectedColor);
     int i;
     for(i=0; i<2; i++)
-        Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx-n2*i, ty-n2*i,
+        Text_Rollover(&fontDefs[titleFontMenu.selectedItem],tx-numShadowOffset*i, ty-numShadowOffset*i,
                       txtBrk, txtBrk, 1, 0, message, points, &colorScheme[6-i], VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
@@ -976,6 +981,7 @@ void init_big_menu(tMenuState * menu, char * title)
     calc_point_xy(&menu->titlePer, &menu->titlePos);
     menu->selectedIndex = 0;
     menu->scrollIndex 	= 0;
+    menu->selectedItem  = 0;
     menu->maxItems = 18;
     menu->txtOffset.x = state->screen_height * .20f;
     menu->txtOffset.y = state->screen_width  * .10f;
@@ -1022,6 +1028,7 @@ void init_small_menu(tMenuState * menu, char * title)
     calc_point_xy(&menu->titlePer, &menu->titlePos);
     menu->selectedIndex = 0;
     menu->scrollIndex 	= 0;
+    menu->selectedItem  = 0;
     menu->maxItems = 8;
     menu->txtOffset.x = state->screen_height * .20f;
     menu->txtOffset.y = state->screen_width  * .10f;
@@ -1306,19 +1313,27 @@ void gui_menu_keypress(tMenuState * menu, int key)
         {
         case 6:
             if(set_int(2, 15, offset, &numRow))
+            {
                 numResults = numRow * numCol;
-            REDRAW_GUI_KEYPRESS;
+                clear_vgimages();
+                REDRAW_GUI_KEYPRESS;
+            }
             break;
 
         case 7:
             if(set_int(1, 4, offset, &numCol))
+            {
                 numResults = numRow * numCol;
-            REDRAW_GUI_KEYPRESS;
+                REDRAW_GUI_KEYPRESS;
+            }
             break;
 
         case 8:
             if(set_int(3, 20, offset * -1, &numThumbWidth))
+            {
+                clear_vgimages();
                 REDRAW_GUI_KEYPRESS;
+            }
             break;
         case 9 :
             if(set_int(5, 15, offset, &numPointFontTiny))
@@ -1609,6 +1624,21 @@ LCUR_DWN:
     return menu->selectedItem;
 }
 //------------------------------------------------------------------------------
+void clear_vgimages()//clear images without imagedata will cause them to reload. 
+{
+    struct result_rec * temp_rec = first_rec;
+    while (temp_rec != NULL)
+    {
+        if(temp_rec->image > 0)   
+            vgDestroyImage(temp_rec->image);
+        if(temp_rec->largeImage > 0)
+            vgDestroyImage(temp_rec->largeImage); 
+        temp_rec->image      = 0;   
+        temp_rec->largeImage = 0;                 
+        temp_rec = temp_rec->next;;
+    }
+}
+//------------------------------------------------------------------------------
 void clear_output()
 {
     struct result_rec * temp_rec = first_rec;
@@ -1760,6 +1790,7 @@ void init_ui()
 //------------------------------------------------------------------------------
 void free_ui()
 {
+    clear_vgimages();
     free_ui_var();
     free_font_menus();
     free_mouse_BGImage();
@@ -1844,11 +1875,20 @@ void redraw_results(bool swap)
         if(temp->thumbSmall != NULL)
         {
             if(temp->image == 0)
-                temp->image = load_jpeg(temp->thumbSmall, rbJpg.w, rbJpg.h);
+            {
+                if (temp->tnSmallDLData == NULL)
+    
+                    temp->image = load_jpeg2(temp->thumbSmall, rbJpg.w, rbJpg.h, 
+                                             &temp->tnSmallDLData, &temp->tnSmallImageData, 
+                                             &temp->tnSmallImageDataSize);
+                    temp->image = create_image_from_buf(
+                                      temp->tnSmallImageData,
+                                      temp->tnSmallImageDataSize,
+                                      rbJpg.w, rbJpg.h);       
+            }
             vgSetPixels(rbJpg.x, rbJpg.y, temp->image, 0,0, rbJpg.w, rbJpg.h);
-            //  vgGetParameteri(temp->image, VG_IMAGE_WIDTH),
-            //  vgGetParameteri(temp->image, VG_IMAGE_HEIGHT));
         }
+
         temp = temp->next;
         if(++rowCount == numRow)
         {

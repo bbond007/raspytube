@@ -206,6 +206,7 @@ bool rbPressed(void)
     }
     return false;
 }
+
 //------------------------------------------------------------------------------
 inline void draw_mouse()
 {
@@ -214,10 +215,10 @@ inline void draw_mouse()
     Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
     int i;for (i=0;i<2;i++)
     Text_Char(&fontDefs[fontCount-1],
-               mouseXY.x + pointerOffsetXY.x,
-               mouseXY.y + pointerOffsetXY.y,
+               mouseXY.x + pointerOffsetXY.x - i*numShadowOffset,
+               mouseXY.y + pointerOffsetXY.y - i*numShadowOffset,
                numPointerIndex, 
-               i==0?numPointerSize+5:numPointerSize-5, 
+               numPointerSize, 
                1, &colorScheme[6-i],bgColor);
     //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
 }
