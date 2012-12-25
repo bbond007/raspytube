@@ -38,10 +38,10 @@ int mouseBGImage = 0;
 extern tFontDef fontDefs[];
 extern int fontCount; 
 
-int numMouseIndex    = 0;
-int numJoystickIndex = 0;
-int numPointerIndex  = 101;
-int numPointerSize   = 90;
+int numMouseIndex;
+int numJoystickIndex;
+int numPointerIndex;
+int numPointerSize;
 int numTimer         = -1;
 int timerCount 	     = 0;
 
@@ -212,7 +212,7 @@ inline void draw_mouse()
 {
     char temp[14]; // (1920, 1024)"                
     snprintf(temp, sizeof(temp), "(%d, %d)", mouseXY.x, mouseXY.y);
-    Text(&fontDefs[0], 0, 0, temp, numPointFontTiny, selectedColor, VG_FILL_PATH);
+    Text(&fontDefs[0], 0, 0, temp, numPointFontTiny , selectedColor, VG_FILL_PATH);
     int i;for (i=0;i<2;i++)
     Text_Char(&fontDefs[fontCount-1],
                mouseXY.x + pointerOffsetXY.x - i*numShadowOffset,
@@ -446,10 +446,6 @@ void initKb(void)
     ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
 //  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
-//    open_joystick();
-//    open_mouse();
-    pointerOffsetXY.x = -7;
-    pointerOffsetXY.y = -42;
 }
 //------------------------------------------------------------------------------
 void restoreKb(void)

@@ -120,7 +120,10 @@ int main(int argc, char **argv)
                     do_less(PICK_SEARCH_STR);
                 break;
             case msFarRight:
-                do_more(PICK_SEARCH_STR);
+                if(state->screen_height * 0.92f < clickXY.y)
+                    resize_ui;
+                else
+                    do_more(PICK_SEARCH_STR);
                 break;
             case msSameRec:
                 do_info_menu(PICK_SEARCH_STR);

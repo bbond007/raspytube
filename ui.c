@@ -36,21 +36,21 @@ int numPointFontTiny;
 int numPointFontSmall;
 int numPointFontMed;
 int numPointFontLarge;
-int numThumbWidth     = 10;
-int numRow	      = 6;
-int numCol	      = 2;
-int numResults        = 12;
-int numFormat         = 0;
-int numStart          = 1;
-int numFontSpacing    = 24;
+int numThumbWidth;
+int numRow;
+int numCol;
+int numResults;
+int numFormat;
+int numStart;
+int numFontSpacing;
 int numRectPenSize;
 int numShadowOffset; 
 
 //int numResultsReturned;
 
-enum tSoundOutput soundOutput = soHDMI;
-enum tVideoPlayer videoPlayer = vpOMXPlayer;
-enum tJpegDecoder jpegDecoder = jdOMX;
+enum tSoundOutput soundOutput;
+enum tVideoPlayer videoPlayer;
+enum tJpegDecoder jpegDecoder;
 #define ERROR_POINT  (numPointFontMed)
 
 tColorDef colorScheme[] =
@@ -223,7 +223,7 @@ inline void textXY_Rollover (VGfloat x, VGfloat y,VGfloat brkLength, VGfloat max
     Text_Rollover(&fontDefs[fontMenu.selectedItem], x, y, brkLength, maxLength, maxLines, yStep, s, pointsize, fillcolor, VG_FILL_PATH, false);
 }
 //------------------------------------------------------------------------------
-void free_ui_var()
+void free_gui_images()
 {
     if (tvImage != 0)
         vgDestroyImage(tvImage);
@@ -314,29 +314,8 @@ void init_font_menus()
 
 //------------------------------------------------------------------------------
 static tPointXY arrowSize;
-void init_ui_var()
+void load_gui_images()
 {
-    if(state->screen_width >= 1920)
-    {
-        numPointFontTiny  = 10;
-        numPointFontSmall = 12;
-        numPointFontMed   = 18;
-        numPointFontLarge = 40;
-    }
-    else if (state->screen_width >= 1280)
-    {
-        numPointFontTiny  = 7;
-        numPointFontSmall = 9;
-        numPointFontMed   = 13;
-        numPointFontLarge = 30;
-    }
-    else
-    {
-        numPointFontTiny  = 5;
-        numPointFontSmall = 6;
-        numPointFontMed   = 12;
-        numPointFontLarge = 25;
-    }
     if(tvImage == 0)
     {
         int w, h;
@@ -346,9 +325,6 @@ void init_ui_var()
                                         tv_jpeg_raw_data, tv_jpeg_raw_size, w, h);
     }
 
-    numRectPenSize  = state->screen_width  * .005f;
-    numShadowOffset = numRectPenSize / 2;
-    loadConfig();
     if(upArrowImage == 0)
     {
         arrowSize.x  = (state->screen_width  * .05f);
@@ -1336,19 +1312,19 @@ void gui_menu_keypress(tMenuState * menu, int key)
             }
             break;
         case 9 :
-            if(set_int(5, 15, offset, &numPointFontTiny))
+            if(set_int(2, 25, offset, &numPointFontTiny))
                 REDRAW_GUI_KEYPRESS;
             break;
         case 10:
-            if(set_int(5, 20, offset, &numPointFontSmall))
+            if(set_int(2, 25, offset, &numPointFontSmall))
                 REDRAW_GUI_KEYPRESS;
             break;
         case 11:
-            if(set_int(10, 40, offset, &numPointFontMed))
+            if(set_int(10, 50, offset, &numPointFontMed))
                 REDRAW_GUI_KEYPRESS;
             break;
         case 12:
-            set_int(15, 50, offset, &numPointFontLarge);
+            set_int(15, 100, offset, &numPointFontLarge);
             break;
         case 13:
             set_int(15, 50, offset, &numFontSpacing);
@@ -1765,11 +1741,21 @@ tMSResult mouse_select(tPointXY * point)
 bool bQScreen = false; 
 void init_ui()
 {
+    static bool bConfigLoaded = false;
     // bcm_host_init();
     memset( state, 0, sizeof( *state ) );
     init_ogl(state, bQScreen);
+    load_gui_images();
     init_font_menus();
-    init_ui_var();
+    numRectPenSize  = state->screen_width  * .005f;
+    numShadowOffset = numRectPenSize / 2;      
+    if(!bConfigLoaded)
+    {
+        bConfigLoaded = true;
+        loadConfig();
+    }
+    else
+        setRezSpecific();
     init_small_menu(&mainMenu, "Main Menu:");
     init_big_menu(&regionMenu, "Select region:");
     init_format_menu(&formatMenu);
@@ -1785,13 +1771,13 @@ void init_ui()
     guiMenu.drawDetail = gui_menu_detail;
     guiMenu.keyPress = gui_menu_keypress;
     set_menu_value(&regionMenu,0);
-};
+}
 
 //------------------------------------------------------------------------------
 void free_ui()
 {
     clear_vgimages();
-    free_ui_var();
+    free_gui_images();
     free_font_menus();
     free_mouse_BGImage();
     exit_func();
@@ -1803,16 +1789,6 @@ void resize_ui()
     free_ui();
     bQScreen = !bQScreen;                           
     init_ui();
-    if(bQScreen)
-    {	
-        numPointFontTiny    = numPointFontTiny  / 2;
-        numPointFontSmall   = numPointFontSmall / 2;
-        numPointFontMed     = numPointFontMed   / 2;
-        numPointFontLarge   = numPointFontLarge / 2;
-        numPointerSize      = numPointerSize    / 2;
-        pointerOffsetXY.x   = pointerOffsetXY.x / 2;
-        pointerOffsetXY.y   = pointerOffsetXY.y / 2;
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -1848,6 +1824,7 @@ void redraw_results(bool swap)
     int count = 0;
     clear_screen(false);
     struct result_rec * temp = first_rec;
+    
     while (temp != NULL)
     {
         if (selected_rec == NULL)

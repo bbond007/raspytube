@@ -102,8 +102,8 @@ typedef enum tMSResult    {msFarLeft =-1, msFarRight  = 1, msNewRec = 2, msSameR
 
 void init_ui();
 void free_ui();
-void init_ui_var();
-void free_ui_var();
+void load_gui_images();
+void free_gui_images();
 void free_font_menus();
 void resize_ui();
 struct result_rec * init_result_rec();
