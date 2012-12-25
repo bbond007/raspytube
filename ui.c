@@ -1320,11 +1320,11 @@ void gui_menu_keypress(tMenuState * menu, int key)
                 REDRAW_GUI_KEYPRESS;
             break;
         case 11:
-            if(set_int(10, 50, offset, &numPointFontMed))
+            if(set_int(5, 50, offset, &numPointFontMed))
                 REDRAW_GUI_KEYPRESS;
             break;
         case 12:
-            set_int(15, 100, offset, &numPointFontLarge);
+            set_int(10, 100, offset, &numPointFontLarge);
             break;
         case 13:
             set_int(15, 50, offset, &numFontSpacing);
