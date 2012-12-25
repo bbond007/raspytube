@@ -852,7 +852,7 @@ void show_message(char * message, int error, int points)
         errorStr = malloc(sErrorStr);
         snprintf(errorStr, sErrorStr, formatStr, error, message);
         printf("ERROR->%d\n", error);
-        numTimer = 400; // starts TIMER_M messages
+        numTimer = 50; // starts TIMER_M messages
         redraw_results(false);
         setBGImage();
     }

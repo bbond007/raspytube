@@ -227,7 +227,7 @@ inline void draw_mouse()
 //Roundrect(mouseXY.x, mouseXY.y, 10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------
-inline handle_mouse_x11(int * key)
+inline void handle_mouse_x11(int * key)
 {
     static Display *dpy = NULL;
     static Window root;
@@ -301,6 +301,7 @@ inline handle_mouse_x11(int * key)
             eglSwapBuffers(state->display, state->surface);
         }
     }
+
 }
 //------------------------------------------------------------------------------
 inline bool handle_mouse(int * key)
@@ -402,6 +403,8 @@ void dumpMouse()
 //------------------------------------------------------------------------------
 inline int readKb_loop(bool checkMouse)
 {
+    clock_t start = clock();
+    
     struct js_event jse;
     int key;
     do
@@ -409,9 +412,11 @@ inline int readKb_loop(bool checkMouse)
 //timer is high prioiry...
         if(numTimer > 0)
         {
-            if (++timerCount > numTimer)
+            clock_t end = clock();
+            unsigned long millis = (end - start) * 1000 / CLOCKS_PER_SEC;
+            if (millis > numTimer)
             {
-                timerCount = 0;
+                start = clock();
                 return TIMER_M;
             }
         }
@@ -458,16 +463,15 @@ inline int readKb_loop(bool checkMouse)
         if(key == EOF && checkMouse && mouseEnabled)
         {
             if(!bQScreen)
-                handle_mouse(&key);
-             else
-               x_window_loop(&key, true);
+                handle_mouse(&key);        
         }
-
+        if(key == EOF)
+            x_window_loop(&key, true);
+      
         if(key == EOF)
             usleep(1000);
     }
     while (key == EOF);
-
     if (key == ESC_KEY)
     {
         key = handleESC();
@@ -703,6 +707,9 @@ void x_window_loop(int * key, bool checkMouse)
                         case XK_Escape: *key = ESC_KEY;
                             return;
                         case XK_Return: *key = RTN_KEY;
+                            return;	
+                        case XK_BackSpace:
+                        case XK_Delete: *key = DEL_KEY;
                             return;
                         default: *key = sym;
                             return; 
@@ -717,12 +724,21 @@ void x_window_loop(int * key, bool checkMouse)
             root_window = get_toplevel_parent(x_display, x_win);
             if(XGetWindowAttributes(x_display, root_window, &xwa_root))   
             {
-                if (xwa_root.x != x_winXY.x || xwa_root.y != x_winXY.y)
+                if(xwa_root.map_state == 0)
                 {
-                    x_winXY.x = xwa_root.x;
-                    x_winXY.y = xwa_root.y;
-                    move_window(x_winXY.x + xwa_win.x, 
+                    move_window(-state->screen_width, -state->screen_height);
+                    x_winXY.x = x_winXY.y = -1; 
+                }
+
+                else
+                {
+                    if (xwa_root.x != x_winXY.x || xwa_root.y != x_winXY.y)
+                    {   
+                        x_winXY.x = xwa_root.x;
+                        x_winXY.y = xwa_root.y;
+                        move_window(x_winXY.x + xwa_win.x, 
                                 x_winXY.y + xwa_win.y);
+                    }
                 }
             }
             start = clock();
