@@ -568,7 +568,14 @@ bool create_x_window()
     Window root = DefaultRootWindow(x_display); // get the root window (usually the whole screen)
 
     XSetWindowAttributes swa;
-    swa.event_mask = ExposureMask | PointerMotionMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask;
+    swa.event_mask = ExposureMask | 
+                     PointerMotionMask | 
+                     KeyPressMask | 
+                     ButtonPressMask | 
+                     ButtonReleaseMask | 
+                     VisibilityChangeMask |
+                     PropertyChangeMask | 
+                     StructureNotifyMask;
 
 // create a window with the provided parameters
     x_win = XCreateWindow (x_display, root, 0, 0, state->screen_width,
@@ -630,9 +637,7 @@ Window get_toplevel_parent(Display*display,Window window)
 tPointXY x_winXY;
 void x_window_loop(int * key, bool checkMouse)
 {
-    static int count = 0;
-    static clock_t start = 0;
-    
+    static clock_t start = 0;    
     int sym;
     bool bMouseMoved = false;
     Window root_window;
@@ -647,6 +652,10 @@ void x_window_loop(int * key, bool checkMouse)
             XNextEvent(x_display, &xev);
             switch(xev.type)
             {	
+                case VisibilityNotify:
+                     XRaiseWindow(x_display,x_win);
+                     XFlush(x_display);
+                     break;
                 case Expose: 
                     screen = DefaultScreen(x_display);
                     XFillRectangle(x_display,x_win, DefaultGC(x_display, screen),
