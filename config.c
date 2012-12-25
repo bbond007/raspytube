@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 6502
+#define VERSION_NUMBER 6510
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
