@@ -32,3 +32,7 @@ extern int numPointerSize;
 extern int numTimer;
 extern char mouseDev[];
 extern char jsDev[];
+extern bool bQScreen;
+void x_window_loop(int * key, bool checkMouse);
+bool create_x_window();
+bool destroy_x_window();

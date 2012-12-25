@@ -3,7 +3,7 @@
 // Anthony Starks (ajstarks@gmail.com)
 // and "test_image.c"
 // ShivaVG / Ivan Leben <ivan.leben@gmail.com>
-// ShivaVG - an open-source LGPL ANSI C implementation of the OpenVG specificatio
+// ShivaVG - an open-source LGPL ANSIC implementation of the OpenVG specificatio
 
 
 #include <stdio.h>
@@ -28,7 +28,7 @@ extern int numPointFontMed;
 VGImageFormat getRGBAFormat()
 {
     unsigned int lilEndianTest = 1;
-    // Check for endianness
+// Check for endianness
     if (((unsigned char *)&lilEndianTest)[0] == 1)
         return VG_sABGR_8888;
     else
@@ -38,39 +38,39 @@ VGImageFormat getRGBAFormat()
 /*
 VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height)
 {
-    VGImage img = 0;
-    unsigned int error;
-    BITMAP bitmap;
-    error = lodepng_decode32_file(&bitmap.data, &bitmap.w, &bitmap.h, filename);
-    char errorStr[128];
-    if(error)
-    {
-        snprintf(errorStr, sizeof(errorStr),
-                 "error %u: %s\n", error, lodepng_error_text(error));
-        show_message(errorStr, TRUE, ERROR_POINT);
-        return 0;
-    }
-    bitmap.bpp    = 4;
-    bitmap.stride = bitmap.w * bitmap.bpp;
-    BITMAP * pBitmap = &bitmap;
-    if((desired_width != bitmap.w || desired_height != bitmap.h) && 
-       (desired_width != 0 && desired_height != 0))
-    {
-        BITMAP newBM;
-        newBM.w = desired_width;
-        newBM.h = desired_height;
-        newBM.bpp = 4;
-        newBM.stride = newBM.w * newBM.bpp;
-        newBM.data = malloc(newBM.stride * newBM.h);
-        ResizeBitmapRGBA(&bitmap, &newBM);
-        pBitmap = &newBM;
-        free(bitmap.data);
-    }
-    img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(img, &pBitmap->data[pBitmap->h * pBitmap->stride],
-                   pBitmap->stride * -1, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
-    free(pBitmap->data);
-    return img;
+ VGImage img = 0;
+ unsigned int error;
+ BITMAP bitmap;
+ error = lodepng_decode32_file(&bitmap.data, &bitmap.w, &bitmap.h, filename);
+ char errorStr[128];
+ if(error)
+ {
+ snprintf(errorStr, sizeof(errorStr),
+ "error %u: %s\n", error, lodepng_error_text(error));
+ show_message(errorStr, TRUE, ERROR_POINT);
+ return 0;
+ }
+ bitmap.bpp = 4;
+ bitmap.stride = bitmap.w * bitmap.bpp;
+ BITMAP * pBitmap = &bitmap;
+ if((desired_width != bitmap.w || desired_height != bitmap.h) &&
+ (desired_width != 0 && desired_height != 0))
+ {
+ BITMAP newBM;
+ newBM.w = desired_width;
+ newBM.h = desired_height;
+ newBM.bpp = 4;
+ newBM.stride = newBM.w * newBM.bpp;
+ newBM.data = malloc(newBM.stride * newBM.h);
+ ResizeBitmapRGBA(&bitmap, &newBM);
+ pBitmap = &newBM;
+ free(bitmap.data);
+ }
+ img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
+ vgImageSubData(img, &pBitmap->data[pBitmap->h * pBitmap->stride],
+ pBitmap->stride * -1, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
+ free(pBitmap->data);
+ return img;
 }
 */
 // createImageFromJpeg decompresses a JPEG image to the standard image format
@@ -85,13 +85,13 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
     unsigned int bbpp;
 
     VGImage img;
-    
+
     BITMAP bitmap;
     BITMAP * pBitmap = &bitmap;
     VGubyte *brow;
     VGubyte *drow;
     unsigned int x;
-    // Try to open image file
+// Try to open image file
     infile = fopen(filename, "rb");
     if (infile == NULL)
     {
@@ -99,44 +99,44 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
         return VG_INVALID_HANDLE;
     }
 
-    // Setup default error handling
+// Setup default error handling
     jdc.err = jpeg_std_error(&jerr);
     jpeg_create_decompress(&jdc);
 
-    // Set input file
+// Set input file
     jpeg_stdio_src(&jdc, infile);
 
 
-    // Read header and start
+// Read header and start
     jpeg_read_header(&jdc, TRUE);
     jdc.scale_num = 1;
     jdc.scale_denom = 1;
 
     jpeg_start_decompress(&jdc);
-    bitmap.w  = jdc.output_width;
+    bitmap.w = jdc.output_width;
     bitmap.h = jdc.output_height;
 
 
-    // Allocate buffer using jpeg allocator
+// Allocate buffer using jpeg allocator
     bbpp = jdc.output_components;
     bstride = bitmap.w * bbpp;
     buffer = (*jdc.mem->alloc_sarray)
              ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
 
-    // Allocate image data buffer
+// Allocate image data buffer
     bitmap.bpp = 4;
     bitmap.stride = bitmap.w * bitmap.bpp;
     bitmap.data = (VGubyte *) malloc(bitmap.stride * bitmap.h);
 
-    // Iterate until all scanlines processed
+// Iterate until all scanlines processed
     while (jdc.output_scanline < bitmap.h)
     {
 
-        // Read scanline into buffer
+// Read scanline into buffer
         jpeg_read_scanlines(&jdc, buffer, 1);
         drow = bitmap.data + (bitmap.h - jdc.output_scanline) * bitmap.stride;
         brow = buffer[0];
-        // Expand to RGBA
+// Expand to RGBA
         for (x = 0; x < bitmap.w; ++x, drow += bitmap.bpp, brow += bbpp)
         {
             switch (bbpp)
@@ -157,9 +157,9 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
         }
     }
 
-    if((desired_width != bitmap.w || desired_height != bitmap.h) && 
-       (desired_width != 0 && desired_height != 0))
-   
+    if((desired_width != bitmap.w || desired_height != bitmap.h) &&
+            (desired_width != 0 && desired_height != 0))
+
     {
         BITMAP newBM;
         newBM.w = desired_width;
@@ -174,7 +174,7 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
 
     img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
     vgImageSubData(img, pBitmap->data, pBitmap->stride, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
-    // Cleanup
+// Cleanup
     jpeg_destroy_decompress(&jdc);
     free(pBitmap->data);
 
@@ -190,21 +190,21 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
     unsigned int bbpp;
 
     VGImage img;
-    BITMAP  bitmap;
+    BITMAP bitmap;
     BITMAP * pBitmap = &bitmap;
     VGubyte *brow;
     VGubyte *drow;
     unsigned int x;
 
-    // Setup default error handling
+// Setup default error handling
     jdc.err = jpeg_std_error(&jerr);
     jpeg_create_decompress(&jdc);
 
-    // Set input file
+// Set input file
     jpeg_mem_src(&jdc, buf, bufSize);
 
 
-    // Read header and start
+// Read header and start
     jpeg_read_header(&jdc, TRUE);
     jdc.scale_num = 1;
     jdc.scale_denom = 1;
@@ -214,26 +214,26 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
     bitmap.h = jdc.output_height;
 
 
-    // Allocate buffer using jpeg allocator
+// Allocate buffer using jpeg allocator
     bbpp = jdc.output_components;
     bstride = bitmap.w * bbpp;
     buffer = (*jdc.mem->alloc_sarray)
              ((j_common_ptr) & jdc, JPOOL_IMAGE, bstride, 1);
 
-    // Allocate image data buffer
+// Allocate image data buffer
     bitmap.bpp = 4;
     bitmap.stride = bitmap.w * bitmap.bpp;
     bitmap.data = malloc(bitmap.stride * bitmap.h);
 
-    // Iterate until all scanlines processed
+// Iterate until all scanlines processed
     while (jdc.output_scanline < bitmap.h)
     {
 
-        // Read scanline into buffer
+// Read scanline into buffer
         jpeg_read_scanlines(&jdc, buffer, 1);
         drow = bitmap.data + (bitmap.h - jdc.output_scanline) * bitmap.stride;
         brow = buffer[0];
-        // Expand to RGBA
+// Expand to RGBA
         for (x = 0; x < bitmap.w; ++x, drow += bitmap.bpp, brow += bbpp)
         {
             switch (bbpp)
@@ -254,8 +254,8 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
         }
     }
 
-    if((desired_width != bitmap.w || desired_height != bitmap.h) && 
-       (desired_width != 0 && desired_height != 0))
+    if((desired_width != bitmap.w || desired_height != bitmap.h) &&
+            (desired_width != 0 && desired_height != 0))
     {
         BITMAP newBM;
         newBM.w = desired_width;
@@ -270,7 +270,7 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
 
     img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
     vgImageSubData(img, pBitmap->data, pBitmap->stride, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
-    // Cleanup
+// Cleanup
     jpeg_destroy_decompress(&jdc);
     free(pBitmap->data);
     return img;
@@ -279,13 +279,13 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
 //------------------------------------------------------------------------------
 void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst)
 {
-    // EDIT: added +1 to account for an early rounding problem
+// EDIT: added +1 to account for an early rounding problem
     int x_ratio = (int)((src->w<<16)/dst->w) +1;
     int y_ratio = (int)((src->h<<16)/dst->h) +1;
     int x2, y2, i, j;
     unsigned int * psrc = (unsigned int *) src->data;
     unsigned int * pdst = (unsigned int *) dst->data;
-    
+
     for (i=0; i<dst->h; i++)
     {
         for (j=0; j<dst->w; j++)
@@ -300,13 +300,13 @@ void ResizeBitmapRGBA(BITMAP * src, BITMAP * dst)
 //------------------------------------------------------------------------------
 void ResizeBitmap8BITIDX(BITMAP * src, BITMAP * dst)
 {
-    // EDIT: added +1 to account for an early rounding problem
+// EDIT: added +1 to account for an early rounding problem
     int x_ratio = (int)((src->w<<16)/dst->w) +1;
     int y_ratio = (int)((src->h<<16)/dst->h) +1;
     int x2, y2, i, j;
     unsigned char * psrc = (unsigned char *) src->data;
     unsigned char * pdst = (unsigned char *) dst->data;
-    
+
     for (i=0; i<dst->h; i++)
     {
         for (j=0; j<dst->w; j++)
@@ -322,19 +322,19 @@ void ResizeBitmap8BITIDX(BITMAP * src, BITMAP * dst)
 //
 VGImage ResizeImage(VGImage src, int width, int height)
 {
-/*
+    /*
     int orig_width = vgGetParameteri(src, VG_IMAGE_WIDTH);
     int orig_height = vgGetParameteri(src, VG_IMAGE_HEIGHT);
     printf("(%d, %d)\n", orig_width, orig_height);
 
     VGImage dst = vgCreateImage(getRGBAFormat(), width, height, VG_IMAGE_QUALITY_BETTER);
-    
-    	vgCopyImage(dst, VGint dx, VGint dy,
-                                 VGImage src, VGint sx, VGint sy,
-                                 VGint width, VGint height,
-                                 VGboolean dither) VG_API_EXIT;
-                                
- */
+
+    vgCopyImage(dst, VGint dx, VGint dy,
+    VGImage src, VGint sx, VGint sy,
+    VGint width, VGint height,
+    VGboolean dither) VG_API_EXIT;
+
+    */
     return src;
 }
 //------------------------------------------------------------------------------
@@ -343,7 +343,7 @@ void Roundrect(
     VGfloat x, VGfloat y,
     VGfloat w, VGfloat h,
     VGfloat rw, VGfloat rh,
-    VGfloat sw, tColorDef * fill,  tColorDef *stroke)
+    VGfloat sw, tColorDef * fill, tColorDef *stroke)
 {
     VGPath path = newpath();
     vguRoundRect(path, x, y, w, h, rw, rh);
@@ -354,20 +354,20 @@ void Roundrect(
 }
 
 //------------------------------------------------------------------------------
-// Rect makes a rectangle  at the specified location and dimensions, applying style
-void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, tColorDef * fill, tColorDef * stroke) 
+// Rect makes a rectangle at the specified location and dimensions, applying style
+void Rect(VGfloat x, VGfloat y, VGfloat w, VGfloat h, VGfloat sw, tColorDef * fill, tColorDef * stroke)
 {
-	VGPath path = newpath();
-	vguRect(path, x, y, w, h);
-	setfill(fill);
-	setstroke(stroke, sw);
-	vgDrawPath(path, VG_FILL_PATH | VG_STROKE_PATH);
-	vgDestroyPath(path);
+    VGPath path = newpath();
+    vguRect(path, x, y, w, h);
+    setfill(fill);
+    setstroke(stroke, sw);
+    vgDrawPath(path, VG_FILL_PATH | VG_STROKE_PATH);
+    vgDestroyPath(path);
 }
 
 //------------------------------------------------------------------------------
 // loadfont loads font path data
-void  loadfont(const int *Points, const int *PointIndices, const unsigned char *Instructions, const int *InstructionIndices, const int *InstructionCounts, int ng, VGPath *glyphs)
+void loadfont(const int *Points, const int *PointIndices, const unsigned char *Instructions, const int *InstructionIndices, const int *InstructionCounts, int ng, VGPath *glyphs)
 {
     int i;
     memset(glyphs, 0, ng*sizeof(VGPath));
@@ -388,7 +388,7 @@ void  loadfont(const int *Points, const int *PointIndices, const unsigned char *
 
 //------------------------------------------------------------------------------
 // loadfont loads font path data
-void  load_font(tFontDef * fontDef)
+void load_font(tFontDef * fontDef)
 {
     int i;
     size_t size = fontDef->glyphCount*sizeof(VGPath);
@@ -482,14 +482,14 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
         int glyph = fontDef->characterMap[character];
         if( glyph == -1 )
         {
-            continue;	//glyph is undefined
+            continue; //glyph is undefined
         }
 
         VGfloat mat[9] =
         {
-            size,	0.0f,	0.0f,
-            0.0f,	size,	0.0f,
-            xx,		y,		1.0f
+            size, 0.0f, 0.0f,
+            0.0f, size, 0.0f,
+            xx, y, 1.0f
         };
 
         vgLoadMatrix(mm);
@@ -499,10 +499,10 @@ void Text(tFontDef * fontDef, VGfloat x, VGfloat y, const char* s, int pointsize
     }
     vgLoadMatrix(mm);
 }
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize, 
-               VGfloat sw, tColorDef * fill,  tColorDef *stroke)
+void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize,
+               VGfloat sw, tColorDef * fill, tColorDef *stroke)
 {
     int glyph = fontDef->characterMap[c];
     if( glyph != -1 )
@@ -513,9 +513,9 @@ void Text_Char(tFontDef * fontDef, VGfloat x, VGfloat y, int c, int pointsize,
         setfill(fill);
         VGfloat mat[9] =
         {
-            size,	0.0f,	0.0f,
-            0.0f,	size,	0.0f,
-            x,		y,		1.0f
+            size, 0.0f, 0.0f,
+            0.0f, size, 0.0f,
+            x, y, 1.0f
         };
         vgLoadMatrix(mm);
         vgMultMatrix(mat);
@@ -532,8 +532,8 @@ void Text_getHeight(tFontDef * fontDef, int pointsize)
 }
 //------------------------------------------------------------------------------
 // Text renders a string of text at a specified location, using the specified font glyphs
-void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, VGfloat maxLength, int maxLines, 
-  VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags, bool bRichTXT)
+void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, VGfloat maxLength, int maxLines,
+                   VGfloat yStep, const char* s, int pointsize, tColorDef * fillcolor, VGbitfield renderFlags, bool bRichTXT)
 {
     float size = (float)pointsize;
     float xx = x;
@@ -545,27 +545,27 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, 
     setfill(&fillcolor[0]);
 
     int max = (int)strlen(s);
-    
+
     for(i=0; i < max; i++)
     {
         unsigned int character = (unsigned int)s[i];
         int glyphWidth = 0;
         if(bRichTXT && character == '~' && (i+1) < max)
         {
-             char sColor[2] = {s[++i], 0x00};
-             int color = atoi(&sColor[0]);
-             setfill(&fillcolor[color]);
+            char sColor[2] = {s[++i], 0x00};
+            int color = atoi(&sColor[0]);
+            setfill(&fillcolor[color]);
         }
         else
         {
-            int glyph = fontDef->characterMap[character];            
+            int glyph = fontDef->characterMap[character];
             if( glyph != -1 && (character != ' ' || xx != x || yy == y))
-            {	
+            {
                 VGfloat mat[9] =
                 {
-                   size,	0.0f,	0.0f,
-                   0.0f,	size,	0.0f,
-                   xx,		yy,	1.0f
+                    size, 0.0f, 0.0f,
+                    0.0f, size, 0.0f,
+                    xx, yy, 1.0f
                 };
 
                 vgLoadMatrix(mm);
@@ -575,7 +575,7 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, 
                 xx += glyphWidth;
             }
         }
-        if((character == '\n' || (xx + glyphWidth) >= maxLength)  || (xx >= brkLength && !isalnum(character))) //autoroll
+        if((character == '\n' || (xx + glyphWidth) >= maxLength) || (xx >= brkLength && !isalnum(character))) //autoroll
         {
             xx = x;
             yy -= yStep;
@@ -583,7 +583,7 @@ void Text_Rollover(tFontDef * fontDef, VGfloat x, VGfloat y, VGfloat brkLength, 
             if (maxLines > 0 && iLines == maxLines)
                 break;
         }
-        
+
     }
     vgLoadMatrix(mm);
 }
@@ -595,7 +595,7 @@ void Poly(VGfloat *xy, VGint n, VGfloat sw, tColorDef * fill, tColorDef * stroke
     VGPath path = newpath();
     VGbitfield pflag;
 
-    //interleave(x, y, n, points);
+//interleave(x, y, n, points);
     vguPolygon(path, xy, n, VG_FALSE);
     if (dofill)
     {
@@ -611,7 +611,43 @@ void Poly(VGfloat *xy, VGint n, VGfloat sw, tColorDef * fill, tColorDef * stroke
     vgDrawPath(path, pflag);
     vgDestroyPath(path);
 }
+//------------------------------------------------------------------------------
+static DISPMANX_UPDATE_HANDLE_T StartUpdate(void)
+{
+    return vc_dispmanx_update_start(sched_get_priority_max(SCHED_OTHER));
+}
+//------------------------------------------------------------------------------
+static void EndUpdate(DISPMANX_UPDATE_HANDLE_T update)
+{
+    vc_dispmanx_update_submit_sync(update);
+}
+//------------------------------------------------------------------------------
+bool move_window(int x, int y)
+{
+    int ret;
+    DISPMANX_UPDATE_HANDLE_T update;
+//valuefrominterface/vmcs_host/vc_vchi_dispmanx.h
+    const uint32_t ELEMENT_CHANGE_DEST_RECT =(1 << 2);
+    const uint32_t ELEMENT_CHANGE_SRC_RECT = (1 << 3);
+    const uint32_t mode=ELEMENT_CHANGE_SRC_RECT | ELEMENT_CHANGE_DEST_RECT;
 
+    state->dst_rect.x = x;
+    state->dst_rect.y = y;
+    update = StartUpdate();
+    if (update == DISPMANX_NO_HANDLE)
+        return 1;
+    ret = vc_dispmanx_element_change_attributes(update,
+            state->dispman_element,
+            mode,
+            0,//layer
+            0xff,//opacity
+            &state->dst_rect,
+            &state->src_rect,
+            (DISPMANX_RESOURCE_HANDLE_T)0,//mask
+            DISPMANX_NO_ROTATE);
+    EndUpdate(update);
+    return ret;
+}
 //------------------------------------------------------------------------------
 // init_ogl sets the display, OpenGL|ES context and screen information
 // state holds the OGLES model information
@@ -621,13 +657,14 @@ void init_ogl(STATE_T *state, bool bQScreen)
     EGLBoolean result;
     EGLint num_config;
 
-    static EGL_DISPMANX_WINDOW_T nativewindow;
+//static EGL_DISPMANX_WINDOW_T nativewindow;
 
-    DISPMANX_ELEMENT_HANDLE_T dispman_element;
-    DISPMANX_DISPLAY_HANDLE_T dispman_display;
-    DISPMANX_UPDATE_HANDLE_T dispman_update;
-    VC_RECT_T dst_rect;
-    VC_RECT_T src_rect;
+// DISPMANX_ELEMENT_HANDLE_T dispman_element;
+// DISPMANX_DISPLAY_HANDLE_T dispman_display;
+// DISPMANX_UPDATE_HANDLE_T dispman_update;
+//VC_RECT_T dst_rect;
+//VC_RECT_T src_rect;
+    memset(&state->nativewindow, 0x00, sizeof( EGL_DISPMANX_WINDOW_T));
 
     static const EGLint attribute_list[] =
     {
@@ -641,65 +678,65 @@ void init_ogl(STATE_T *state, bool bQScreen)
 
     EGLConfig config;
 
-    // get an EGL display connection
+// get an EGL display connection
     state->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     assert(state->display!=EGL_NO_DISPLAY);
 
-    // initialize the EGL display connection
+// initialize the EGL display connection
     result = eglInitialize(state->display, NULL, NULL);
     assert(EGL_FALSE != result);
 
-    // bind OpenVG API
+// bind OpenVG API
     eglBindAPI(EGL_OPENVG_API);
 
-    // get an appropriate EGL frame buffer configuration
+// get an appropriate EGL frame buffer configuration
     result = eglChooseConfig(state->display, attribute_list, &config, 1, &num_config);
     assert(EGL_FALSE != result);
 
-    // create an EGL rendering context
+// create an EGL rendering context
     state->context = eglCreateContext(state->display, config, EGL_NO_CONTEXT, NULL);
     assert(state->context!=EGL_NO_CONTEXT);
 
-    // create an EGL window surface
+// create an EGL window surface
     success = graphics_get_display_size(0 /* LCD */, &state->screen_width, &state->screen_height);
     if(bQScreen)
     {
         state->screen_width = state->screen_width / 2;
         state->screen_height = state->screen_height / 2;
     }
-    
+
     assert( success >= 0 );
 
-    dst_rect.x = 0;
-    dst_rect.y = 0;
-    dst_rect.width = state->screen_width;
-    dst_rect.height = state->screen_height;
+    state->dst_rect.x = 0;
+    state->dst_rect.y = 0;
+    state->dst_rect.width = state->screen_width;
+    state->dst_rect.height = state->screen_height;
 
-    src_rect.x = 0;
-    src_rect.y = 0;
-    src_rect.width = state->screen_width << 16;
-    src_rect.height = state->screen_height << 16;
+    state->src_rect.x = 0;
+    state->src_rect.y = 0;
+    state->src_rect.width = state->screen_width << 16;
+    state->src_rect.height = state->screen_height << 16;
 
-    dispman_display = vc_dispmanx_display_open( 0 /* LCD */);
-    dispman_update = vc_dispmanx_update_start( 0 );
+    state->dispman_display = vc_dispmanx_display_open( 0 /* LCD */);
+    state->dispman_update = vc_dispmanx_update_start( 0 );
 
-    dispman_element = vc_dispmanx_element_add ( dispman_update, dispman_display,
-                      0/*layer*/, &dst_rect, 0/*src*/,
-                      &src_rect, DISPMANX_PROTECTION_NONE, 0 /*alpha*/, 0/*clamp*/, 0/*transform*/);
+    state->dispman_element = vc_dispmanx_element_add ( state->dispman_update, state->dispman_display,
+                             0/*layer*/, &state->dst_rect, 0/*src*/,
+                             &state->src_rect, DISPMANX_PROTECTION_NONE, 0 /*alpha*/, 0/*clamp*/, 0/*transform*/);
 
-    nativewindow.element = dispman_element;
-    nativewindow.width = state->screen_width;
-    nativewindow.height = state->screen_height;
-    vc_dispmanx_update_submit_sync( dispman_update );
+    state->nativewindow.element = state->dispman_element;
+    state->nativewindow.width = state->screen_width;
+    state->nativewindow.height = state->screen_height;
+    vc_dispmanx_update_submit_sync( state->dispman_update );
 
-    state->surface = eglCreateWindowSurface( state->display, config, &nativewindow, NULL );
+    state->surface = eglCreateWindowSurface( state->display, config, &state->nativewindow, NULL );
     assert(state->surface != EGL_NO_SURFACE);
 
-    // connect the context to the surface
+// connect the context to the surface
     result = eglMakeCurrent(state->display, state->surface, state->surface, state->context);
     assert(EGL_FALSE != result);
 
-    //DAVE - Set up screen ratio
+//DAVE - Set up screen ratio
     glViewport(0, 0, (GLsizei)state->screen_width, (GLsizei)state->screen_height);
 
     glMatrixMode(GL_PROJECTION);
@@ -713,11 +750,11 @@ void init_ogl(STATE_T *state, bool bQScreen)
 // exit_func cleans up
 void exit_func(void)
 {
-    // clear screen
+// clear screen
     glClear( GL_COLOR_BUFFER_BIT );
     eglSwapBuffers(state->display, state->surface);
 
-    // Release OpenGL resources
+// Release OpenGL resources
     eglMakeCurrent( state->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
     eglDestroySurface( state->display, state->surface );
     eglDestroyContext( state->display, state->context );
@@ -772,7 +809,7 @@ int write_jpeg_file(FILE * outputFile, unsigned char * bitmapData, unsigned int 
             dst++;
             src++;
         }
-        //bitmapData[cinfo.next_scanline*cinfo.image_width*cinfo.input_components];
+//bitmapData[cinfo.next_scanline*cinfo.image_width*cinfo.input_components];
         jpeg_write_scanlines(&cinfo,row_pointer,1);
     }
     free(outputBuf);

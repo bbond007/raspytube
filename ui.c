@@ -1787,8 +1787,11 @@ void free_ui()
 void resize_ui()
 {
     free_ui();
+    destroy_x_window();    
     bQScreen = !bQScreen;                           
     init_ui();
+    if (bQScreen)
+        create_x_window();
 }
 
 //------------------------------------------------------------------------------

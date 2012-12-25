@@ -238,6 +238,7 @@ void term_command(tTermState * ts, char * command)
     }
     int pipefd = fileno(pipe);
     int flags = fcntl(pipefd, F_GETFL, 0);
+    int key = 0x00;
     flags |= O_NONBLOCK;
     fcntl(pipefd, F_SETFL, flags);
     while(!feof(pipe))
@@ -249,6 +250,8 @@ void term_command(tTermState * ts, char * command)
         term_show(ts, false);
         draw_boing(boingXY.x, boingXY.y, boingSize.x, boingSize.y, true);
         eglSwapBuffers(state->display, state->surface);
+        if (bQScreen)
+            x_window_loop(&key, false);
     }
     pclose(pipe);
 }

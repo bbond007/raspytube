@@ -43,8 +43,13 @@ typedef struct
     EGLDisplay display;
     EGLSurface surface;
     EGLContext context;
+    DISPMANX_ELEMENT_HANDLE_T dispman_element;
+    DISPMANX_DISPLAY_HANDLE_T dispman_display;
+    DISPMANX_UPDATE_HANDLE_T dispman_update;
+    EGL_DISPMANX_WINDOW_T nativewindow;
+    VC_RECT_T dst_rect;
+    VC_RECT_T src_rect;
 } STATE_T;
-
 
 void load_font(tFontDef * fontDef);
 void unload_font(tFontDef * fontDef);

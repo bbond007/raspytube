@@ -218,18 +218,18 @@ extern tColorDef colorScheme[];
 //#define MOUSE_2 5
 //#define MOUSE_M 6
 //#define MOUSE_F 7
-#define CUR_UP  -1
-#define CUR_DWN -2
-#define CUR_R   -3
-#define CUR_L   -4
-#define FUN_1 	-5 
-#define FUN_2	-6
-#define JOY_1   -7
-#define MOUSE_1 -8
-#define MOUSE_2 -9
-#define MOUSE_M -10
-#define MOUSE_F -11
-#define MOUSE_B -12
-#define TIMER_M -99
+#define CUR_UP  -101
+#define CUR_DWN -102
+#define CUR_R   -103
+#define CUR_L   -104
+#define FUN_1 	-105 
+#define FUN_2	-106
+#define JOY_1   -107
+#define MOUSE_1 -108
+#define MOUSE_2 -109
+#define MOUSE_M -110
+#define MOUSE_F -111
+#define MOUSE_B -112
+#define TIMER_M -199
 
 

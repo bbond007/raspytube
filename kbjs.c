@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <linux/input.h>
-#include <X11/Xlib.h>
+#include <X11/Xlib.h> 
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
 #include "gfxlib.h"
 #include "ui.h"
 #include "kbjs.h"
@@ -25,13 +27,13 @@ static int mouse_fd = -1;
 char jsDev[] = "/dev/input/js#";
 char mouseDev[] = "/dev/input/event#";
 
-int jsXAxis     = 0;
-int jsYAxis     = 1;
+int jsXAxis = 0;
+int jsYAxis = 1;
 int jsThreshold = 30000;
-int jsSelect    = 2;
-int jsBack      = 1;
-int jsInfo      = 8;
-int jsMenu      = 9;
+int jsSelect = 2;
+int jsBack = 1;
+int jsInfo = 8;
+int jsMenu = 9;
 bool mouseEnabled = true;
 tPointXY mouseXY;
 tPointXY clickXY;
@@ -43,8 +45,8 @@ int numMouseIndex;
 int numJoystickIndex;
 int numPointerIndex;
 int numPointerSize;
-int numTimer         = -1;
-int timerCount 	     = 0;
+int numTimer = -1;
+int timerCount = 0;
 
 tPointXY pointerOffsetXY;
 //------------------------------------------------------------------------------
@@ -222,7 +224,7 @@ inline void draw_mouse()
                   numPointerIndex,
                   numPointerSize,
                   1, &colorScheme[6-i],bgColor);
-    //Roundrect(mouseXY.x, mouseXY.y,  10, 10, 20, 20, 1, rectColor, errorColor);
+//Roundrect(mouseXY.x, mouseXY.y, 10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------
 inline handle_mouse_x11(int * key)
@@ -239,6 +241,8 @@ inline handle_mouse_x11(int * key)
     int root_x;
     int root_y;
     unsigned int mask;
+
+
     if(dpy == NULL)
     {
         dpy = XOpenDisplay(NULL);
@@ -289,7 +293,7 @@ inline handle_mouse_x11(int * key)
         }
         else
             while(read_mouse_event(&mousee));
-         
+
         if (mouseBGImage != 0 && (oldMouseXY.x != mouseXY.x || oldMouseXY.y != mouseXY.y))
         {
             vgSetPixels(0,0, mouseBGImage, 0, 0, state->screen_width, state->screen_height);
@@ -391,7 +395,7 @@ void dumpMouse()
     {
         while(read_mouse_event(&mousee))
         {
-            // :)
+// :)
         }
     }
 }
@@ -402,7 +406,7 @@ inline int readKb_loop(bool checkMouse)
     int key;
     do
     {
-        //timer is high prioiry...
+//timer is high prioiry...
         if(numTimer > 0)
         {
             if (++timerCount > numTimer)
@@ -426,7 +430,7 @@ inline int readKb_loop(bool checkMouse)
                     else if(jse.value <= -jsThreshold)
                         return CUR_L;
                 }
-                else if(jse.number ==  jsYAxis)
+                else if(jse.number == jsYAxis)
                 {
                     if (jse.value >= jsThreshold)
                         return CUR_DWN;
@@ -450,13 +454,14 @@ inline int readKb_loop(bool checkMouse)
                 break;
             }
         }
-
-        key = getchar();
+        key = getchar();                        
         if(key == EOF && checkMouse && mouseEnabled)
+        {
             if(!bQScreen)
                 handle_mouse(&key);
-            else
-                handle_mouse_x11(&key);
+             else
+               x_window_loop(&key, true);
+        }
 
         if(key == EOF)
             usleep(1000);
@@ -504,7 +509,7 @@ void dumpJs(void)
         struct js_event jse;
         while (read_joystick_event(&jse))
         {
-            //dumping joystick
+//dumping joystick
         }
     }
 }
@@ -513,26 +518,26 @@ void dumpKb(void)
 {
     while (getchar()!= EOF)
     {
-        // dumping kb :)
+// dumping kb :)
     }
 
 }
 //------------------------------------------------------------------------------
 void initKb(void)
 {
-    tcgetattr(STDIN_FILENO, &oldt); 		// store old settings
-    newt = oldt; 				// copy old settings to new settings
-    newt.c_lflag &= ~(ICANON | ECHO); 		// change settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt); 	// apply the new settings immediatly
+    tcgetattr(STDIN_FILENO, &oldt); // store old settings
+    newt = oldt; // copy old settings to new settings
+    newt.c_lflag &= ~(ICANON | ECHO); // change settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); // apply the new settings immediatly
     ttflags = fcntl(STDIN_FILENO, F_GETFL, 0);
-//  load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
+// load_sample(&asiKbClick, (uint8_t *) soundraw_data, soundraw_size, 8000, 16, 1, 1);
     fcntl(STDIN_FILENO, F_SETFL, ttflags | O_NONBLOCK);
 }
 //------------------------------------------------------------------------------
 void restoreKb(void)
 {
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); 	// reapply the old settings
-//  delete_sample(&asiKbClick);
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // reapply the old settings
+// delete_sample(&asiKbClick);
     close_joystick();
     close_mouse();
     if(mouseBGImage != 0)
@@ -546,6 +551,182 @@ void free_mouse_BGImage(void)
         vgDestroyImage(mouseBGImage);
     mouseBGImage = 0;
 }
+
+//------------------------------------------------------------------------------
+Display * x_display = NULL;
+Window x_win;
+//------------------------------------------------------------------------------
+bool create_x_window()
+{
+    x_display = XOpenDisplay(NULL); // open the standard display (the primary screen)
+    if (x_display == NULL)
+    {
+        show_message("XOpenDisplay(NULL)", true, numPointFontMed);
+        return false;
+    }
+
+    Window root = DefaultRootWindow(x_display); // get the root window (usually the whole screen)
+
+    XSetWindowAttributes swa;
+    swa.event_mask = ExposureMask | PointerMotionMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask;
+
+// create a window with the provided parameters
+    x_win = XCreateWindow (x_display, root, 0, 0, state->screen_width,
+                           state->screen_height, 0, CopyFromParent, InputOutput,
+                           CopyFromParent, CWEventMask, &swa );
+
+    XMapWindow (x_display, x_win ); // make the window visible on the screen
+    XStoreName (x_display, x_win, "RASPYTUBE!" ); // give the window a name
+    XSizeHints Hints;
+    Hints.flags=PSize|PMinSize|PMaxSize;
+    Hints.min_width=Hints.max_width=Hints.base_width=state->screen_width;
+    Hints.min_height=Hints.max_height=Hints.base_height=state->screen_height;  
+    XSetWMNormalHints(x_display,x_win,&Hints);
+    return true;
+}
+//------------------------------------------------------------------------------
+bool destroy_x_window()
+{
+    if(x_display != NULL)
+    {
+        XDestroyWindow(x_display, x_win);
+        XCloseDisplay(x_display);
+        x_display = NULL;
+    }
+    return true;
+}
+//------------------------------------------------------------------------------
+Window get_toplevel_parent(Display*display,Window window)
+{
+    Window parent;
+    Window root;
+    Window * children;
+    unsigned int num_children;
+
+    while(1)
+    {
+        if(0==XQueryTree(display,window, &root,
+                         &parent,&children, &num_children))
+        {
+            fprintf(stderr,"XQueryTreeerror\n");
+            abort();//changetowhatevererrorhandlingyouprefer
+        }
+        if(children) //musttestfornull
+        {
+            XFree(children);
+        }
+        if(window == root|| parent == root)
+        {
+            return window;
+        }
+        else
+        {
+            window=parent;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+tPointXY x_winXY;
+void x_window_loop(int * key, bool checkMouse)
+{
+    static int count = 0;
+    static clock_t start = 0;
+    
+    int sym;
+    bool bMouseMoved = false;
+    Window root_window;
+    XEvent xev;
+    XWindowAttributes xwa_root, xwa_win;
+    int screen;
+    if(x_display != NULL)
+    {
+        while (XPending(x_display))
+        {
+            // check for events from the x-server
+            XNextEvent(x_display, &xev);
+            switch(xev.type)
+            {	
+                case Expose: 
+                    screen = DefaultScreen(x_display);
+                    XFillRectangle(x_display,x_win, DefaultGC(x_display, screen),
+                    0, 0, state->screen_width, state->screen_height);
+                break;
+                case ClientMessage:
+                   // if(e.xclient.data.l[0] == wmDeleteMessage)
+                
+                break;
+                
+                case MotionNotify:
+                    mouseXY.x = xev.xmotion.x;
+                    mouseXY.y = state->screen_height - xev.xmotion.y;
+                    bMouseMoved = true;
+                break;
+                
+                case ButtonPress:
+                    if(checkMouse)
+                    {
+                        memcpy(&clickXY, &mouseXY, sizeof(tPointXY));
+                        //printf("mouse button? %d\n", xev.xbutton.button);
+                        switch(xev.xbutton.button)
+                        {
+                            case 1: *key = MOUSE_1;
+                                return;
+                            case 3: *key = MOUSE_2;
+                                return;
+                        }
+                    }
+                    break;
+                case KeyPress:
+                    sym = XLookupKeysym(&xev.xkey, 0);
+                 //   printf("->%d", sym); 
+                    switch(sym)
+                    {
+                        //case 65362:
+                        case XK_Up:     *key = CUR_UP;
+                            return;
+                        case XK_Down:   *key = CUR_DWN;
+                            return; 
+                        case XK_Left:   *key = CUR_L;
+                            return;
+                        case XK_Right:  *key = CUR_R;                            
+                            return;
+                        case XK_Escape: *key = ESC_KEY;
+                            return;
+                        case XK_Return: *key = RTN_KEY;
+                            return;
+                        default: *key = sym;
+                            return; 
+                    }   
+                    break;
+            }
+        }
+        clock_t end = clock();
+        unsigned long millis = (end - start) * 1000 / CLOCKS_PER_SEC;
+        if(millis > 100 && XGetWindowAttributes(x_display, x_win, &xwa_win))
+        {
+            root_window = get_toplevel_parent(x_display, x_win);
+            if(XGetWindowAttributes(x_display, root_window, &xwa_root))   
+            {
+                if (xwa_root.x != x_winXY.x || xwa_root.y != x_winXY.y)
+                {
+                    x_winXY.x = xwa_root.x;
+                    x_winXY.y = xwa_root.y;
+                    move_window(x_winXY.x + xwa_win.x, 
+                                x_winXY.y + xwa_win.y);
+                }
+            }
+            start = clock();
+        }
+        if (bMouseMoved && checkMouse && mouseEnabled)
+        {
+             vgSetPixels(0,0, mouseBGImage, 0, 0, state->screen_width, state->screen_height);
+             draw_mouse();
+             eglSwapBuffers(state->display, state->surface);
+        }     
+    }
+}
+
 //------------------------------------------------------------------------------
 void do_joystick_test(void)
 {
@@ -557,7 +738,7 @@ void do_joystick_test(void)
     term_put_str(&ts, "\n");
     term_show(&ts, true);
     term_set_color(&ts, 5);
-    char format[] =  "event: time %8u, value %8hd, type: %3u, axis/button: %u\n";
+    char format[] = "event: time %8u, value %8hd, type: %3u, axis/button: %u\n";
     size_t size = strlen(format) + 50;
     char * txt = malloc(size);
     int key = 0;
@@ -577,9 +758,14 @@ void do_joystick_test(void)
             else
                 usleep(1000);
 
+                
             key = getchar();
             if (key == ESC_KEY)
                 key = handleESC();
+            
+            if(key == EOF && bQScreen)
+                x_window_loop(&key, false);
+            
         }
         while (key != ESC_KEY);
     }
