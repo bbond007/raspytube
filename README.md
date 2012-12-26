@@ -50,32 +50,31 @@ This application can now run in a X11 window. The app is not really
 
 running in X11 window, but it is a clever illusion. How I accomplish 
 
-this is I create a dummy X11 window, track the movement of that window
+this is I create a dummy X11 window, track the movement of that window 
 
-on the desktop then uses "vc_dispmanx_element_change_attributes" of the 
+on the desktop then uses "vc_dispmanx_element_change_attributes" of 
 
-VC output to match. This has the added benefit of being able to take
+the VC output to match. This has the added benefit of being able to 
 
-input focus and capture X11 input such as mouse move/enter events and 
+take input focus and capture X11 input such as mouse move/enter events 
 
-keypresses. Apparently it is very expensive to call XGetWindowAttributes 
+and keypresses. Apparently it is very expensive to call 
 
-and XGetGeometry (that is how MC Hammer went broke), so I only do so 
+XGetWindowAttributes and XGetGeometry (that is actually how MC Hammer 
 
-periodically which is why you'll notice a slight lag. This is also why 
+went broke), so I only do so periodically which is why you'll notice a 
 
-the window always always frontmost. To switch to Xwindows mode, There is 
+slight lag when you move the window (before the VC window catches up). 
 
-an invisible "button" on right-topmost psition to toggle on the screen or
+This is also why the window is always front-most. To switch to XWindows 
 
-the "q" key (for quarter-screen).
+mode, There is an invisible "button" on right-topmost position to toggle 
 
-Not perfect, but still, this is  cool technology and I hope to modify 
+on the screen or the "q" key (for quarter-screen).   
 
-OMX player to work in the same way...
-  
 
 Thanks the the RPi community!
+
 
 		parts of this come from "shapes.c":
 
