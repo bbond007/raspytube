@@ -83,6 +83,7 @@ tMenuItem jskbMenuItems[] =
     {"Pointer Size",     "PS",			     12},
     {"Pointer Offset X", "OX",			     13},
     {"Pointer Offset Y", "OY",			     14},
+    {"***Save config***","SC",			      0},
     {NULL,		 NULL,			      0}
 };
      	

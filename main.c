@@ -380,8 +380,9 @@ static void do_jskb_menu()
         {
         case 0:
             break;
-            
-        case 7: mouseEnabled = !mouseEnabled;
+        case 7:  mouseEnabled = !mouseEnabled;
+        break;
+        case 14: saveConfig();
         break;
         }
     }
