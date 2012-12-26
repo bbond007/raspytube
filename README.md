@@ -40,7 +40,7 @@ NOTES:
 		
 		* you need 64MB VRAM ro run this program.
 
-		* MPlayer not working yet... mplayer still not working....
+		* MPlayer if you switch to windowed mode.  
 
 		* Added mouse support.
 

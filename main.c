@@ -703,7 +703,7 @@ static void play_video (char * url)
             {
             case vpMPlayer:
                 player_argv[iArgv++]="/usr/bin/mplayer";
-                player_argv[iArgv++]="-fs";
+                //player_argv[iArgv++]="-fs";
                 player_argv[iArgv++]="--";
                 break;
 
