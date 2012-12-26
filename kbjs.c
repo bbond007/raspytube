@@ -563,44 +563,6 @@ void free_mouse_BGImage(void)
 }
 
 //------------------------------------------------------------------------------
-bool create_x_window()
-{
-    x_display = XOpenDisplay(NULL); // open the standard display (the primary screen)
-    if (x_display == NULL)
-    {
-        show_message("XOpenDisplay(NULL)", 0x11000001, numPointFontMed);
-        return false;
-    }
-
-    Window root = DefaultRootWindow(x_display); // get the root window (usually the whole screen)
-
-    XSetWindowAttributes swa;
-    swa.event_mask = ExposureMask | 
-                     PointerMotionMask | 
-                     KeyPressMask | 
-                     ButtonPressMask | 
-                     ButtonReleaseMask | 
-                     VisibilityChangeMask |
-                     PropertyChangeMask | 
-                     StructureNotifyMask |
-                //     EnterWindowMask |
-                     LeaveWindowMask;
-
-// create a window with the provided parameters
-    x_win = XCreateWindow (x_display, root, 0, 0, state->screen_width,
-                           state->screen_height, 0, CopyFromParent, InputOutput,
-                           CopyFromParent, CWEventMask, &swa );
-
-    XMapWindow (x_display, x_win ); // make the window visible on the screen
-    XStoreName (x_display, x_win, "BB7:RASPYTUBE!" ); // give the window a name
-    XSizeHints Hints;
-    Hints.flags=PSize|PMinSize|PMaxSize;
-    Hints.min_width=Hints.max_width=Hints.base_width=state->screen_width;
-    Hints.min_height=Hints.max_height=Hints.base_height=state->screen_height;  
-    XSetWMNormalHints(x_display,x_win,&Hints);
-    return true;
-}
-//------------------------------------------------------------------------------
 bool destroy_x_window()
 {
     if(x_display != NULL)
@@ -643,7 +605,8 @@ inline Window get_toplevel_parent(Display*display,Window window)
 }
 
 //------------------------------------------------------------------------------
-tPointXY x_winXY;
+static tPointXY x_winXY;
+static Atom wmDeleteMessage;
 #define USEGETXGEOMETRY
 // XGetGeometry should be faster for what its worth
 void x_window_loop(int * key, bool checkMouse)
@@ -685,11 +648,17 @@ void x_window_loop(int * key, bool checkMouse)
                     XFillRectangle(x_display,x_win, DefaultGC(x_display, screen),
                     0, 0, state->screen_width, state->screen_height);
                 break;
+                
                 case ClientMessage:
-                   // if(e.xclient.data.l[0] == wmDeleteMessage)
-                
+                     if (xev.xclient.data.l[0] == wmDeleteMessage)
+                     {
+                         printf("CLOSE:X11 :)\n");
+                         clear_output();  
+                         free_ui();
+                         restoreKb();
+                         exit(0);
+                    }
                 break;
-                
                 case MotionNotify:
                     mouseXY.x = xev.xmotion.x;
                     mouseXY.y = state->screen_height - xev.xmotion.y;
@@ -781,6 +750,47 @@ void x_window_loop(int * key, bool checkMouse)
              eglSwapBuffers(state->display, state->surface);
         }     
     }
+}
+//------------------------------------------------------------------------------
+bool create_x_window()
+{
+    x_display = XOpenDisplay(NULL); // open the standard display (the primary screen)
+    if (x_display == NULL)
+    {
+        show_message("XOpenDisplay(NULL)", 0x11000001, numPointFontMed);
+        return false;
+    }
+
+    Window root = DefaultRootWindow(x_display); // get the root window (usually the whole screen)
+
+    XSetWindowAttributes swa;
+    swa.event_mask = ExposureMask         | 
+                     PointerMotionMask    | 
+                     KeyPressMask         | 
+                     ButtonPressMask      | 
+                     ButtonReleaseMask    | 
+                     VisibilityChangeMask |
+                     PropertyChangeMask   | 
+                     StructureNotifyMask  |
+                //   EnterWindowMask      |
+                //   DestroyNotify        |
+                     LeaveWindowMask;
+
+// create a window with the provided parameters
+    x_win = XCreateWindow (x_display, root, 0, 0, state->screen_width,
+                           state->screen_height, 0, CopyFromParent, InputOutput,
+                           CopyFromParent, CWEventMask, &swa );
+
+    XMapWindow (x_display, x_win ); // make the window visible on the screen
+    XStoreName (x_display, x_win, "BB7->raspyTube!" ); 
+    XSizeHints Hints;
+    Hints.flags=PSize|PMinSize|PMaxSize;
+    Hints.min_width=Hints.max_width=Hints.base_width=state->screen_width;
+    Hints.min_height=Hints.max_height=Hints.base_height=state->screen_height;  
+    XSetWMNormalHints(x_display,x_win,&Hints);
+    wmDeleteMessage = XInternAtom(x_display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(x_display, x_win, &wmDeleteMessage, 1);
+    return true;
 }
 
 //------------------------------------------------------------------------------
