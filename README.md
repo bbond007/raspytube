@@ -10,7 +10,9 @@ keys:
  
 		N - new search
  
-		J - test joystick (useful for configuring JS)
+		J - (uppercase) test joystick (useful for configuring JS) 
+
+		j - (lowercase) joystick/keyboard/mouse menu (input menu)
  
 		cursor down - next record
  
@@ -24,11 +26,16 @@ keys:
  
 the following are also available from the menu:
 
+	
 		F - set youtube-dl format
+ 		
+		G - GUI Menu 
  
-		P- toggle between OMXPlayer and MPlayer 
+		P - toggle between OMXPlayer and MPlayer 
  
 		H- toggle between HDMI/Local audio output
+	
+		j - joystick/keyboard/mouse menu (input menu)
  
 		I- more information on selected record
  

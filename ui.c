@@ -1789,7 +1789,8 @@ void free_ui()
 void resize_ui()
 {
     free_ui();
-    destroy_x_window();    
+    destroy_x_window();   
+    saveRezSpecific(); 
     bQScreen = !bQScreen;                           
     init_ui();
     if (bQScreen)

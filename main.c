@@ -26,7 +26,7 @@
 
 typedef struct bufLink
 {
-    unsigned char buf[BUFSIZ];
+    unsigned char buf[BUFSIZ];//
     unsigned int count;
     struct bufLink *next;
 };
@@ -91,6 +91,7 @@ int main(int argc, char **argv)
     char txt[200];
     bool quit = false;
     int result;
+//    printf("BUFSIZ->%d\n", BUFSIZ);
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -151,12 +152,22 @@ int main(int argc, char **argv)
             do_cur_left(PICK_SEARCH_STR);
             break;
 
+        case 'g':
+        case 'G':
+            redraw_results(false);
+            setBGImage();
+            do_gui_menu();
+            break;
         case 'h':
         case 'H' :
             do_change_audio_dev();
             break;
 
         case 'j':
+            redraw_results(false);
+            setBGImage();
+            do_jskb_menu();
+            break;
         case 'J' :
             do_joystick_test();
             break;
@@ -1116,7 +1127,7 @@ unsigned char * download_file(char * host, char * fileName, unsigned int * fileS
         buf->next = NULL;
         if(saveBuf != NULL)
             saveBuf->next = buf;
-        buf->count = recv(sock, &buf->buf[0], BUFSIZ, 0);
+        buf->count = recv(sock, &buf->buf[0], sizeof(buf->buf), 0);
         count += buf->count;
     }
     while (buf->count > 0);
