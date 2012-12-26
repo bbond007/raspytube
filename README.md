@@ -58,19 +58,19 @@ the VC output to match. This has the added benefit of being able to
 
 take input focus and capture X11 input such as mouse move/enter events 
 
-and keypresses. Apparently it is very expensive to call 
+and keypresses. Apparently it is very expensive to call XGetWindowAttributes 
 
-XGetWindowAttributes and XGetGeometry (that is actually how MC Hammer 
+and XGetGeometry (that is actually how MC Hammer went broke), so I only 
 
-went broke), so I only do so periodically which is why you'll notice a 
+do so periodically which is why you'll notice a slight lag when you move 
 
-slight lag when you move the window (before the VC window catches up). 
+the window (before the VC window catches up). This is also why the window 
 
-This is also why the window is always front-most. To switch to XWindows 
+is always front-most. To switch to XWindows mode, There is an invisible 
 
-mode, There is an invisible "button" on right-topmost position to toggle 
+"button" on right-topmost position to toggle on the screen or the "q" 
 
-on the screen or the "q" key (for quarter-screen).   
+key (for quarter-screen). Repeat to return.    
 
 
 Thanks the the RPi community!
