@@ -629,7 +629,7 @@ static void play_video (char * url)
     char * freeMe = parse_url(url, &server, &page);
     char url2[4096] = "";
     char request_format[6] = "";
-    int status, key;
+    int status;
     redraw_results(false);
     show_message("Calling youtube_dl...", false, numPointFontMed);
     eglSwapBuffers(state->display, state->surface);
@@ -734,12 +734,13 @@ static void play_video (char * url)
             exit(200);
         }
         int wpid;
+        int key = 0x00;
         do
         {
             wpid = waitpid(pid, &status, WNOHANG);
             if (wpid == 0)
             {
-                if(jsESC() || rbPressed())
+                if(jsESC() || rbPressed() || key == ESC_KEY)
                 {
                     system("killall omxplayer.bin");
                     switch(videoPlayer)

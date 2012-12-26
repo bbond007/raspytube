@@ -604,6 +604,17 @@ inline Window get_toplevel_parent(Display*display,Window window)
     }
 }
 
+//-----------------------------------------------------------------------------
+bool rbPressedX11()
+{
+    if(x_display != NULL)  
+    {
+         //do i need this? 
+         //maybe not
+    
+    }
+    return false;
+}
 //------------------------------------------------------------------------------
 static tPointXY x_winXY;
 static Atom wmDeleteMessage;
