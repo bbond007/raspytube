@@ -1,6 +1,7 @@
 raspytube - an OpenVG YouTube client for Raspberry Pi.
 
 keys:
+		
 		Q - run 1/4 screen in X11 window
 
 		M - main menu
@@ -36,9 +37,13 @@ the following are also available from the menu:
 binarybond007@gmail.com
 
 NOTES:
+		
 		* you need 64MB VRAM ro run this program.
+
 		* MPlayer not working yet... mplayer still not working....
+
 		* Added mouse support.
+
 		* Added support to run in X11 window! 
 
 This application can now run in a X11 window. The app is not really 
