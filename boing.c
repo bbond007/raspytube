@@ -121,8 +121,9 @@ bool draw_boing(int x, int y, int width, int height, bool next)
     int result = true;
     if(boingAnim[frame].image == -1)
     {
-//        boingAnim[frame].image = create_image_from_buf(
+        //boingAnim[frame].image = create_image_from_buf(
         boingAnim[frame].image = createImageFromBuf(
+        //boingAnim[frame].image = OMXCreateImageFromBuf(
                     boingAnim[frame].rawData,
                     boingAnim[frame].rawDataSize,
                     width, 

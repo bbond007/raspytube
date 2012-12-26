@@ -70,6 +70,7 @@ void setstroke(tColorDef *color, float width);
 void Roundrect(VGfloat x, VGfloat y,VGfloat w, VGfloat h, VGfloat rw, VGfloat rh, VGfloat sw, tColorDef * fill,  tColorDef * stroke);
 void unloadfont(VGPath *glyphs, int n);
 void DoSnapshot();  
+bool move_window(int x, int y);
 VGImage ResizeImage(VGImage vgImageSource, int width, int desired_height);
 VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height);
 VGImage createImageFromJpeg(const char *filename, int desired_width, int desired_height);

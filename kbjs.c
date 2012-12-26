@@ -639,6 +639,7 @@ Window get_toplevel_parent(Display*display,Window window)
 
 //------------------------------------------------------------------------------
 tPointXY x_winXY;
+#define USEGETXGEOMETRY
 void x_window_loop(int * key, bool checkMouse)
 {
     static clock_t start = 0;    
@@ -646,7 +647,14 @@ void x_window_loop(int * key, bool checkMouse)
     bool bMouseMoved = false;
     Window root_window;
     XEvent xev;
-    XWindowAttributes xwa_root, xwa_win;
+    XWindowAttributes xwa_root; 
+#ifdef USEGETXGEOMETRY
+    int win_x, win_y;
+    unsigned int win_h, win_w, win_bw, win_d;
+#else
+    XWindowAttributes xwa_win;
+#endif
+
     int screen;
     if(x_display != NULL)
     {
@@ -677,7 +685,7 @@ void x_window_loop(int * key, bool checkMouse)
                 break;
                 
                 case ButtonPress:
-                    if(checkMouse)
+                    if(checkMouse && mouseEnabled)
                     {
                         memcpy(&clickXY, &mouseXY, sizeof(tPointXY));
                         //printf("mouse button? %d\n", xev.xbutton.button);
@@ -691,7 +699,7 @@ void x_window_loop(int * key, bool checkMouse)
                     }
                     break;
                 case KeyPress:
-                    sym = XLookupKeysym(&xev.xkey, 0);
+                    sym = XLookupKeysym(&xev.xkey, xev.xkey.state);
                  //   printf("->%d", sym); 
                     switch(sym)
                     {
@@ -719,7 +727,12 @@ void x_window_loop(int * key, bool checkMouse)
         }
         clock_t end = clock();
         unsigned long millis = (end - start) * 1000 / CLOCKS_PER_SEC;
+#ifdef USEGETXGEOMETRY        
+        if(millis > 100 && XGetGeometry(x_display, x_win, &root_window, 
+            &win_x, &win_y, &win_w, &win_h, &win_bw, &win_d))
+#else
         if(millis > 100 && XGetWindowAttributes(x_display, x_win, &xwa_win))
+#endif
         {
             root_window = get_toplevel_parent(x_display, x_win);
             if(XGetWindowAttributes(x_display, root_window, &xwa_root))   
@@ -733,11 +746,18 @@ void x_window_loop(int * key, bool checkMouse)
                 else
                 {
                     if (xwa_root.x != x_winXY.x || xwa_root.y != x_winXY.y)
-                    {   
+                    {         
                         x_winXY.x = xwa_root.x;
                         x_winXY.y = xwa_root.y;
+                        
+#ifdef USEGETXGEOMETRY
+                        move_window(x_winXY.x + win_x, 
+                                    x_winXY.y + win_y);
+                                         
+#else
                         move_window(x_winXY.x + xwa_win.x, 
-                                x_winXY.y + xwa_win.y);
+                                    x_winXY.y + xwa_win.y);
+#endif
                     }
                 }
             }
