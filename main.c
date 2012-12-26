@@ -629,7 +629,7 @@ static void play_video (char * url)
     char * freeMe = parse_url(url, &server, &page);
     char url2[4096] = "";
     char request_format[6] = "";
-    int status;
+    int status, key;
     redraw_results(false);
     show_message("Calling youtube_dl...", false, numPointFontMed);
     eglSwapBuffers(state->display, state->surface);
@@ -755,6 +755,9 @@ static void play_video (char * url)
                 }
                 else
                     usleep(2000);
+                
+                if (bQScreen)
+                   x_window_loop(&key, false);
             }
         }
         while (wpid == 0);

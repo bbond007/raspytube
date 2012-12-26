@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 0x00068000
+#define VERSION_NUMBER 0x00068010
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -31,6 +31,10 @@ typedef struct tConfigRec
     int numPointFontMed_FS;
     int numPointFontLarge_FS;
     int numFontSpacing_FS;
+    int numPointerSize_FS;
+    int numPointerSize_QS;
+    tPointXY pointerOffsetXY_FS;
+    tPointXY pointerOffsetXY_QS;
     int numThumbWidth;
     int numRow;
     int numCol;
@@ -46,10 +50,6 @@ typedef struct tConfigRec
     int numMouseIndex;
     int numJoystickIndex;
     int numPointerIndex;
-    int numPointerSize_FS;
-    int numPointerSize_QS;
-    tPointXY pointerOffsetXY_FS;
-    tPointXY pointerOffsetXY_QS;
     int numVersion;
 } tConfigRec;
 
@@ -87,7 +87,9 @@ void setRezSpecific()
         numPointFontLarge    = configRec.numPointFontLarge_QS;
         numFontSpacing	     = configRec.numFontSpacing_QS;
         numPointerSize       = configRec.numPointerSize_QS;
-        memcpy(&pointerOffsetXY, &configRec.pointerOffsetXY_QS, sizeof(tPointXY));        
+        //memcpy(&pointerOffsetXY, &configRec.pointerOffsetXY_QS, sizeof(tPointXY));        
+        pointerOffsetXY.x    = configRec.pointerOffsetXY_QS.x;
+        pointerOffsetXY.y    = configRec.pointerOffsetXY_QS.y;
     }
     else
     {
@@ -97,7 +99,9 @@ void setRezSpecific()
         numPointFontLarge    = configRec.numPointFontLarge_FS;
         numFontSpacing	     = configRec.numFontSpacing_FS;
         numPointerSize       = configRec.numPointerSize_FS;
-        memcpy(&pointerOffsetXY, &configRec.pointerOffsetXY_FS, sizeof(tPointXY));
+        //memcpy(&pointerOffsetXY, &configRec.pointerOffsetXY_FS, sizeof(tPointXY));
+        pointerOffsetXY.x    = configRec.pointerOffsetXY_FS.x;
+        pointerOffsetXY.y    = configRec.pointerOffsetXY_FS.y;
     }   
 }
 //----------------------------------------------------------------------------
@@ -105,7 +109,9 @@ void saveRezSpecific()
 {
     if(bQScreen)
     {
-        memcpy(&configRec.pointerOffsetXY_QS, &pointerOffsetXY, sizeof(tPointXY));        
+        //memcpy(&configRec.pointerOffsetXY_QS, &pointerOffsetXY, sizeof(tPointXY));        
+        configRec.pointerOffsetXY_QS.x  = pointerOffsetXY.x;
+        configRec.pointerOffsetXY_QS.y  = pointerOffsetXY.y;
         configRec.numPointerSize_QS     = numPointerSize;
         configRec.numPointFontTiny_QS   = numPointFontTiny;
         configRec.numPointFontSmall_QS  = numPointFontSmall;
@@ -115,7 +121,9 @@ void saveRezSpecific()
     }
     else
     {
-        memcpy(&configRec.pointerOffsetXY_FS, &pointerOffsetXY, sizeof(tPointXY));
+        //memcpy(&configRec.pointerOffsetXY_FS, &pointerOffsetXY, sizeof(tPointXY));
+        configRec.pointerOffsetXY_FS.x  = pointerOffsetXY.x;
+        configRec.pointerOffsetXY_FS.y  = pointerOffsetXY.y;
         configRec.numPointerSize_FS     = numPointerSize;
         configRec.numPointFontTiny_FS   = numPointFontTiny;
         configRec.numPointFontSmall_FS  = numPointFontSmall;
@@ -147,6 +155,7 @@ bool loadConfig()
         show_message(message, true, ERROR_POINT);
         free(message);
         free(fileName);
+        setUIDefaults();
         return false;
     }
     setRezSpecific();
@@ -269,11 +278,11 @@ void setUIDefaults()
     configRec.numFontSpacing_QS      = 24;
     configRec.numFontSpacing_FS      = 24;
     configRec.numPointerSize_FS      = 90;
-    configRec.pointerOffsetXY_FS.x   = -7;
-    configRec.pointerOffsetXY_FS.y   = -84;
+    configRec.pointerOffsetXY_FS.x   = -2;
+    configRec.pointerOffsetXY_FS.y   = -68;
     configRec.numPointerSize_QS      = 45;
-    configRec.pointerOffsetXY_QS.x   = -4;
-    configRec.pointerOffsetXY_QS.y   = -42;
+    configRec.pointerOffsetXY_QS.x   = 0;
+    configRec.pointerOffsetXY_QS.y   = -33;
     setRezSpecific();
     numThumbWidth     = 10;
     numRow            = 6;

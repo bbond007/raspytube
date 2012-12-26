@@ -196,40 +196,28 @@ extern tColorDef * selectedColor;
 extern tColorDef * bgColor;
 extern tColorDef * errorColor;
 extern tColorDef colorScheme[];
-
-#define ESC_KEY 0x1b
-#define RTN_KEY 0x0a
-#define DEL_KEY 0x7f
-#define BSL_KEY 0x5c
+#define ESC_KEY      0x1b
+#define RTN_KEY      0x0a
+#define DEL_KEY      0x7f
+#define BSL_KEY      0x5c
 #define TERM_CUR_UP  'A'
 #define TERM_CUR_DWN 'B'
 #define TERM_CUR_R   'C'
 #define TERM_CUR_L   'D'
 #define TERM_FUN_1   'P'
 #define TERM_FUN_2   'Q'
-//#define CUR_UP  17
-//#define CUR_DWN 18
-//#define CUR_R   19
-//#define CUR_L   20
-//#define FUN_1 	1 
-//#define FUN_2	2
-//#define JOY_1   3
-//#define MOUSE_1 4
-//#define MOUSE_2 5
-//#define MOUSE_M 6
-//#define MOUSE_F 7
-#define CUR_UP  -101
-#define CUR_DWN -102
-#define CUR_R   -103
-#define CUR_L   -104
-#define FUN_1 	-105 
-#define FUN_2	-106
-#define JOY_1   -107
-#define MOUSE_1 -108
-#define MOUSE_2 -109
-#define MOUSE_M -110
-#define MOUSE_F -111
-#define MOUSE_B -112
-#define TIMER_M -199
+#define CUR_UP       -101
+#define CUR_DWN      -102
+#define CUR_R        -103
+#define CUR_L        -104
+#define FUN_1 	     -105 
+#define FUN_2	     -106
+#define JOY_1        -107
+#define MOUSE_1      -108
+#define MOUSE_2      -109
+#define MOUSE_M      -110
+#define MOUSE_F      -111
+#define MOUSE_B      -112
+#define TIMER_M      -199
 
 

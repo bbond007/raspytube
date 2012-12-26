@@ -467,9 +467,10 @@ inline int readKb_loop(bool checkMouse)
         key = getchar();                        
         if(key == EOF && checkMouse && mouseEnabled)
         {
-            if(!bQScreen)
-                handle_mouse(&key);        
-        }
+            if(!bQScreen || x_display == NULL) //we got to qscreen and 
+                handle_mouse(&key);            // maybe we are not running x11
+                                               // continue to service mouse the 
+        }                                      // old way
         if(key == EOF)
             x_window_loop(&key, true);
       
