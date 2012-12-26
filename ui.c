@@ -1384,13 +1384,13 @@ void jskb_menu_keypress(tMenuState * menu, int key)
             set_int(0, 255,     offset, &numPointerIndex);
             break;
         case 12:
-            set_int(10, 120,    offset, &numPointerSize);
+            set_int(10, 256,    offset, &numPointerSize);
             break;
         case 13:
-            set_int(-100, 100,     offset, &pointerOffsetXY.x);
+            set_int(-512, 512,     offset, &pointerOffsetXY.x);
             break;
         case 14:
-            set_int(-100, 100,    offset, &pointerOffsetXY.y);
+            set_int(-512, 512,    offset, &pointerOffsetXY.y);
             break;
         };
     }
@@ -1539,11 +1539,13 @@ int show_menu(tMenuState * menu)
                 else if(point_in_rect(&clickXY, &menu->downArrowRect))
                     goto LCUR_DWN;
 
-                clickIndex = (state->screen_height - clickXY.y - menu->txtOffset.y) / menu->yStep;
-                //printf("Got click (%d, %d):\n", clickXY.x, clickXY.y);
-                //printf("menu->menu->yStep = %d\n", menu->yStep);
-                //printf("menu->txtOffset.y = %d\n", menu->txtOffset.y);
-                //printf("clickIndex = %d\n", clickIndex);
+                clickIndex = (state->screen_height - clickXY.y - menu->txtOffset.y + menu->yStep) / menu->yStep;
+/*
+                printf("Got click (%d, %d):\n", clickXY.x, clickXY.y);
+                printf("menu->menu->yStep = %d\n", menu->yStep);
+                printf("menu->txtOffset.y = %d\n", menu->txtOffset.y);
+                printf("clickIndex = %d\n", clickIndex);
+*/
                 if (clickIndex < menu->maxItems && clickIndex >= 0)
                 {
                     if (clickIndex < menu->selectedIndex)

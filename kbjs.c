@@ -47,8 +47,12 @@ int numPointerIndex;
 int numPointerSize;
 int numTimer = -1;
 int timerCount = 0;
-
 tPointXY pointerOffsetXY;
+//------------------------------------------------------------------------------
+//stuff for running in "windowed" QScreen mode
+static Display * x_display = NULL;
+static Window x_win;
+
 //------------------------------------------------------------------------------
 int open_joystick()
 {
@@ -217,13 +221,14 @@ inline void draw_mouse()
     snprintf(temp, sizeof(temp), "(%d, %d)", mouseXY.x, mouseXY.y);
     Text(&fontDefs[0], 0, 0, temp, numPointFontTiny , selectedColor, VG_FILL_PATH);
     int i;
-    for (i=0; i<2; i++)
-        Text_Char(&fontDefs[fontCount-1],
-                  mouseXY.x + pointerOffsetXY.x - i*numShadowOffset,
-                  mouseXY.y + pointerOffsetXY.y - i*numShadowOffset,
-                  numPointerIndex,
-                  numPointerSize,
-                  1, &colorScheme[6-i],bgColor);
+    if (mouseXY.x != -1) //xwindows, mouse has gone off screen...
+        for (i=0; i<2; i++)
+            Text_Char(&fontDefs[fontCount-1],
+                      mouseXY.x + pointerOffsetXY.x - i*numShadowOffset,
+                      mouseXY.y + pointerOffsetXY.y - i*numShadowOffset,
+                      numPointerIndex,
+                      numPointerSize,
+                      1, &colorScheme[6-i],bgColor);
 //Roundrect(mouseXY.x, mouseXY.y, 10, 10, 20, 20, 1, rectColor, errorColor);
 }
 //------------------------------------------------------------------------------
@@ -557,15 +562,12 @@ void free_mouse_BGImage(void)
 }
 
 //------------------------------------------------------------------------------
-Display * x_display = NULL;
-Window x_win;
-//------------------------------------------------------------------------------
 bool create_x_window()
 {
     x_display = XOpenDisplay(NULL); // open the standard display (the primary screen)
     if (x_display == NULL)
     {
-        show_message("XOpenDisplay(NULL)", true, numPointFontMed);
+        show_message("XOpenDisplay(NULL)", 0x11000001, numPointFontMed);
         return false;
     }
 
@@ -579,7 +581,9 @@ bool create_x_window()
                      ButtonReleaseMask | 
                      VisibilityChangeMask |
                      PropertyChangeMask | 
-                     StructureNotifyMask;
+                     StructureNotifyMask |
+                //     EnterWindowMask |
+                     LeaveWindowMask;
 
 // create a window with the provided parameters
     x_win = XCreateWindow (x_display, root, 0, 0, state->screen_width,
@@ -587,7 +591,7 @@ bool create_x_window()
                            CopyFromParent, CWEventMask, &swa );
 
     XMapWindow (x_display, x_win ); // make the window visible on the screen
-    XStoreName (x_display, x_win, "RASPYTUBE!" ); // give the window a name
+    XStoreName (x_display, x_win, "BB7:RASPYTUBE!" ); // give the window a name
     XSizeHints Hints;
     Hints.flags=PSize|PMinSize|PMaxSize;
     Hints.min_width=Hints.max_width=Hints.base_width=state->screen_width;
@@ -614,15 +618,15 @@ inline Window get_toplevel_parent(Display*display,Window window)
     Window * children;
     unsigned int num_children;
 
-    while(1)
+    while(true)
     {
         if(0==XQueryTree(display,window, &root,
                          &parent,&children, &num_children))
         {
-            fprintf(stderr,"XQueryTreeerror\n");
-            abort();//changetowhatevererrorhandlingyouprefer
+            show_message("ERROR:XQueryTree()", true, ERROR_POINT);
+            abort();
         }
-        if(children) //musttestfornull
+        if(children) //must test for null
         {
             XFree(children);
         }
@@ -665,6 +669,12 @@ void x_window_loop(int * key, bool checkMouse)
             XNextEvent(x_display, &xev);
             switch(xev.type)
             {	
+                case LeaveNotify:
+                     mouseXY.x = -1;
+                     mouseXY.y = -1;
+                     bMouseMoved = true;
+                     break;
+                    
                 case VisibilityNotify:
                      XRaiseWindow(x_display,x_win);
                      XFlush(x_display);

@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 6510
+#define VERSION_NUMBER 0x00068000
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -270,15 +270,15 @@ void setUIDefaults()
     configRec.numFontSpacing_FS      = 24;
     configRec.numPointerSize_FS      = 90;
     configRec.pointerOffsetXY_FS.x   = -7;
-    configRec.pointerOffsetXY_FS.y   = -42;
+    configRec.pointerOffsetXY_FS.y   = -84;
     configRec.numPointerSize_QS      = 45;
     configRec.pointerOffsetXY_QS.x   = -4;
-    configRec.pointerOffsetXY_QS.y   = -21;
+    configRec.pointerOffsetXY_QS.y   = -42;
     setRezSpecific();
     numThumbWidth     = 10;
     numRow            = 6;
-    numCol            = 2;
-    numResults        = 12;
+    numCol            = 3;
+    numResults        = numRow * numCol;
     numFormat         = 0;
     numStart          = 1;
     numJoystickIndex  = 0;
