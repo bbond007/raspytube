@@ -1,6 +1,8 @@
 raspytube - an OpenVG YouTube client for Raspberry Pi.
 
 keys:
+		Q - run 1/4 screen in X11 window
+
 		M - main menu
  
 		S- search (edit existing txt)
@@ -36,8 +38,31 @@ binarybond007@gmail.com
 NOTES:
 		* you need 64MB VRAM ro run this program.
 		* MPlayer not working yet... mplayer still not working....
-		* Added mouse support!!!
-		 
+		* Added mouse support.
+		* Added support to run in X11 window! 
+
+This application can now run in a X11 window. The app is not really 
+
+running in X11 window, but it is a clever illusion. How accomplish 
+
+this is I create a dummy X11 window, track the movement of that window
+
+on the desktop then uses "vc_dispmanx_element_change_attributes" of the 
+
+VC output to match. Apparently it is very expensive to call 
+
+XGetWindowAttributes and XGetGeometry (that is how MC Hammer went broke),
+
+so I only do so periodically which is why you'll notice a slight lag. 
+
+This is also why the window always is frontmost. There is an invisible
+
+"button" on right-topmost psition on the screen. Still, this is 
+
+cool technology and I hope to modify OMX player to work in the same 
+
+way...
+  
 
 Thanks the the RPi community!
 
