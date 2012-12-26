@@ -607,7 +607,7 @@ bool destroy_x_window()
     return true;
 }
 //------------------------------------------------------------------------------
-Window get_toplevel_parent(Display*display,Window window)
+inline Window get_toplevel_parent(Display*display,Window window)
 {
     Window parent;
     Window root;
@@ -640,6 +640,7 @@ Window get_toplevel_parent(Display*display,Window window)
 //------------------------------------------------------------------------------
 tPointXY x_winXY;
 #define USEGETXGEOMETRY
+// XGetGeometry should be faster for what its worth
 void x_window_loop(int * key, bool checkMouse)
 {
     static clock_t start = 0;    
@@ -703,7 +704,6 @@ void x_window_loop(int * key, bool checkMouse)
                  //   printf("->%d", sym); 
                     switch(sym)
                     {
-                        //case 65362:
                         case XK_Up:     *key = CUR_UP;
                             return;
                         case XK_Down:   *key = CUR_DWN;
@@ -773,6 +773,8 @@ void x_window_loop(int * key, bool checkMouse)
 }
 
 //------------------------------------------------------------------------------
+#define JT_LOOP_CRITERIA (key != ESC_KEY && key != RTN_KEY && key != MOUSE_1 && key != MOUSE_2)
+ 
 void do_joystick_test(void)
 {
     tTermState ts;
@@ -812,16 +814,15 @@ void do_joystick_test(void)
                 x_window_loop(&key, false);
             
         }
-        while (key != ESC_KEY);
+        while (JT_LOOP_CRITERIA);
     }
     else
     {
         snprintf(txt, size, "%s was not opened.", jsDev);
         term_put_str(&ts, txt);
         term_set_color(&ts, 5);
-        term_put_str(&ts, "\n\n\nPress any key to continue...");
-        term_show(&ts, true);
-        readKb();
+        term_put_str(&ts, "\n\n\nPress ESC or MOUSE to continue...");
+        do{term_show(&ts, false);key = readKb_mouse();} while (JT_LOOP_CRITERIA);
     }
     free(txt);
     term_free(&ts);
