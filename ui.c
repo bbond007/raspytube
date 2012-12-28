@@ -1828,6 +1828,7 @@ void redraw_results(bool swap)
     int maxLines = rbTxt.h / offset.y;
     int rowCount = 0;
     int count = 0;
+    int key;
     clear_screen(false);
     struct result_rec * temp = first_rec;
     
@@ -1924,6 +1925,10 @@ void redraw_results(bool swap)
 
     if(swap)
         eglSwapBuffers(state->display, state->surface);
+    
+    if (bQScreen)
+        x_window_loop(&key, false);
+                 
 }
 
 //------------------------------------------------------------------------------
