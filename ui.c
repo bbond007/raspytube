@@ -1212,6 +1212,7 @@ void gui_menu_detail(tMenuState * menu)
 void main_menu_detail(tMenuState * menu)
 {
     char * videoFormat = NULL;
+    char * categoryStr = NULL;
     char * resolution;
     char * container;
     char * number;
@@ -1240,9 +1241,16 @@ void main_menu_detail(tMenuState * menu)
             break;
      
         case 3:
-            descr = categoryMenu.selectedItem==0?"":categoryMenu.menuItems[categoryMenu.selectedItem].description;
+            if(categoryMenu.selectedItem == 0)
+                descr = "";
+            else
+            {
+                size = strlen(categoryMenu.menuItems[categoryMenu.selectedItem].key) + 3;
+                categoryStr = malloc(size);
+                snprintf(categoryStr, size, "(%s)", categoryMenu.menuItems[categoryMenu.selectedItem].key);
+                descr = categoryStr;
+            }   
             break;
-     
         case 6:
             descr = regionMenu.menuItems[regionMenu.selectedItem].description;
             break;
@@ -1258,6 +1266,8 @@ void main_menu_detail(tMenuState * menu)
                    numPointFontMed, errorColor);
         if(videoFormat != NULL)
             free(videoFormat);
+        if(categoryStr != NULL)
+            free(categoryStr);
     }
 }
 //------------------------------------------------------------------------------

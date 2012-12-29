@@ -25,7 +25,8 @@ keys:
 		ESC - exit screen/proram
  
 the following are also available from the menu:
-
+		
+		C - category menu
 	
 		F - set youtube-dl format
  		
