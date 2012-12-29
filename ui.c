@@ -86,7 +86,7 @@ tMenuState guiMenu;
 tMenuState titleFontMenu;
 tMenuState formatMenu;
 tMenuState jskbMenu;
-
+tMenuState categoryMenu;
 
 extern const char tv_jpeg_raw_data[];
 extern const unsigned int tv_jpeg_raw_size;
@@ -1236,10 +1236,18 @@ void main_menu_detail(tMenuState * menu)
             break;;
 
         case 2:
+            descr = categoryMenu.menuItems[categoryMenu.selectedItem].description;
+            break;
+     
+        case 3:
+            descr = categoryMenu.selectedItem==0?"":categoryMenu.menuItems[categoryMenu.selectedItem].description;
+            break;
+     
+        case 6:
             descr = regionMenu.menuItems[regionMenu.selectedItem].description;
             break;
 
-        case 3:
+        case 7:
             descr = regionMenu.menuItems[regionMenu.selectedItem].key;
             break;
         }
@@ -1763,6 +1771,7 @@ void init_ui()
     init_format_menu(&formatMenu);
     init_small_menu(&jskbMenu, "Input Menu");
     init_small_menu(&guiMenu, "GUI Menu");
+    init_small_menu(&categoryMenu, "Category Menu");
     jskbMenu.menuItems = jskbMenuItems;
     jskbMenu.drawDetail = jskb_menu_detail;
     jskbMenu.keyPress = jskb_menu_keypress;
@@ -1772,6 +1781,7 @@ void init_ui()
     guiMenu.menuItems = guiMenuItems;
     guiMenu.drawDetail = gui_menu_detail;
     guiMenu.keyPress = gui_menu_keypress;
+    categoryMenu.menuItems = categoryMenuItems;
     set_menu_value(&regionMenu,0);
 }
 

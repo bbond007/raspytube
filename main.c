@@ -33,6 +33,11 @@ typedef struct bufLink
 
 #define AFORMAT_HEIGHT 24
 #define AFORMAT_WIDTH 8
+#define MAIN_MENU_SPEC_REGION 7
+#define MAIN_MENU_SPEC_USER   5
+#define MAIN_MENU_STD_SEARCH  3
+#define MAIN_MENU_CATEGORY    2
+
 extern char * supported_formats[AFORMAT_HEIGHT][AFORMAT_WIDTH];
 //------------------------------------------------------------------------------
 
@@ -74,7 +79,7 @@ static void do_change_jpeg_dec();
 static void do_change_video_player();
 static void do_download(char * url, char * title);
 
-#define PICK_SEARCH_STR ((mainMenu.selectedItem == 3 || mainMenu.selectedItem == 4) ? userStr : searchStr)
+#define PICK_SEARCH_STR ((mainMenuItems[mainMenu.selectedItem].special==MAIN_MENU_SPEC_USER)?userStr:searchStr)
 //------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
@@ -91,7 +96,7 @@ int main(int argc, char **argv)
     char txt[200];
     bool quit = false;
     int result;
-//    printf("BUFSIZ->%d\n", BUFSIZ);
+    mainMenu.selectedIndex = mainMenu.selectedItem = MAIN_MENU_STD_SEARCH;
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -152,6 +157,12 @@ int main(int argc, char **argv)
             do_cur_left(PICK_SEARCH_STR);
             break;
 
+        case 'c':
+        case 'C':
+            redraw_results(false);
+            setBGImage();
+            show_menu(&categoryMenu);
+            break;
         case 'g':
         case 'G':
             redraw_results(false);
@@ -232,7 +243,7 @@ int main(int argc, char **argv)
             redraw_results(false);
             setBGImage();
             mainMenu.scrollIndex   = 0;
-            mainMenu.selectedIndex = mainMenu.selectedItem = 2;
+            mainMenu.selectedIndex = mainMenu.selectedItem = MAIN_MENU_STD_SEARCH;
             do_search(searchStr);
             break;
 
@@ -324,16 +335,18 @@ static void do_main_menu(char * searchStr, char * userStr)
                 show_format_menu(&formatMenu);
                 break;
             case 2:
-                do_search(searchStr);
+                show_menu(&categoryMenu);
                 break;
             case 3:
+                do_search(searchStr);
+                break;
             case 4:
+            case 5:
                 do_user_search(userStr);
                 break;
-            case 5:
+            case 6:
                 show_menu(&regionMenu);
                 break;
-            case 6:
             case 7:
             case 8:
             case 9:
@@ -341,6 +354,7 @@ static void do_main_menu(char * searchStr, char * userStr)
             case 11:
             case 12:
             case 13:
+            case 14:
                 numStart = 1;
                 clear_output();
                 clear_screen(true);
@@ -351,7 +365,7 @@ static void do_main_menu(char * searchStr, char * userStr)
                 //  case 14:
                 //  case 15:
                 //      break;
-            case 16:
+            case 17:
                 do_gui_menu();
                 break;
             default:
@@ -364,9 +378,9 @@ static void do_main_menu(char * searchStr, char * userStr)
             }
         }
     }
-    while (result !=  -1 &&
-            !(result >= 2 && result <= 4) &&
-            !(result >= 6 && result <= 13));
+    while ( result !=  -1 && result != 3 && 
+            result !=   4 && result != 5 &&
+            !(result >= 7 && result <= 14));
 
 }
 //------------------------------------------------------------------------------
@@ -598,8 +612,19 @@ static void do_change_video_player()
 //------------------------------------------------------------------------------
 static void do_search(char * searchStr)
 {
-    replace_char_str(searchStr, '+', ' ');
-    int result = input_string("Search:", searchStr, 50);
+    char caption[] = "Search ";
+    size_t stPrompt = ((categoryMenu.selectedItem>0)?strlen(categoryMenuItems[categoryMenu.selectedItem].description):0)  + strlen(caption)+ 5;
+    char * prompt = malloc(stPrompt);
+    strncpy(prompt, caption, stPrompt);
+    if(categoryMenu.selectedItem > 0)
+    {
+        strncat(prompt, "(", stPrompt);
+        strncat(prompt, categoryMenuItems[categoryMenu.selectedItem].description, stPrompt);
+        strncat(prompt, ")", stPrompt);
+    }
+    strncat(prompt, ":", stPrompt);
+    int result = input_string(prompt, searchStr, 50);
+    free(prompt);
     if(result)
     {
         replace_char_str(searchStr, ' ', '+');
@@ -616,10 +641,12 @@ static void do_search(char * searchStr)
 static void do_user_search(char * userStr)
 {
     char caption[] = "Search ";
-    char * prompt = malloc(strlen(mainMenuItems[mainMenu.selectedItem].description) + + strlen(caption)+ 2);
-    strcpy(prompt, caption);
-    strcat(prompt, mainMenuItems[mainMenu.selectedItem].description);
-    strcat(prompt, ":");
+    size_t stPrompt = strlen(mainMenuItems[mainMenu.selectedItem].description) + strlen(caption)+ 4;
+    char * prompt = malloc(stPrompt);
+    strncpy(prompt, caption, stPrompt);
+    strncat(prompt, "(", stPrompt);
+    strncat(prompt, mainMenuItems[mainMenu.selectedItem].description, stPrompt);
+    strncat(prompt, "):", stPrompt);
     int result = input_string(prompt, userStr, 50);
     free(prompt);
     if(result)
@@ -1203,16 +1230,15 @@ static char *get_ip(char *host)
 
 static char *build_youtube_query(char *host, char *searchStr, int results, int startIndex)
 {
-#define MAIN_MENU_SPEC_REGION 3
 
     char * query;
     char tempBegin[] = "GET /feeds/api/";
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     char * temp;
-
+    char * categoryFmtStr = mainMenuItems[MAIN_MENU_CATEGORY].key;
+    char * categoryStr = "";
     char * tempMid = mainMenuItems[
-                         (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?mainMenu.selectedItem:2].key;
-
+        (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?mainMenu.selectedItem:MAIN_MENU_STD_SEARCH].key;
     char country[6] = "";
     size_t stTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
     temp = malloc(stTemp);
@@ -1230,13 +1256,30 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
         searchStr = country;
     }
 
+    if (categoryMenu.selectedItem > 0)
+    {
+        size_t stCatFmt = strlen(categoryFmtStr) +
+                          strlen(categoryMenuItems[categoryMenu.selectedItem].key);
+        categoryStr = malloc(stCatFmt);
+        snprintf(categoryStr, stCatFmt, categoryFmtStr,  
+            categoryMenuItems[categoryMenu.selectedItem].key);
+    }
+     
     size_t stQuery = strlen(host) +
                      strlen(searchStr)+
                      strlen(USERAGENT)+
-                     strlen(temp) + 30;
+                     strlen(temp) + 
+                     strlen(categoryStr) + 30;
+                     
     query = malloc (stQuery);
-    snprintf(query, stQuery, temp, searchStr, results, startIndex, host, USERAGENT);
+    if(mainMenu.selectedItem == MAIN_MENU_STD_SEARCH) //REGULAR SEARCH
+        snprintf(query, stQuery, temp, searchStr, categoryStr, results, startIndex, host, USERAGENT);
+    else
+        snprintf(query, stQuery, temp, searchStr, results, startIndex, host, USERAGENT);
+    
     free(temp);
+    if(strcmp(categoryStr, "") != 0)
+        free(categoryStr);
     //show_message(query, true, ERROR_POINT);
     return query;
 }

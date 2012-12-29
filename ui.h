@@ -182,8 +182,11 @@ extern tMenuState guiMenu;
 extern tMenuState titleFontMenu;
 extern tMenuState formatMenu;   
 extern tMenuState jskbMenu;  
+extern tMenuState categoryMenu;
 extern tMenuItem regionMenuItems[];
 extern tMenuItem mainMenuItems[];   
+extern tMenuItem categoryMenuItems[];
+
 #define ERROR_POINT (numPointFontMed)
 
 extern tColorDef * textColor;
