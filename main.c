@@ -33,10 +33,11 @@ typedef struct bufLink
 
 #define AFORMAT_HEIGHT 24
 #define AFORMAT_WIDTH 8
-#define MAIN_MENU_SPEC_REGION 7
-#define MAIN_MENU_SPEC_USER   5
-#define MAIN_MENU_STD_SEARCH  3
-#define MAIN_MENU_CATEGORY    2
+#define MAIN_MENU_SPEC_REGION  7
+#define MAIN_MENU_SPEC_USER    5
+#define MAIN_MENU_STD_SEARCH   3
+#define MAIN_MENU_SET_CATEGORY 2
+
 
 extern char * supported_formats[AFORMAT_HEIGHT][AFORMAT_WIDTH];
 //------------------------------------------------------------------------------
@@ -1003,8 +1004,8 @@ int establish_socket_connection(char * host, int Port)
     }
 
     remote = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in *));
-    remote->sin_family = AF_INET;
-    result = inet_pton(AF_INET, ip, (void *)(&(remote->sin_addr.s_addr)));
+    remote->sin_family = AF_INET; result = inet_pton(AF_INET, ip, (void
+    *)(&(remote->sin_addr.s_addr)));
 
     if(result < 0)
     {
@@ -1235,10 +1236,23 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
     char tempBegin[] = "GET /feeds/api/";
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     char * temp;
-    char * categoryFmtStr = mainMenuItems[MAIN_MENU_CATEGORY].key;
+    char * categoryFmtStr = mainMenuItems[MAIN_MENU_SET_CATEGORY].key;
     char * categoryStr = "";
-    char * tempMid = mainMenuItems[
-        (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)?mainMenu.selectedItem:MAIN_MENU_STD_SEARCH].key;
+    char * tempMid;
+    bool bCategory = false;
+        
+    switch(mainMenuItems[mainMenu.selectedItem].special)
+    {
+        case MAIN_MENU_SPEC_REGION : tempMid = mainMenuItems[mainMenu.selectedItem].key;
+            break;
+        case MAIN_MENU_SPEC_USER   : tempMid = mainMenuItems[mainMenu.selectedItem].key;
+            break;
+        default:
+            tempMid = mainMenuItems[MAIN_MENU_STD_SEARCH].key;
+            bCategory = true;
+            break;
+    }
+        
     char country[6] = "";
     size_t stTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
     temp = malloc(stTemp);
@@ -1256,7 +1270,7 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
         searchStr = country;
     }
 
-    if (categoryMenu.selectedItem > 0)
+    if (bCategory && categoryMenu.selectedItem > 0)
     {
         size_t stCatFmt = strlen(categoryFmtStr) +
                           strlen(categoryMenuItems[categoryMenu.selectedItem].key);
@@ -1272,7 +1286,7 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
                      strlen(categoryStr) + 30;
                      
     query = malloc (stQuery);
-    if(mainMenu.selectedItem == MAIN_MENU_STD_SEARCH) //REGULAR SEARCH
+    if(bCategory) // REGULAR SEARCH
         snprintf(query, stQuery, temp, searchStr, categoryStr, results, startIndex, host, USERAGENT);
     else
         snprintf(query, stQuery, temp, searchStr, results, startIndex, host, USERAGENT);
