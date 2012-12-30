@@ -164,7 +164,7 @@ int main(int argc, char **argv)
             setBGImage();
             save   = categoryMenu.selectedItem;
             result = show_menu(&categoryMenu);
-            if (save != result && result != -1)
+            if (save != result && result != -1 && result != 0)
             {
                 searchStr[0] = 0x00;
                 set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH);
