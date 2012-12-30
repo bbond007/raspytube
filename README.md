@@ -45,6 +45,8 @@ the following are also available from the menu:
 binarybond007@gmail.com
 
 NOTES:
+
+		* OMX-jpg & gfx data broken out into seperate static libs (see updated compile instructions)
 		
 		* you need 64MB VRAM ro run this program.
 
@@ -118,6 +120,18 @@ Compile instructions:
 		git clone https://github.com/bbond007/raspytube
 
 		cd raspytube
+
+		cd OMXJPEG
+		
+		make
+
+		cd ..
+
+		cd GFXDATA
+
+		make
+
+		cd ..
 
 		make
 
