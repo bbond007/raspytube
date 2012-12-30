@@ -1237,49 +1237,42 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
     char tempBegin[] = "GET /feeds/api/";
     char * tempEnd = "&max-results=%d&start-index=%d HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n";
     char * temp;
-    char * categoryFmtStr = mainMenuItems[MAIN_MENU_SET_CATEGORY].key;
-    char * categoryStr = "";
     char * tempMid;
     bool bCategory = false;
-        
+    char countryStr[10]  = "";
+    char categoryStr[40] = "";
+    
     switch(mainMenuItems[mainMenu.selectedItem].special)
     {
-        case MAIN_MENU_SPEC_REGION : tempMid = mainMenuItems[mainMenu.selectedItem].key;
+        case MAIN_MENU_SPEC_REGION : 
+            tempMid = mainMenuItems[mainMenu.selectedItem].key;
+            if (regionMenu.selectedItem > 0)
+            {
+                strcat(countryStr, regionMenuItems[regionMenu.selectedItem].key);
+                strcat(countryStr, "/");
+            }
+            searchStr = countryStr;
             break;
-        case MAIN_MENU_SPEC_USER   : tempMid = mainMenuItems[mainMenu.selectedItem].key;
+        case MAIN_MENU_SPEC_USER : 
+            tempMid = mainMenuItems[mainMenu.selectedItem].key;
             break;
-        default:
+        default: //regular search or other
             tempMid = mainMenuItems[MAIN_MENU_STD_SEARCH].key;
+            if (categoryMenu.selectedItem > 0)
+                snprintf(categoryStr, sizeof(categoryStr), 
+                         mainMenuItems[MAIN_MENU_SET_CATEGORY].key, 
+                         categoryMenuItems[categoryMenu.selectedItem].key);
             bCategory = true;
             break;
     }
         
-    char country[6] = "";
     size_t stTemp = strlen(tempBegin) +strlen(tempMid) + strlen(tempEnd) + 1;
     temp = malloc(stTemp);
     temp[0] = 0x00;
     strncat(temp, tempBegin, stTemp);
     strncat(temp, tempMid,   stTemp);
     strncat(temp, tempEnd,   stTemp);
-    if (mainMenuItems[mainMenu.selectedItem].special == MAIN_MENU_SPEC_REGION)
-    {
-        if (regionMenu.selectedItem > 0)
-        {
-            strcat(country, regionMenuItems[regionMenu.selectedItem].key);
-            strcat(country, "/");
-        }
-        searchStr = country;
-    }
 
-    if (bCategory && categoryMenu.selectedItem > 0)
-    {
-        size_t stCatFmt = strlen(categoryFmtStr) +
-                          strlen(categoryMenuItems[categoryMenu.selectedItem].key);
-        categoryStr = malloc(stCatFmt);
-        snprintf(categoryStr, stCatFmt, categoryFmtStr,  
-            categoryMenuItems[categoryMenu.selectedItem].key);
-    }
-     
     size_t stQuery = strlen(host) +
                      strlen(searchStr)+
                      strlen(USERAGENT)+
@@ -1291,10 +1284,7 @@ static char *build_youtube_query(char *host, char *searchStr, int results, int s
         snprintf(query, stQuery, temp, searchStr, categoryStr, results, startIndex, host, USERAGENT);
     else
         snprintf(query, stQuery, temp, searchStr, results, startIndex, host, USERAGENT);
-    
     free(temp);
-    if(strcmp(categoryStr, "") != 0)
-        free(categoryStr);
     //show_message(query, true, ERROR_POINT);
     return query;
 }
