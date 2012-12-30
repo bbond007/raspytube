@@ -397,6 +397,10 @@ static void do_jskb_menu()
         case 0:
             break;
         case 7:  mouseEnabled = !mouseEnabled;
+                 if (mouseEnabled)
+                     open_mouse();
+                 else
+                     close_mouse();
         break;
         case 14: saveConfig();
         break;

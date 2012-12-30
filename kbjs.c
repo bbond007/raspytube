@@ -81,6 +81,9 @@ void close_mouse()
 {
     if (mouse_fd > 0)
         close(mouse_fd);
+        
+    if(mouseBGImage != 0)
+        vgDestroyImage(mouseBGImage);
 }
 
 //------------------------------------------------------------------------------
