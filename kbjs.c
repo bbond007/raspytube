@@ -89,7 +89,7 @@ void close_mouse()
 {
     if (mouse_fd > 0)
         close(mouse_fd);
-    free_mouseBGImage();
+    free_mouse_BGImage();
     mouse_fd = -1;
 }
 
