@@ -162,7 +162,15 @@ int main(int argc, char **argv)
         case 'C':
             redraw_results(false);
             setBGImage();
-            show_menu(&categoryMenu);
+            if (categoryMenu.selectedItem != show_menu(&categoryMenu))
+            {
+                searchStr[0] = 0x00;
+                set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH);
+                numStart = 1;
+                clear_output();
+                clear_screen(true);
+                youtube_search(searchStr);
+            }
             break;
         case 'g':
         case 'G':
