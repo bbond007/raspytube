@@ -10,7 +10,7 @@
 #include "ui.h"
 #include "kbjs.h"
 #include "term.h"
-#include "boing.h"
+#include "GFXDATA/boing.h"
 
 extern const char tv_jpeg_raw_data[];
 extern const unsigned int tv_jpeg_raw_size;

@@ -12,14 +12,11 @@
 #include "videoformats.h"
 #include "ui.h"
 #include "audio.h"
-#include "fonts.inc"
 #include "config.h"
-#include "menu_arrow_up.inc"
-#include "menu_arrow_down.inc"
 #include "kbjs.h"
 #include "mainmenu.h"
 #include "region.h"
-
+#include "GFXDATA/gfxdata.h"
 /* sounds disabled because it sucked
 static AudioSampleInfo asiKbClick;
 extern const signed char soundraw_data[];
