@@ -219,7 +219,7 @@ bool rbPressed(void)
     struct input_event mousee;
     if(read_mouse_event(&mousee))
     {
-        if(mousee.type == 1 && mousee.code == 273 && mousee.value == 1)
+        if(mousee.type == 1 && mousee.code == BTN_RIGHT && mousee.value == 1)
             return true;
     }
     return false;
@@ -242,84 +242,6 @@ inline void draw_mouse()
                       1, &colorScheme[6-i],bgColor);
 //Roundrect(mouseXY.x, mouseXY.y, 10, 10, 20, 20, 1, rectColor, errorColor);
 }
-//------------------------------------------------------------------------------
-inline void handle_mouse_x11(int * key)
-{
-    static Display *dpy = NULL;
-    static Window root;
-    static int screen_height;
-    static int screen_width;
-    struct input_event mousee;
-    Window ret_root;
-    Window ret_child;
-    int win_x;
-    int win_y;
-    int root_x;
-    int root_y;
-    unsigned int mask;
-
-
-    if(dpy == NULL)
-    {
-        dpy = XOpenDisplay(NULL);
-        root = XDefaultRootWindow(dpy);
-        graphics_get_display_size(0, &screen_width, &screen_height);
-    }
-    tPointXY oldMouseXY;
-    memcpy(&oldMouseXY, &mouseXY, sizeof(tPointXY));
-    if(XQueryPointer(dpy, root, &ret_root, &ret_child, &root_x, &root_y,
-                     &win_x, &win_y, &mask))
-    {
-        tPointXY oldMouseXY;
-        memcpy(&oldMouseXY, &mouseXY, sizeof(tPointXY));
-        root_y = screen_height - root_y - state->screen_height;
-        mouseXY.y = (root_y <= state->screen_height)?root_y:0;
-        mouseXY.x = (root_x <= state->screen_width)?root_x:state->screen_width;
-        if(root_y <= state->screen_height && root_x <= state->screen_width)
-        {
-            while(read_mouse_event(&mousee))
-            {
-                switch(mousee.type)
-                {
-                case 1:
-                    switch (mousee.code)
-                    {
-                    case BTN_LEFT:
-                        if(mousee.value == 1)
-                            *key = MOUSE_1;
-                        clickXY.x = mouseXY.x;
-                        clickXY.y = mouseXY.y;
-                        break;
-                    case BTN_RIGHT:
-                        if(mousee.value == 1)
-                            *key = MOUSE_2;
-                        clickXY.x = mouseXY.x;
-                        clickXY.y = mouseXY.y;
-                        break;
-                    case 115: //BTN_FORWARD:
-                        *key = MOUSE_F;
-                        break;
-                    case 116: //BTN_BACK:
-                        *key = MOUSE_B;
-                        break;
-                    }
-                    break;
-                }
-            }
-        }
-        else
-            while(read_mouse_event(&mousee));
-
-        if (mouseBGImage != 0 && (oldMouseXY.x != mouseXY.x || oldMouseXY.y != mouseXY.y))
-        {
-            vgSetPixels(0,0, mouseBGImage, 0, 0, state->screen_width, state->screen_height);
-            draw_mouse();
-            eglSwapBuffers(state->display, state->surface);
-        }
-    }
-
-}
-//------------------------------------------------------------------------------
 inline bool handle_mouse(int * key)
 {
     if(mouse_fd < 0) return false;
@@ -344,12 +266,6 @@ inline bool handle_mouse(int * key)
                     *key = MOUSE_2;
                 clickXY.x = mouseXY.x;
                 clickXY.y = mouseXY.y;
-                break;
-            case 115: //BTN_FORWARD:
-                *key = MOUSE_F;
-                break;
-            case 116: //BTN_BACK:
-                *key = MOUSE_B;
                 break;
             }
             break;
@@ -390,7 +306,13 @@ inline bool handle_mouse(int * key)
                         mouseXY.y = state->screen_height;
                 }
                 break;
+            case 8:
+                if (mousee.value > 0)
+                    *key = MOUSE_F;
+                else if(mousee.value < 0)
+                    *key = MOUSE_B;
             }
+                
             break;
         }
     }
@@ -688,6 +610,10 @@ void x_window_loop(int * key, bool checkMouse)
                             case 1: *key = MOUSE_1;
                                 return;
                             case 3: *key = MOUSE_2;
+                                return;
+                            case 4: *key = MOUSE_F;
+                                return;
+                            case 5: *key = MOUSE_B;
                                 return;
                         }
                     }
