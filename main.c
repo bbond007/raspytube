@@ -629,6 +629,7 @@ static void do_search(char * searchStr)
         strncat(prompt, ")", stPrompt);
     }
     strncat(prompt, ":", stPrompt);
+    replace_char_str(searchStr, '+', ' ');
     int result = input_string(prompt, searchStr, 50);
     free(prompt);
     if(result)
@@ -638,6 +639,7 @@ static void do_search(char * searchStr)
         numStart = 1;
         clear_screen(true);
         youtube_search(searchStr);
+        
         if (selected_rec == NULL)
             show_message("Search returned 0 results!", 5, ERROR_POINT);
     }
