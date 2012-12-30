@@ -54,6 +54,14 @@ static Display * x_display = NULL;
 static Window x_win;
 
 //------------------------------------------------------------------------------
+void free_mouse_BGImage(void)
+{
+    if(mouseBGImage != 0)
+        vgDestroyImage(mouseBGImage);
+    mouseBGImage = 0;
+}
+
+//------------------------------------------------------------------------------
 int open_joystick()
 {
     close_joystick();
@@ -81,9 +89,8 @@ void close_mouse()
 {
     if (mouse_fd > 0)
         close(mouse_fd);
-        
-    if(mouseBGImage != 0)
-        vgDestroyImage(mouseBGImage);
+    free_mouseBGImage();
+    mouse_fd = -1;
 }
 
 //------------------------------------------------------------------------------
@@ -120,6 +127,7 @@ void close_joystick(void)
 {
     if(joystick_fd > 0)
         close(joystick_fd);
+    joystick_fd = -1;
 }
 
 //------------------------------------------------------------------------------
@@ -553,16 +561,7 @@ void restoreKb(void)
 // delete_sample(&asiKbClick);
     close_joystick();
     close_mouse();
-    if(mouseBGImage != 0)
-        vgDestroyImage(mouseBGImage);
-    mouseBGImage = 0;
-}
-//------------------------------------------------------------------------------
-void free_mouse_BGImage(void)
-{
-    if(mouseBGImage != 0)
-        vgDestroyImage(mouseBGImage);
-    mouseBGImage = 0;
+    free_mouse_BGImage();
 }
 
 //------------------------------------------------------------------------------
