@@ -141,11 +141,13 @@ int main(int argc, char **argv)
                 break;
             }
             break;
-
+        
+        case MOUSE_F:
         case CUR_UP :
             do_cur_up();
             break;
 
+        case MOUSE_B:
         case CUR_DWN:
             do_cur_down();
             break;
