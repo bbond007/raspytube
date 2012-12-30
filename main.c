@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     char txt[200];
     bool quit = false;
     int result;
-    mainMenu.selectedIndex = mainMenu.selectedItem = MAIN_MENU_STD_SEARCH;
+    set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH);
     if(argc > 1)
     {
         youtube_search(argv[1]);
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
             redraw_results(false);
             setBGImage();
             mainMenu.scrollIndex   = 0;
-            mainMenu.selectedIndex = mainMenu.selectedItem = MAIN_MENU_STD_SEARCH;
+            set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH); 
             do_search(searchStr);
             break;
 
@@ -337,6 +337,7 @@ static void do_main_menu(char * searchStr, char * userStr)
                 break;
             case 2:
                 show_menu(&categoryMenu);
+                set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH);
                 break;
             case 3:
                 do_search(searchStr);
