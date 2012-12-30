@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     char userStr[100] = "";
     char txt[200];
     bool quit = false;
-    int result;
+    int result, save;
     set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH);
     if(argc > 1)
     {
@@ -162,7 +162,9 @@ int main(int argc, char **argv)
         case 'C':
             redraw_results(false);
             setBGImage();
-            if (categoryMenu.selectedItem != show_menu(&categoryMenu))
+            save   = categoryMenu.selectedItem;
+            result = show_menu(&categoryMenu);
+            if (save != result && result != -1)
             {
                 searchStr[0] = 0x00;
                 set_menu_value(&mainMenu, MAIN_MENU_STD_SEARCH);
