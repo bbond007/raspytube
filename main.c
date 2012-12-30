@@ -750,7 +750,8 @@ static void play_video (char * url)
             {
             case vpMPlayer:
                 player_argv[iArgv++]="/usr/bin/mplayer";
-                //player_argv[iArgv++]="-fs";
+                if (!bQScreen)
+                    player_argv[iArgv++]="-fs";
                 player_argv[iArgv++]="--";
                 break;
 
@@ -780,6 +781,10 @@ static void play_video (char * url)
             execvp(player_argv[0],player_argv);
             exit(200);
         }
+        //locate this window off screen so you can see mplayer        
+        if (!bQScreen && videoPlayer != vpOMXPlayer)
+            move_window(state->screen_width, state->screen_height);
+            
         int wpid;
         int key = 0x00;
         do
@@ -809,6 +814,9 @@ static void play_video (char * url)
             }
         }
         while (wpid == 0);
+        //restore the windows location
+        if(!bQScreen && videoPlayer != vpOMXPlayer)
+            move_window(0,0);
         redraw_results(true);
     }
     else
