@@ -9,6 +9,11 @@ binarybond007@gmail.com
 sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
 sudo chmod a+x /usr/local/bin/youtube-dl
 
+# !!!optional!! ultra-simple binary-only install.
+sudo apt-get install omxplayer wget libjpeg8
+wget https://github.com/bbond007/raspytube/blob/master/raspytube.bin
+chmod 755 raspytube.bin
+
 # Install compilation tools and required libraries
 sudo apt-get update
 sudo apt-get install build-essential git-core libjpeg8-dev libx11-dev
