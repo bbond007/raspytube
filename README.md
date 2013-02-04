@@ -85,7 +85,7 @@ The following are also available from the menu:
 
 		* OMX-jpg & gfx data broken out into seperate static libs (see updated compile instructions)
 		
-		* you need 64MB VRAM ro run this program.
+		* you need 64MB VRAM to run this program.
 
 		* MPlayer if you switch to windowed mode.  
 
@@ -135,4 +135,6 @@ ShivaVG / IvanLeben<ivan.leben@gmail.com>
 
 ShivaVG-anopen-sourceLGPLANSICimplementationoftheOpenVGspecification
 
-Also thanks to MattOwnby and jumble) for OMX jpeg decode 
+Also thanks to MattOwnby and jumble) for OMX jpeg decode
+
+Thanks to CalumJEadie for formatting this file. 
