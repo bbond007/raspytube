@@ -19,6 +19,7 @@
 #include "GLES/gl.h"
 #include "gfxlib.h"
 #include "lodepng.h"
+#include "openmax.h"
 
 STATE_T _state, *state=&_state;
 #define ERROR_POINT (numPointFontMed)
@@ -34,6 +35,8 @@ VGImageFormat getRGBAFormat()
     else
         return VG_sRGBA_8888;
 }
+
+//------------------------------------------------------------------------------
 
 /*
 VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height)
@@ -73,9 +76,10 @@ VGImage createImageFromPNG(const char *filename, int desired_width, int desired_
  return img;
 }
 */
+//------------------------------------------------------------------------------
 // createImageFromJpeg decompresses a JPEG image to the standard image format
 // source: https://github.com/ileben/ShivaVG/blob/master/examples/test_image.c
-VGImage createImageFromJpeg(const char *filename, int desired_width, int desired_height)
+VGImage createImageFromJpeg(const char *filename, size_t outputWidth, size_t outputHeight)
 {
     FILE *infile;
     struct jpeg_decompress_struct jdc;
@@ -157,13 +161,12 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
         }
     }
 
-    if((desired_width != bitmap.w || desired_height != bitmap.h) &&
-            (desired_width != 0 && desired_height != 0))
-
+  if((outputWidth != bitmap.w || outputHeight != bitmap.h) &&
+            (outputWidth != 0 && outputHeight != 0))  
     {
         BITMAP newBM;
-        newBM.w = desired_width;
-        newBM.h = desired_height;
+        newBM.w = outputWidth;
+        newBM.h = outputHeight;
         newBM.bpp = 4;
         newBM.stride = newBM.w * newBM.bpp;
         newBM.data = malloc(newBM.stride * newBM.h);
@@ -181,7 +184,31 @@ VGImage createImageFromJpeg(const char *filename, int desired_width, int desired
     return img;
 }
 
-VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
+//------------------------------------------------------------------------------
+VGImage OpenMAXCreateImageFromBuf(unsigned char * buf, size_t bufSize, size_t outputWidth, size_t outputHeight)
+{
+    static OPENMAX_JPEG_DECODER * OMXDecoder = NULL;
+    VGImage vgImage;
+    size_t stStride;
+    VGImageFormat rgbaFormat = VG_sABGR_8888;
+    unsigned int remainder = outputWidth % 16;
+    if (remainder == 0)
+        stStride = (outputWidth * 4);
+    else
+        stStride = (outputWidth + (16 - remainder )) * 4;
+
+//    if(OMXDecoder == NULL)
+        OpenMaxJPEG_setupDecoder(&OMXDecoder);
+    OpenMaxJPEG_decodeImage(OMXDecoder, (char *) buf, bufSize, outputWidth, outputHeight);
+    vgImage = vgCreateImage(rgbaFormat, outputWidth, outputHeight, VG_IMAGE_QUALITY_BETTER);
+    vgImageSubData(vgImage, &OMXDecoder->pOutputBufferHeader->pBuffer[stStride * outputHeight], stStride * -1, 
+        rgbaFormat, 0, 0, outputWidth, outputHeight);
+    OpenMaxJPEG_cleanup(OMXDecoder);
+    return vgImage;
+}
+
+//------------------------------------------------------------------------------
+VGImage createImageFromBuf(unsigned char *buf, size_t bufSize, size_t outputWidth, size_t outputHeight)
 {
     struct jpeg_decompress_struct jdc;
     struct jpeg_error_mgr jerr;
@@ -254,12 +281,12 @@ VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired
         }
     }
 
-    if((desired_width != bitmap.w || desired_height != bitmap.h) &&
-            (desired_width != 0 && desired_height != 0))
+    if((outputWidth != bitmap.w || outputHeight != bitmap.h) &&
+            (outputWidth != 0 && outputHeight != 0))
     {
         BITMAP newBM;
-        newBM.w = desired_width;
-        newBM.h = desired_height;
+        newBM.w = outputWidth;
+        newBM.h = outputHeight;
         newBM.bpp = 4;
         newBM.stride = newBM.w * newBM.bpp;
         newBM.data = malloc(newBM.stride * newBM.h);

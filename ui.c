@@ -43,11 +43,9 @@ int numFontSpacing;
 int numRectPenSize;
 int numShadowOffset; 
 
-//int numResultsReturned;
-
 enum tSoundOutput soundOutput;
 enum tVideoPlayer videoPlayer;
-enum tJpegDecoder jpegDecoder;
+enum tJpegDecoder jpegDecoder = jdLibJpeg;
 #define ERROR_POINT  (numPointFontMed)
 
 tColorDef colorScheme[] =
@@ -189,19 +187,27 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
         return NULL;
 }
 //------------------------------------------------------------------------------
-VGImage create_image_from_buf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height)
+VGImage create_image_from_buf(unsigned char *buf, size_t bufSize, size_t outputWidth, size_t outputHeight)
 {
-
+/*
+    return createImageFromBuf((unsigned char *)
+                                  buf, bufSize, outputWidth, outputHeight);
+*/   
     switch (jpegDecoder)
     {
     case jdOMX:
         return OMXCreateImageFromBuf((unsigned char *)
-                                     buf, bufSize, desired_width, desired_height);
+                                     buf, bufSize, outputWidth, outputHeight);
+        break;
+
+    case jdOpenMax:
+        return OpenMAXCreateImageFromBuf((unsigned char *)
+                                        buf, bufSize, outputWidth, outputHeight);
         break;
 
     case jdLibJpeg:
         return createImageFromBuf((unsigned char *)
-                                  buf, bufSize, desired_width, desired_height);
+                                  buf, bufSize, outputWidth, outputHeight);
         break;
     default:
         show_message("ERROR:\n\nbad jped decoder enum", true, ERROR_POINT);
@@ -1917,6 +1923,9 @@ void redraw_results(bool swap)
     {
     case jdOMX:
         textXY(0,state->screen_height * .96f, "[OMXJPEG]", numPointFontTiny, textColor);
+        break;
+    case jdOpenMax:
+        textXY(0,state->screen_height * .96f, "[OM2JPEG]", numPointFontTiny, textColor);
         break;
     case jdLibJpeg:
         textXY(0, state->screen_height * .96f, "[LIBJPEG]", numPointFontTiny, textColor);

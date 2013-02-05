@@ -72,9 +72,10 @@ void unloadfont(VGPath *glyphs, int n);
 void DoSnapshot();  
 bool move_window(int x, int y);
 VGImage ResizeImage(VGImage vgImageSource, int width, int desired_height);
-VGImage createImageFromPNG(const char *filename, int desired_width, int desired_height);
-VGImage createImageFromJpeg(const char *filename, int desired_width, int desired_height);
-VGImage createImageFromBuf(unsigned char *buf, unsigned int bufSize, int desired_width, int desired_height);
+VGImage createImageFromPNG(const char *filename,  size_t outputWidth, size_t outputHeight);
+VGImage createImageFromJpeg(const char *filename, size_t outputWidth, size_t outputHeight);
+VGImage createImageFromBuf(unsigned char *buf, size_t bufSize, size_t outputWidth, size_t outputHeight);
+VGImage OpenMAXCreateImageFromBuf(unsigned char * buf, size_t bufSize, size_t outputWidth, size_t outputHeight);
 VGImage createImageFromScreen();
 
 VGPath newpath();

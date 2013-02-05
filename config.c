@@ -12,7 +12,7 @@
 #include "config.h"
 #include "kbjs.h"
 
-#define VERSION_NUMBER 0x00068010
+#define VERSION_NUMBER 0x00068020
 #define CONFIG_FILE ".rt.cfg.bin"
 typedef struct tConfigRec
 {
@@ -295,6 +295,5 @@ void setUIDefaults()
     numMouseIndex     = 0; 
     soundOutput       = soHDMI;
     videoPlayer       = vpOMXPlayer;
-    jpegDecoder       = jdLibJpeg;
-    
+    jpegDecoder       = jdLibJpeg;    
 }

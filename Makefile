@@ -1,4 +1,4 @@
-OBJS=gfxlib.o kbjs.o ui.o term.o config.o main.o 
+OBJS=openmax.o gfxlib.o kbjs.o ui.o term.o config.o main.o 
 BIN=raspytube.bin
 
 CC=gcc
