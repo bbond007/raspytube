@@ -17,6 +17,7 @@ void OpenMaxJPEG_setDebugLevel(bool value)
     ShowDebug = value;
 }
 
+//#define perror perrorUI
 extern void show_message(char * message, int error, int points);
 extern int numPointFontMed;
 void perrorUI(char * errorStr)
@@ -27,9 +28,9 @@ void perrorUI(char * errorStr)
     show_message(temp, true, numPointFontMed);  
 }    
 
-static int bufferIndex = 0; //index to buffer array
+int bufferIndex = 0; //index to buffer array
 
-static int portSettingsChanged(OPENMAX_JPEG_DECODER* decoder, size_t * outputWidth, size_t * outputHeight)
+int portSettingsChanged(OPENMAX_JPEG_DECODER* decoder, size_t * outputWidth, size_t * outputHeight)
 {
     OMX_PARAM_PORTDEFINITIONTYPE portdef;
 
@@ -183,7 +184,7 @@ static int portSettingsChanged(OPENMAX_JPEG_DECODER* decoder, size_t * outputWid
     return OMXJPEG_OK;
 }
 
-static int portSettingsChangedAgain(OPENMAX_JPEG_DECODER* decoder)
+int portSettingsChangedAgain(OPENMAX_JPEG_DECODER* decoder)
 {
     ilclient_disable_port(decoder->imageDecoder->component,
                           decoder->imageDecoder->outPort);
@@ -219,7 +220,7 @@ static int portSettingsChangedAgain(OPENMAX_JPEG_DECODER* decoder)
     return OMXJPEG_OK;
 }
 
-static int prepareResizer(OPENMAX_JPEG_DECODER* decoder)
+int prepareResizer(OPENMAX_JPEG_DECODER* decoder)
 {
     decoder->imageResizer = malloc(sizeof(COMPONENT_DETAILS));
     if(decoder->imageResizer == NULL)
@@ -262,7 +263,7 @@ static int prepareResizer(OPENMAX_JPEG_DECODER* decoder)
     return OMXJPEG_OK;
 }
 
-static int prepareImageDecoder(OPENMAX_JPEG_DECODER* decoder)
+int prepareImageDecoder(OPENMAX_JPEG_DECODER* decoder)
 {
     decoder->imageDecoder = malloc(sizeof(COMPONENT_DETAILS));
     if(decoder->imageDecoder == NULL)
@@ -303,7 +304,7 @@ static int prepareImageDecoder(OPENMAX_JPEG_DECODER* decoder)
     return OMXJPEG_OK;
 }
 
-static int startupImageDecoder(OPENMAX_JPEG_DECODER* decoder)
+int startupImageDecoder(OPENMAX_JPEG_DECODER* decoder)
 {
     //move to idle
     ilclient_change_component_state(decoder->imageDecoder->component,
@@ -519,7 +520,7 @@ int OpenMaxJPEG_decodeImage(OPENMAX_JPEG_DECODER* decoder,
                 done = 1;
 
             if((done == 0) || (decoder->pOutputBufferHeader == NULL))
-                usleep(30 * 1000);//sleep(5);
+                sleep(1);
         }
 
         //fill the buffer if we have created the buffer
@@ -548,6 +549,7 @@ int OpenMaxJPEG_decodeImage(OPENMAX_JPEG_DECODER* decoder,
     //wait for buffer to fill
     while(decoder->pOutputBufferHeader->nFilledLen > 0)
     {
+        //sleep(5);
         usleep(30 * 1000);
     }
 
