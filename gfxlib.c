@@ -201,7 +201,7 @@ VGImage OpenMAXCreateImageFromBuf(unsigned char * buf, size_t bufSize, size_t ou
         OpenMaxJPEG_setupDecoder(&OMXDecoder);
     OpenMaxJPEG_decodeImage(OMXDecoder, (char *) buf, bufSize, outputWidth, outputHeight);
     vgImage = vgCreateImage(rgbaFormat, outputWidth, outputHeight, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(vgImage, &OMXDecoder->pOutputBufferHeader->pBuffer[stStride * outputHeight], stStride * -1, 
+    vgImageSubData(vgImage, &OMXDecoder->pOutputBufferHeader->pBuffer[stStride * (outputHeight-1)], stStride * -1, 
         rgbaFormat, 0, 0, outputWidth, outputHeight);
     OpenMaxJPEG_cleanup(OMXDecoder);
     return vgImage;

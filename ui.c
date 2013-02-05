@@ -189,10 +189,6 @@ char ** get_lastrec_column(int iBracket, int iBrace, char * key)
 //------------------------------------------------------------------------------
 VGImage create_image_from_buf(unsigned char *buf, size_t bufSize, size_t outputWidth, size_t outputHeight)
 {
-/*
-    return createImageFromBuf((unsigned char *)
-                                  buf, bufSize, outputWidth, outputHeight);
-*/   
     switch (jpegDecoder)
     {
     case jdOMX:
