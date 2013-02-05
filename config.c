@@ -295,5 +295,5 @@ void setUIDefaults()
     numMouseIndex     = 0; 
     soundOutput       = soHDMI;
     videoPlayer       = vpOMXPlayer;
-    jpegDecoder       = jdOMX;    
+    jpegDecoder       = jdLibJpeg;    
 }
