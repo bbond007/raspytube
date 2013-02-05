@@ -95,7 +95,7 @@ typedef struct _tMenuState
     
 typedef enum tVideoPlayer {vpMPlayer   = 1, vpOMXPlayer   = 0} tVideoPlayer;
 typedef enum tSoundOutput {soHDMI      = 1, soLOCAL       = 0} tSoundOutput;
-typedef enum tJpegDecoder {jdLibJpeg   = 0, jdOMX         = 1, jdOpenMax = 2} tJpegDecoder;
+typedef enum tJpegDecoder {jdLibJpeg   = 0, jdOMXCPP      = 1, jdOMXC = 2} tJpegDecoder;
 typedef enum tMSResult    {msFarLeft =-1, msFarRight  = 1, msNewRec = 2, msSameRec = -2, msInvalid = 3} tMSResult;
 
 //------------------------------------------------------------------------------

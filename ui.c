@@ -191,12 +191,12 @@ VGImage create_image_from_buf(unsigned char *buf, size_t bufSize, size_t outputW
 {
     switch (jpegDecoder)
     {
-    case jdOMX:
+    case jdOMXCPP:
         return OMXCreateImageFromBuf((unsigned char *)
                                      buf, bufSize, outputWidth, outputHeight);
         break;
 
-    case jdOpenMax:
+    case jdOMXC:
         return OpenMAXCreateImageFromBuf((unsigned char *)
                                         buf, bufSize, outputWidth, outputHeight);
         break;
@@ -1917,11 +1917,11 @@ void redraw_results(bool swap)
 
     switch(jpegDecoder)
     {
-    case jdOMX:
-        textXY(0,state->screen_height * .96f, "[OMXJPEG]", numPointFontTiny, textColor);
+    case jdOMXCPP:
+        textXY(0,state->screen_height * .96f, "[OMXCPP]", numPointFontTiny, textColor);
         break;
-    case jdOpenMax:
-        textXY(0,state->screen_height * .96f, "[OM2JPEG]", numPointFontTiny, textColor);
+    case jdOMXC:
+        textXY(0,state->screen_height * .96f, "[OMXC]", numPointFontTiny, textColor);
         break;
     case jdLibJpeg:
         textXY(0, state->screen_height * .96f, "[LIBJPEG]", numPointFontTiny, textColor);

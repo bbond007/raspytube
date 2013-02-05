@@ -613,9 +613,9 @@ static void do_change_audio_dev()
 static void do_change_jpeg_dec()
 {
     if (jpegDecoder == jdLibJpeg)
-        jpegDecoder = jdOMX;
-    //else if (jpegDecoder == jdOMX)
-    //    jpegDecoder = jdOpenMax;
+        jpegDecoder = jdOMXCPP;
+    else if (jpegDecoder == jdOMXCPP)
+        jpegDecoder = jdOMXC;
     else
         jpegDecoder = jdLibJpeg;
 }

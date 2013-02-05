@@ -41,8 +41,9 @@ tMenuItem audioMenuItems[] =
      	
 tMenuItem jpegMenuItems[] =
 {
-    {"OMX",	      	"OMX", 			      0},
-    {"LIBJPEG",	      	"LIBJPEG",                    0},
+    {"LIBJPEG :)",	"LIPJPEG", 	              0},
+    {"OMXCPP :(",     	"OMXCPP",                     0},
+    {"OMXC :(",     	"OMXC",                       0},
     {NULL, 		NULL, 			      0}
 };
      	
