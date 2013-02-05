@@ -43,7 +43,7 @@ tMenuItem jpegMenuItems[] =
 {
     {"LIBJPEG :)",	"LIPJPEG", 	              0},
     {"OMXCPP :(",     	"OMXCPP",                     0},
-    {"OMXC :(",     	"OMXC",                       0},
+    {"OMXC :( :(",     	"OMXC",                       0},
     {NULL, 		NULL, 			      0}
 };
      	
