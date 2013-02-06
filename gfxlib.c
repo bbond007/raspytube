@@ -71,7 +71,7 @@ VGImage createImageFromPNG(const char *filename, int desired_width, int desired_
  }
  img = vgCreateImage(getRGBAFormat(), pBitmap->w, pBitmap->h, VG_IMAGE_QUALITY_BETTER);
  vgImageSubData(img, &pBitmap->data[pBitmap->h * pBitmap->stride],
- pBitmap->stride * -1, getRGBAFormat(), 0, 0, pBitmap->w, pBitmap->h);
+ pBitmap->stride * -1, getRGBAFormat(), 0, 0, pBitmap->w-1, pBitmap->h-1);
  free(pBitmap->data);
  return img;
 }
@@ -201,7 +201,8 @@ VGImage OpenMAXCreateImageFromBuf(unsigned char * buf, size_t bufSize, size_t ou
         OpenMaxJPEG_setupDecoder(&OMXDecoder);
     OpenMaxJPEG_decodeImage(OMXDecoder, (char *) buf, bufSize, outputWidth, outputHeight);
     vgImage = vgCreateImage(rgbaFormat, outputWidth, outputHeight, VG_IMAGE_QUALITY_BETTER);
-    vgImageSubData(vgImage, &OMXDecoder->pOutputBufferHeader->pBuffer[stStride * (outputHeight-1)], stStride * -1, 
+    vgImageSubData(vgImage, &OMXDecoder->pOutputBufferHeader->pBuffer[stStride * (outputHeight)], stStride * -1, 
+//    vgImageSubData(vgImage, &OMXDecoder->pOutputBufferHeader->pBuffer[0], stStride, 
         rgbaFormat, 0, 0, outputWidth, outputHeight);
     OpenMaxJPEG_cleanup(OMXDecoder);
     return vgImage;

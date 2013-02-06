@@ -520,7 +520,7 @@ int OpenMaxJPEG_decodeImage(OPENMAX_JPEG_DECODER* decoder,
                 done = 1;
 
             if((done == 0) || (decoder->pOutputBufferHeader == NULL))
-                sleep(1);
+                usleep(30 * 1000);
         }
 
         //fill the buffer if we have created the buffer

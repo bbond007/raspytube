@@ -254,8 +254,8 @@ VGImage OMXJPEG::CreateImageFromBuf(unsigned char *buf, unsigned int bufLength, 
    
         VGImageFormat rgbaFormat = VG_sABGR_8888;
         vgImage = vgCreateImage(rgbaFormat, outputWidth, outputHeight, VG_IMAGE_QUALITY_BETTER);
-        vgImageSubData(vgImage, &m_pHeaderOutput->pBuffer[stStride * (outputHeight-1)], stStride * -1, rgbaFormat, 0, 0, outputWidth, outputHeight);
-        //vgImageSubData(vgImage, m_pHeaderOutput->pBuffer, stStride, rgbaFormat, 0, 0, outputWidth, outputHeight);
+        vgImageSubData(vgImage, &m_pHeaderOutput->pBuffer[stStride * (outputHeight)], stStride * -1, rgbaFormat, 0, 0, outputWidth, outputHeight);
+//        vgImageSubData(vgImage, m_pHeaderOutput->pBuffer, stStride, rgbaFormat, 0, 0, outputWidth, outputHeight);
         
         // 3.4.3.1 of official spec says:
         // change components to Idle
