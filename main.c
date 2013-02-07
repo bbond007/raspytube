@@ -654,7 +654,7 @@ static void do_search(char * searchStr)
         clear_screen(true);
         youtube_search(searchStr);
         
-        if (selected_rec == NULL)
+        if (first_rec == NULL)
             show_message("Search returned 0 results!", 5, ERROR_POINT);
     }
 }
