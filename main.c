@@ -373,7 +373,8 @@ static void do_main_menu(char * searchStr, char * userStr)
                 clear_output();
                 clear_screen(true);
                 youtube_search(NULL);
-                if (selected_rec == NULL)
+                if (first_rec == NULL)
+                //if (selected_rec == NULL)
                     show_message("Region search returned 0 results!", 1, ERROR_POINT);
                 break;
                 //  case 14:
@@ -677,7 +678,8 @@ static void do_user_search(char * userStr)
         numStart = 1;
         clear_screen(true);
         youtube_search(userStr);
-        if (selected_rec == NULL)
+        //if (selected_rec == NULL)
+        if (first_rec == NULL)
             show_message("User search returned 0 results!", 6, ERROR_POINT);
     }
 }
