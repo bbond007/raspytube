@@ -1,50 +1,83 @@
-raspytube - an OpenVG YouTube client for Raspberry Pi.
+# raspytube - an OpenVG YouTube client for Raspberry Pi.
 
-keys:
-		
-		Q - run 1/4 screen in X11 window
-
-		M - main menu
- 
-		S- search (edit existing txt)
- 
-		N - new search
- 
-		J - (uppercase) test joystick (useful for configuring JS) 
-
-		j - (lowercase) joystick/keyboard/mouse menu (input menu)
- 
-		cursor down - next record
- 
-		cursor up - prev record
- 
-		cursor right- get next # results
- 
-		cursor left- get prev # results
- 
-		ESC - exit screen/proram
- 
-the following are also available from the menu:
-		
-		C - category menu
-	
-		F - set youtube-dl format
- 		
-		G - GUI Menu 
- 
-		P - toggle between OMXPlayer and MPlayer 
- 
-		H- toggle between HDMI/Local audio output
-	
-		j - joystick/keyboard/mouse menu (input menu)
- 
-		I- more information on selected record
- 
-		X- toggle between software (libjpeg) and hardware (OMX) jpeg decoding.
- 
 binarybond007@gmail.com
 
-NOTES:
+## Installation
+
+```sh
+# Install youtube-dl
+sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
+sudo chmod a+x /usr/local/bin/youtube-dl
+
+# Install compilation tools and required libraries
+sudo apt-get update
+sudo apt-get install build-essential git-core libjpeg8-dev
+
+# Compile ilclient
+cd /opt/vc/src/hello_pi/libs/ilclient
+make
+
+# Compile raspytube
+cd ~
+git clone https://github.com/bbond007/raspytube
+cd raspytube
+cd OMXJPEG
+make
+cd ..
+cd GFXDATA
+make
+cd ..
+make
+
+# Launch raspytube
+./raspytube.bin
+```
+
+## Usage
+
+Keys:
+		
+	Q - run 1/4 screen in X11 window
+
+	M - main menu
+
+	S - search (edit existing txt)
+
+	N - new search
+
+	J - (uppercase) test joystick (useful for configuring JS) 
+
+	j - (lowercase) joystick/keyboard/mouse menu (input menu)
+
+	cursor down - next record
+
+	cursor up - prev record
+
+	cursor right- get next # results
+
+	cursor left- get prev # results
+
+	ESC - exit screen/program
+ 
+The following are also available from the menu:
+		
+	C - category menu
+
+	F - set youtube-dl format
+		
+	G - GUI Menu 
+
+	P - toggle between OMXPlayer and MPlayer 
+
+	H - toggle between HDMI/Local audio output
+
+	j - joystick/keyboard/mouse menu (input menu)
+
+	I - more information on selected record
+
+	X - toggle between software (libjpeg) and hardware (OMX) jpeg decoding.
+
+## Notes
 
 		* OMX-jpg & gfx data broken out into seperate static libs (see updated compile instructions)
 		
@@ -80,61 +113,22 @@ is always front-most. To switch to XWindows mode, There is an invisible
 
 "button" on right-topmost position to toggle on the screen or the "q" 
 
-key (for quarter-screen). Repeat to return.    
+key (for quarter-screen). Repeat to return.
 
+## Acknowledgements
 
 Thanks the the RPi community!
 
+parts of this come from "shapes.c":
 
-		parts of this come from "shapes.c":
+shapes: minimal program to explore OpenVG
 
-		shapes: minimal program to explore OpenVG
+Anthony Starks (ajstarks@gmail.com)
 
-		Anthony Starks (ajstarks@gmail.com)
+and "test_image.c"
 
-		and "test_image.c"
-		
-		ShivaVG / IvanLeben<ivan.leben@gmail.com>
-		
-		ShivaVG-anopen-sourceLGPLANSICimplementationoftheOpenVGspecification
+ShivaVG / IvanLeben<ivan.leben@gmail.com>
 
-		Also thanks to MattOwnby and jumble) for OMX jpeg decode 
+ShivaVG-anopen-sourceLGPLANSICimplementationoftheOpenVGspecification
 
-
-Compile instructions:
-
-		sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
-
-		sudo chmod a+x /usr/local/bin/youtube-dl
-
-		sudo apt-get update
-
-		sudo apt-get install build-essential git-core libjpeg8-dev
-
-		cd /opt/vc/src/hello_pi/libs/ilclient
-
-		make
-
-		cd ~
-
-		git clone https://github.com/bbond007/raspytube
-
-		cd raspytube
-
-		cd OMXJPEG
-		
-		make
-
-		cd ..
-
-		cd GFXDATA
-
-		make
-
-		cd ..
-
-		make
-
-		./raspytube.bin
-
- 
+Also thanks to MattOwnby and jumble) for OMX jpeg decode 
