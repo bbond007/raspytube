@@ -15,6 +15,7 @@ sudo apt-get install build-essential git-core libjpeg8-dev
 
 # Compile ilclient
 cd /opt/vc/src/hello_pi/libs/ilclient
+make clean
 make
 
 # Compile raspytube
@@ -22,11 +23,14 @@ cd ~
 git clone https://github.com/bbond007/raspytube
 cd raspytube
 cd OMXJPEG
+make clean
 make
 cd ..
 cd GFXDATA
+make clean
 make
 cd ..
+make clean
 make
 
 # Launch raspytube
