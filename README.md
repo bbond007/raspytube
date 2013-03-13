@@ -11,7 +11,7 @@ sudo chmod a+x /usr/local/bin/youtube-dl
 
 # Install compilation tools and required libraries
 sudo apt-get update
-sudo apt-get install build-essential git-core libjpeg8-dev
+sudo apt-get install build-essential git-core libjpeg8-dev libx11-dev
 
 # Compile ilclient
 cd /opt/vc/src/hello_pi/libs/ilclient
