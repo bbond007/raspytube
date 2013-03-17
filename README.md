@@ -7,12 +7,11 @@ binarybond007@gmail.com
 ### Installing using ultra-simple binary-only install.
 
 ```sh
-# Install youtube-dl
-sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
-sudo chmod a+x /usr/local/bin/youtube-dl
-
 # Install dependancies
-sudo apt-get install omxplayer wget libjpeg8
+sudo apt-get install omxplayer wget libjpeg8 youtube-dl
+
+# Update youtube-dl. Need to make sure it's up to date with youtube API.
+sudo youtube-dl -U
 
 # Download binary
 wget https://github.com/bbond007/raspytube/blob/master/raspytube.bin
@@ -25,9 +24,11 @@ chmod 755 raspytube.bin
 ### Installing from source
 
 ```sh
-# Install youtube-dl
-sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
-sudo chmod a+x /usr/local/bin/youtube-dl
+# Install dependancies
+sudo apt-get install omxplayer wget libjpeg8 youtube-dl
+
+# Update youtube-dl. Need to make sure it's up to date with youtube API.
+sudo youtube-dl -U
 
 # Install compilation tools and required libraries
 sudo apt-get update
