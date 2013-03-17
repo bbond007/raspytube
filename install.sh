@@ -1,21 +1,12 @@
 #!/bin/sh
 
-# Install youtube-dl. Use github to make sure it's the latest version.
-# Check for /usr/bin/youtube-dl (from package manager install) and
-# /usr/local/bin/youtube-dl (from previous repo based install)
-if [ ! -f /usr/bin/youtube-dl -a ! -f /usr/local/bin/youtube-dl ];
-then
-    echo "> Installing youtube-dl."
-    sudo wget https://github.com/downloads/rg3/youtube-dl/youtube-dl -O /usr/local/bin/youtube-dl
-    sudo chmod a+x /usr/local/bin/youtube-dl
-else
-    echo "> Updating youtube-dl."
-    sudo youtube-dl -U
-fi
-
 # Install dependancies
 echo "> Installing dependancies."
-sudo apt-get install omxplayer wget libjpeg8
+sudo apt-get install omxplayer wget libjpeg8 youtube-dl
+
+# Updating youtube-dl to make sure it's the latest version.
+echo "> Updating youtube-dl."
+sudo youtube-dl -U
 
 # Download binary
 echo "> Downloading raspytube binary."
