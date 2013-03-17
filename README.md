@@ -29,7 +29,6 @@ sudo chmod a+x /usr/local/bin/raspytube.bin
 # Launch raspytube!
 echo "> Launching raspytube!"
 raspytube.bin
->>>>>>> master
 ```
 
 ### Installing from source
