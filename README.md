@@ -4,6 +4,12 @@ binarybond007@gmail.com
 
 ## Installation
 
+### Automatic install
+
+```sh
+wget --no-check-certificate https://github.com/bbond007/raspytube/raw/master/install.sh -O - | sh
+```
+
 ### Installing using ultra-simple binary-only install.
 
 ```sh
